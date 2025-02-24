@@ -1,11 +1,10 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "content-creator-plugin",
+	"name": "Content Creator Plugin",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Create characters, items, and locations with predefined templates.",
+	"author": "Your Name",
+	"authorUrl": "https://yourwebsite.com",
 	"isDesktopOnly": false
 }
