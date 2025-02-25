@@ -138,13 +138,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "3. Locations/Stardust Lounge.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Stardust Lounge"
+              "title": "Outline"
             }
           },
           {
@@ -172,7 +171,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 470.5
+    "width": 551.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -188,8 +187,13 @@
   },
   "active": "c83838245521deb7",
   "lastOpenFiles": [
-    "2. Items/Dupont's Heirloom.md",
+    "4. Stories/The Last Gamble.md",
     "5. Evenements/Mr Dupont's death.md",
+    "1. Characters/Evelyn Dupont.md",
+    "1. Characters/Mr Dupont.md",
+    "1. Characters/Samuel Blackwood.md",
+    "4. Stories/Silenced Testimony.md",
+    "2. Items/Dupont's Heirloom.md",
     "5. Evenements/_Template.md",
     "5. Evenements/Mr Dupont's death 1.md",
     "3. Locations/Dupont's Mansion.md",
@@ -198,8 +202,6 @@
     "3. Locations/_Template.md",
     "1. Characters/_Template.md",
     "1. Characters/The Shadow.md",
-    "1. Characters/Samuel Blackwood.md",
-    "1. Characters/Evelyn Dupont.md",
     "4. Stories/_Template.md",
     "2. Items/_Template.md",
     "5. Evenements",
@@ -209,16 +211,13 @@
     "New Item-1740415677979.md",
     "New Location-1740415698909.md",
     "New Character-1740415605250.md",
-    "4. Stories/The Last Gamble.md",
     "The Stardust Lounge.md",
     "Dupont Mansion.md",
     "Untitled 1.canvas",
     "Untitled.canvas",
     "99. Notes",
     "4. Stories/The Missing Melody.md",
-    "Stories/Story 2.md",
     "3. Locations",
-    "Welcome.md",
     "4. Stories",
     "2. Items",
     "Characters/Shadows of the Crescent City",

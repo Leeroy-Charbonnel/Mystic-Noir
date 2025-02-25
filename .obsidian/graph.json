@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "( #Evenement ) ( -#Template )",
+  "search": "( #Character OR #Item OR #Story ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -36,7 +36,7 @@
       }
     },
     {
-      "query": "tag:#Evenements",
+      "query": "tag:#Evenement",
       "color": {
         "a": 1,
         "rgb": 13652704
@@ -49,10 +49,10 @@
   "nodeSizeMultiplier": 1,
   "lineSizeMultiplier": 1,
   "collapse-forces": false,
-  "centerStrength": 0.817708333333333,
-  "repelStrength": 0,
-  "linkStrength": 1,
-  "linkDistance": 146,
-  "scale": 1.401982897776156,
+  "centerStrength": 0,
+  "repelStrength": 3.90625,
+  "linkStrength": 0.528645833333333,
+  "linkDistance": 68,
+  "scale": 1.0000000000000409,
   "close": false
 }

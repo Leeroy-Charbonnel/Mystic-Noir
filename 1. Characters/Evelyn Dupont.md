@@ -20,6 +20,7 @@
 - **Habits & Quirks:** Never seen without a touch of expensive perfume. Has a habit of running her fingers over her wedding ring when deep in thought  
 
 ### Relationships
+- [[Mr Dupont]]
 - **Family:** Comes from an old aristocratic lineage; her late husband was a powerful businessman  
 - **Friends & Allies:** Maintains connections with high-society figures, but few know the real Evelyn  
 - **Enemies & Rivals:** Anyone who threatens her family’s reputation or wealth  
