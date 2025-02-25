@@ -1,6 +1,6 @@
 {
-  "collapse-filter": true,
-  "search": "(-tag:#Template)  AND (tag:#Story  OR tag:#Characters  ",
+  "collapse-filter": false,
+  "search": "(-tag:#Template) -path:\"99. Notes\"  ",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -36,16 +36,16 @@
       }
     }
   ],
-  "collapse-display": true,
+  "collapse-display": false,
   "showArrow": false,
-  "textFadeMultiplier": -0.1,
+  "textFadeMultiplier": 0.4,
   "nodeSizeMultiplier": 0.916666666666667,
   "lineSizeMultiplier": 1.80989583333333,
-  "collapse-forces": true,
-  "centerStrength": 0.302083333333333,
-  "repelStrength": 5.9375,
+  "collapse-forces": false,
+  "centerStrength": 0.192708333333333,
+  "repelStrength": 9.79166666666667,
   "linkStrength": 0.90625,
   "linkDistance": 69,
-  "scale": 1.4019828977761053,
-  "close": false
+  "scale": 1.401982897776108,
+  "close": true
 }
