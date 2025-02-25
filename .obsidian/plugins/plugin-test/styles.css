@@ -1,152 +1,73 @@
-/* Creator Plugin Styles */
+/* Main container for the graph and tags view */
+.graph-tags-main-container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+}
 
-.creator-container {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .creator-container h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .creator-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 30px;
-  }
-  
-  .creator-button {
-    padding: 16px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-    background-color: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-  }
-  
-  .creator-button:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .creator-button:active {
-    transform: translateY(0);
-  }
-  
-  .creator-graph-button {
-    background-color: var(--interactive-accent-hover);
-    margin-top: 20px;
-  }
-  
-  /* Custom Tags Filter Styles */
-  .custom-tags-filter {
-    background-color: var(--background-secondary);
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 16px;
-    width: 100%;
-    max-width: 300px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .custom-tags-filter h3 {
-    margin: 0 0 8px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-normal);
-  }
-  
-  .filter-description {
-    margin: 0 0 10px 0;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  
-  .tags-container {
-    max-height: 250px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    padding-right: 5px;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    background-color: var(--background-primary);
-  }
-  
-  .tag-item {
-    display: flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-bottom: 1px solid var(--background-modifier-border);
-  }
-  
-  .tag-item:last-child {
-    border-bottom: none;
-  }
-  
-  .tag-item input[type="checkbox"] {
-    margin-right: 8px;
-  }
-  
-  .tag-item label {
-    cursor: pointer;
-    font-size: 13px;
-    flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .filter-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  
-  .filter-buttons button {
-    flex: 1;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: var(--interactive-normal);
-    color: var(--text-normal);
-    border: 1px solid var(--background-modifier-border);
-  }
-  
-  .filter-buttons button:hover {
-    background-color: var(--interactive-hover);
-  }
-  
-  .tags-loading, .error-message {
-    padding: 10px;
-    text-align: center;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-  
-  .error-message {
-    color: var(--text-error);
-  }
-  
-  /* Responsive adjustments */
-  @media (min-width: 768px) {
-    .creator-buttons {
-      flex-direction: row;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    
-    .creator-button {
-      flex: 1;
-      min-width: 180px;
-      max-width: 250px;
-    }
-  }
+/* Graph container (left side) */
+.graph-container {
+  flex: 1;
+  min-width: 70%;
+  height: 100%;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+/* Tags panel (right side) */
+.tags-panel {
+  width: 30%;
+  min-width: 200px;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tags container */
+.tags-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  overflow-y: auto;
+  max-height: calc(100% - 100px);
+}
+
+/* Individual tag checkbox container */
+.tag-checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.tag-checkbox-container:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.tag-checkbox-container input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* Style for the refresh button */
+.tags-panel button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tags-panel button:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.tags-panel h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
