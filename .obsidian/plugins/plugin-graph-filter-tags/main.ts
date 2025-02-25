@@ -1,6 +1,5 @@
 import { App,Plugin,PluginSettingTab,Setting,WorkspaceLeaf,Notice,ItemView,TextAreaComponent,DropdownComponent,ButtonComponent } from 'obsidian';
 
-// Define the tag filter view ID
 const VIEW_TYPE_TAG_FILTER='graph-tags-view';
 
 interface GraphFilterGraphFilterPluginSettings {
@@ -43,7 +42,6 @@ class TagFilterView extends ItemView {
         header.createEl('h3',{ text: 'Filter Graph by Tags' });
         header.addClass('center');
 
-        // Create action buttons section
         const buttonsSection=mainContainer.createDiv('buttons-section');
 
         // Open graph button
@@ -69,12 +67,11 @@ class TagFilterView extends ItemView {
         selectNoneBtn.setText('Select None');
         selectNoneBtn.addEventListener('click',() => { this.setAllTagsSelection(false); });
 
-        // Container for the tags
         this.tagsContainer=tagsSection.createDiv('tags-container');
         this.tagsContainer.setText('Loading tags...');
         this.tagsContainer.addClass('center');
 
-        // Add refresh button at the bottom
+        // Refresh button
         this.refreshButton=mainContainer.createEl('button',{ cls: 'refresh-button' });
         this.refreshButton.setText('Refresh Tags');
         this.refreshButton.addEventListener('click',() => {
@@ -105,7 +102,7 @@ class TagFilterView extends ItemView {
             if(!this.graphLeaf||!this.app.workspace.getLeavesOfType('graph').length) {
                 await this.openGraphView();
 
-                // Get the graph leaf again
+                // Get the graph leaf
                 const graphLeaves=this.app.workspace.getLeavesOfType('graph');
                 if(graphLeaves.length>0) {
                     this.graphLeaf=graphLeaves[0];
@@ -116,7 +113,6 @@ class TagFilterView extends ItemView {
                 }
             }
 
-            // Make sure we have the graph leaf
             if(!this.graphLeaf||!this.graphLeaf.view) {
                 new Notice('Graph view not found');
                 this.isApplyingFilter=false;

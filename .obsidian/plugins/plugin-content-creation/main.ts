@@ -1,447 +1,444 @@
-import { App,Plugin,PluginSettingTab,Setting,WorkspaceLeaf,Notice,ItemView,TextAreaComponent,DropdownComponent,ButtonComponent } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile, Modal, Notice } from 'obsidian';
+import { ContentSelectorModal } from './contentSelectorModal';
+import { DynamicFormModal } from './dynamicFormModal';
+import { TEMPLATES } from './template';
 
-// Define the tag filter view ID
-const VIEW_TYPE_TAG_FILTER='graph-tags';
-
-interface CreatorPluginSettings {
-    defaultCharactersFolder: string;
-    excludedTags: string[];
+interface ContentCreatorSettings {
+  defaultFolders: {
+    characters: string;
+    items: string;
+    events: string;
+    locations: string;
+  };
+  fileNameTemplate: string;
 }
 
-const DEFAULT_SETTINGS: CreatorPluginSettings={
-    defaultCharactersFolder: '1. Characters',
-    excludedTags: ['Template']
+const DEFAULT_SETTINGS: ContentCreatorSettings = {
+  defaultFolders: {
+    characters: '1. Characters',
+    items: '2. Items',
+    events: '5. Evenements',
+    locations: '3. Locations'
+  },
+  fileNameTemplate: '{{name}}'
+};
+
+export default class ContentCreatorPlugin extends Plugin {
+  settings: ContentCreatorSettings;
+
+  async onload() {
+    await this.loadSettings();
+
+    console.log(`Loading ${this.manifest.name} plugin v${this.manifest.version}`);
+
+    // Add ribbon icon
+    this.addRibbonIcon('file-plus', 'Create Content', () => {
+      new ContentSelectorModal(this.app, this).open();
+    });
+
+    // Add commands for each content type
+    this.addCommand({
+      id: 'create-character',
+      name: 'Create Character',
+      callback: () => {
+        this.openFormForContentType('characters');
+      }
+    });
+
+    this.addCommand({
+      id: 'create-item',
+      name: 'Create Item',
+      callback: () => {
+        this.openFormForContentType('items');
+      }
+    });
+
+    this.addCommand({
+      id: 'create-event',
+      name: 'Create Event',
+      callback: () => {
+        this.openFormForContentType('events');
+      }
+    });
+
+    this.addCommand({
+      id: 'create-location',
+      name: 'Create Location',
+      callback: () => {
+        this.openFormForContentType('locations');
+      }
+    });
+
+    // Add settings tab
+    this.addSettingTab(new CreatorSettingTab(this.app, this));
+  }
+
+  onunload() {
+    console.log(`Unloading ${this.manifest.name} plugin`);
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+
+  openFormForContentType(contentType: string) {
+    if (TEMPLATES[contentType]) {
+      new DynamicFormModal(this.app, this, contentType).open();
+    } else {
+      new Notice(`Unknown content type: ${contentType}`);
+    }
+  }
+
+  async createContent(contentType: string, data: any) {
+    try {
+      // Determine folder path based on content type
+      const folderPath = this.settings.defaultFolders[contentType];
+      
+      // Create folder if it doesn't exist
+      if (!await this.app.vault.adapter.exists(folderPath)) {
+        await this.app.vault.createFolder(folderPath);
+      }
+      
+      // Get the name field based on content type
+      let name = '';
+      if (contentType === 'characters') {
+        name = data.BasicInformation.FullName;
+      } else {
+        name = data.BasicInformation.Name;
+      }
+      
+      if (!name) {
+        new Notice('Content name is required');
+        return false;
+      }
+      
+      // Generate filename
+      let filename = this.settings.fileNameTemplate.replace('{{name}}', name);
+      
+      // Create file path
+      const filePath = `${folderPath}/${filename}.md`;
+      
+      // Check if file already exists
+      if (await this.app.vault.adapter.exists(filePath)) {
+        const userConfirmed = confirm(`File "${filename}.md" already exists. Do you want to overwrite it?`);
+        if (!userConfirmed) {
+          return false;
+        }
+      }
+      
+      // Generate content based on content type and data
+      let content = this.generateContentFromData(contentType, data);
+      
+      // Create or update file
+      const existingFile = this.app.vault.getAbstractFileByPath(filePath);
+      if (existingFile instanceof TFile) {
+        await this.app.vault.modify(existingFile, content);
+      } else {
+        await this.app.vault.create(filePath, content);
+      }
+      
+      // Open the newly created file
+      const newFile = this.app.vault.getAbstractFileByPath(filePath);
+      if (newFile instanceof TFile) {
+        await this.app.workspace.getLeaf().openFile(newFile);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error creating content:', error);
+      new Notice(`Error creating content: ${error.message}`);
+      return false;
+    }
+  }
+
+  private generateContentFromData(contentType: string, data: any): string {
+    switch (contentType) {
+      case 'characters':
+        return this.generateCharacterContent(data);
+      case 'items':
+        return this.generateItemContent(data);
+      case 'events':
+        return this.generateEventContent(data);
+      case 'locations':
+        return this.generateLocationContent(data);
+      default:
+        throw new Error(`Unknown content type: ${contentType}`);
+    }
+  }
+
+  private generateCharacterContent(data: any): string {
+    let content = `#Character\n\n`;
+    
+    // Basic Information
+    content += `### Basic Information\n`;
+    if (data.BasicInformation.FullName) content += `- **Full Name:** ${data.BasicInformation.FullName}  \n`;
+    if (data.BasicInformation.Age) content += `- **Age:** ${data.BasicInformation.Age}  \n`;
+    if (data.BasicInformation.Occupation) content += `- **Occupation:** ${data.BasicInformation.Occupation}  \n`;
+    if (data.BasicInformation.Background) content += `- **Background:** ${data.BasicInformation.Background}  \n`;
+    
+    // Appearance
+    content += `\n### Appearance\n`;
+    if (data.Appearance.Height) content += `- **Height:** ${data.Appearance.Height}  \n`;
+    if (data.Appearance.Build) content += `- **Build:** ${data.Appearance.Build}  \n`;
+    if (data.Appearance.Hair) content += `- **Hair:** ${data.Appearance.Hair}  \n`;
+    if (data.Appearance.Eyes) content += `- **Eyes:** ${data.Appearance.Eyes}  \n`;
+    if (data.Appearance.ClothingStyle) content += `- **Clothing Style:** ${data.Appearance.ClothingStyle}  \n`;
+    if (data.Appearance.DefiningFeatures) content += `- **Defining Features:** ${data.Appearance.DefiningFeatures}  \n`;
+
+    // Personality
+    content += `\n### Personality\n`;
+    if (data.Personality.GeneralTraits) content += `- **General Traits:** ${data.Personality.GeneralTraits}  \n`;
+    
+    if (data.Personality.Strengths && data.Personality.Strengths.length > 0) {
+      content += `- **Strengths:** ${data.Personality.Strengths.join(', ')}  \n`;
+    }
+    
+    if (data.Personality.Weaknesses && data.Personality.Weaknesses.length > 0) {
+      content += `- **Weaknesses:** ${data.Personality.Weaknesses.join(', ')}  \n`;
+    }
+    
+    if (data.Personality.HabitsAndQuirks && data.Personality.HabitsAndQuirks.length > 0) {
+      content += `- **Habits & Quirks:** ${data.Personality.HabitsAndQuirks.join(', ')}  \n`;
+    }
+
+    // Relationships
+    content += `\n### Relationships\n`;
+    
+    if (data.Relationships.Family && data.Relationships.Family.length > 0) {
+      content += `- **Family:** ${data.Relationships.Family.map(name => `[[${name}]]`).join(', ')}  \n`;
+    }
+    
+    if (data.Relationships.FriendsAndAllies && data.Relationships.FriendsAndAllies.length > 0) {
+      content += `- **Friends & Allies:** ${data.Relationships.FriendsAndAllies.map(name => `[[${name}]]`).join(', ')}  \n`;
+    }
+    
+    if (data.Relationships.EnemiesAndRivals && data.Relationships.EnemiesAndRivals.length > 0) {
+      content += `- **Enemies & Rivals:** ${data.Relationships.EnemiesAndRivals.map(name => `[[${name}]]`).join(', ')}  \n`;
+    }
+    
+    if (data.Relationships.RomanticInterests && data.Relationships.RomanticInterests.length > 0) {
+      content += `- **Romantic Interests:** ${data.Relationships.RomanticInterests.map(name => `[[${name}]]`).join(', ')}  \n`;
+    }
+
+    // Belongings
+    content += `\n### Belongings\n`;
+    if (data.Belongings && data.Belongings.length > 0) {
+      data.Belongings.forEach(item => {
+        content += `- [[${item}]]\n`;
+      });
+    }
+
+    // Additional Notes
+    if (data.AdditionalNotes) {
+      content += `\n### Additional Notes\n${data.AdditionalNotes}\n`;
+    }
+
+    return content;
+  }
+
+  private generateItemContent(data: any): string {
+    let content = `#Item \n\n`;
+    
+    // Basic Information
+    content += `### Basic Information\n`;
+    if (data.BasicInformation.Name) content += `- **Name:** ${data.BasicInformation.Name}\n`;
+    if (data.BasicInformation.Owner) content += `- **Owner:** [[${data.BasicInformation.Owner}]]\n`;
+    if (data.BasicInformation.Description) content += `- **Description:** ${data.BasicInformation.Description}\n`;
+    if (data.BasicInformation.Value) content += `- **Value:** ${data.BasicInformation.Value}\n`;
+    
+    // History
+    content += `\n### History\n`;
+    if (data.History.Origin) content += `- **Origin:** ${data.History.Origin}\n`;
+    if (data.History.Age) content += `- **Age:** ${data.History.Age}\n`;
+    
+    if (data.History.PreviousOwners && data.History.PreviousOwners.length > 0) {
+      content += `- **Previous Owners:** ${data.History.PreviousOwners.map(name => `[[${name}]]`).join(', ')}\n`;
+    }
+    
+    // Significance
+    content += `\n### Significance\n`;
+    if (data.Significance.Purpose) content += `- **Purpose:** ${data.Significance.Purpose}\n`;
+    if (data.Significance.CulturalMeaning) content += `- **Cultural Meaning:** ${data.Significance.CulturalMeaning}\n`;
+
+    // Current Status
+    content += `\n### Current Status\n`;
+    if (data.CurrentStatus.Condition) content += `- **Condition:** ${data.CurrentStatus.Condition}\n`;
+    if (data.CurrentStatus.Location) content += `- **Location:** [[${data.CurrentStatus.Location}]]\n`;
+    if (data.CurrentStatus.Accessibility) content += `- **Accessibility:** ${data.CurrentStatus.Accessibility}\n`;
+
+    // Additional Notes
+    if (data.AdditionalNotes) {
+      content += `\n### Additional Notes\n${data.AdditionalNotes}\n`;
+    }
+
+    return content;
+  }
+
+  private generateEventContent(data: any): string {
+    let content = `#Evenement \n\n`;
+    
+    // Basic Information
+    if (data.BasicInformation.Name) content += `## ${data.BasicInformation.Name}\n\n`;
+    if (data.BasicInformation.Date) content += `**Date:** ${data.BasicInformation.Date}\n\n`;
+    if (data.BasicInformation.Location) content += `**Location:** [[${data.BasicInformation.Location}]]\n\n`;
+    if (data.BasicInformation.Description) content += `${data.BasicInformation.Description}\n\n`;
+    
+    // Participants
+    if (data.Participants && 
+        (data.Participants.MainParticipants.length > 0 || 
+         data.Participants.KeyFigures.length > 0 || 
+         data.Participants.Spectators.length > 0)) {
+      
+      content += `## Participants\n\n`;
+      
+      if (data.Participants.MainParticipants && data.Participants.MainParticipants.length > 0) {
+        data.Participants.MainParticipants.forEach(participant => {
+          content += `- [[${participant}]]\n`;
+        });
+        content += '\n';
+      }
+      
+      if (data.Participants.KeyFigures && data.Participants.KeyFigures.length > 0) {
+        content += `### Key Figures\n`;
+        data.Participants.KeyFigures.forEach(figure => {
+          content += `- [[${figure}]]\n`;
+        });
+        content += '\n';
+      }
+    }
+    
+    // Additional Notes
+    if (data.AdditionalNotes) {
+      content += `## Notes\n\n${data.AdditionalNotes}\n`;
+    }
+
+    return content;
+  }
+
+  private generateLocationContent(data: any): string {
+    let content = `#Location\n\n`;
+    
+    // Basic Information
+    content += `### Basic Information\n`;
+    if (data.BasicInformation.Name) content += `- **Name:** ${data.BasicInformation.Name}\n`;
+    if (data.BasicInformation.Type) content += `- **Type:** ${data.BasicInformation.Type}\n`;
+    if (data.BasicInformation.Address) content += `- **Address/Location:** ${data.BasicInformation.Address}\n`;
+    if (data.BasicInformation.Owner) content += `- **Owner/Proprietor:** [[${data.BasicInformation.Owner}]]\n`;
+    
+    // Appearance
+    content += `\n### Appearance\n`;
+    if (data.Appearance.Exterior) content += `- **Exterior:** ${data.Appearance.Exterior}\n`;
+    if (data.Appearance.Interior) content += `- **Interior:** ${data.Appearance.Interior}\n`;
+    if (data.Appearance.Size) content += `- **Size:** ${data.Appearance.Size}\n`;
+    if (data.Appearance.DistinguishingFeatures) content += `- **Distinguishing Features:** ${data.Appearance.DistinguishingFeatures}\n`;
+
+    // Atmosphere
+    content += `\n### Atmosphere\n`;
+    if (data.Atmosphere.Lighting) content += `- **Lighting:** ${data.Atmosphere.Lighting}\n`;
+    if (data.Atmosphere.Sounds) content += `- **Sounds:** ${data.Atmosphere.Sounds}\n`;
+    if (data.Atmosphere.Smells) content += `- **Smells:** ${data.Atmosphere.Smells}\n`;
+    if (data.Atmosphere.Mood) content += `- **Mood:** ${data.Atmosphere.Mood}\n`;
+
+    // Purpose & History
+    content += `\n### Purpose & History\n`;
+    if (data.PurposeAndHistory.PrimaryUse) content += `- **Primary Use:** ${data.PurposeAndHistory.PrimaryUse}\n`;
+    if (data.PurposeAndHistory.History) content += `- **History:** ${data.PurposeAndHistory.History}\n`;
+    if (data.PurposeAndHistory.Significance) content += `- **Significance:** ${data.PurposeAndHistory.Significance}\n`;
+
+    // Characters Associated
+    content += `\n### Characters Associated\n`;
+    if (data.AssociatedCharacters && data.AssociatedCharacters.length > 0) {
+      data.AssociatedCharacters.forEach(character => {
+        content += `- [[${character}]]\n`;
+      });
+    }
+
+    // Additional Notes
+    if (data.AdditionalNotes) {
+      content += `\n### Additional Notes\n${data.AdditionalNotes}\n`;
+    }
+
+    return content;
+  }
 }
 
-// Create a custom view for our tag filter panel
-class TagFilterView extends ItemView {
-    private tagsContainer: HTMLElement;
-    private refreshButton: HTMLElement;
-    private openGraphButton: HTMLElement;
-    private plugin: CreatorPlugin;
-    private currentQuery: string='';
-    private graphLeaf: WorkspaceLeaf|null=null;
-    private isApplyingFilter: boolean=false;
-
-    constructor(leaf: WorkspaceLeaf,plugin: CreatorPlugin) {
-        super(leaf);
-        this.plugin=plugin;
-    }
-
-    getViewType(): string { return VIEW_TYPE_TAG_FILTER; }
-    getDisplayText(): string { return "Content Creation"; }
-    getIcon(): string { return "tag"; }
-
-    async onOpen(): Promise<void> {
-        const container=this.containerEl.children[1];
-        container.empty();
-
-        //Header
-        const mainContainer=container.createDiv('tag-filter-main-container');
-        mainContainer.addClass('center');
-        const header=mainContainer.createEl('div',{ cls: 'tag-filter-header' });
-        header.createEl('h3',{ text: 'Filter Graph by Tags' });
-        header.addClass('center');
-
-        // Create action buttons section
-        const buttonsSection=mainContainer.createDiv('buttons-section');
-
-        // Open graph button
-        this.openGraphButton=buttonsSection.createEl('button',{ cls: 'mod-cta' });
-        this.openGraphButton.setText('Open Graph View');
-        this.openGraphButton.addClass('center');
-        this.openGraphButton.addEventListener('click',() => {
-            this.openGraphView();
-        });
-
-        const tagsSection=mainContainer.createDiv('tags-section');
-        const selectButtons=tagsSection.createDiv('select-buttons');
-        selectButtons.addClass('center');
-
-
-        //Select All
-        const selectAllBtn=selectButtons.createEl('button',{ cls: 'tag-button' });
-        selectAllBtn.setText('Select All');
-        selectAllBtn.addEventListener('click',() => { this.setAllTagsSelection(true); });
-
-        //Select None
-        const selectNoneBtn=selectButtons.createEl('button',{ cls: 'tag-button' });
-        selectNoneBtn.setText('Select None');
-        selectNoneBtn.addEventListener('click',() => { this.setAllTagsSelection(false); });
-
-        // Container for the tags
-        this.tagsContainer=tagsSection.createDiv('tags-container');
-        this.tagsContainer.setText('Loading tags...');
-        this.tagsContainer.addClass('center');
-
-        // Add refresh button at the bottom
-        this.refreshButton=mainContainer.createEl('button',{ cls: 'refresh-button' });
-        this.refreshButton.setText('Refresh Tags');
-        this.refreshButton.addEventListener('click',() => {
-            this.loadTags();
-        });
-
-        await this.loadTags();
-        await this.openGraphView();
-        this.applyFilterToGraph();
-    }
-
-    private async openGraphView() {
-        try {
-            await this.app.commands.executeCommandById('graph:open');
-            const graphLeaves=this.app.workspace.getLeavesOfType('graph');
-            if(graphLeaves.length>0) { this.graphLeaf=graphLeaves[0]; }
-        } catch(error) {
-            console.error('Error opening graph view:',error);
-        }
-    }
-
-    private async applyFilterToGraph() {
-        if(this.isApplyingFilter) return;
-        this.isApplyingFilter=true;
-
-        try {
-            // Make sure the graph view is open
-            if(!this.graphLeaf||!this.app.workspace.getLeavesOfType('graph').length) {
-                await this.openGraphView();
-
-                // Get the graph leaf again
-                const graphLeaves=this.app.workspace.getLeavesOfType('graph');
-                if(graphLeaves.length>0) {
-                    this.graphLeaf=graphLeaves[0];
-                } else {
-                    new Notice('Could not find graph view to apply filter');
-                    this.isApplyingFilter=false;
-                    return;
-                }
-            }
-
-            // Make sure we have the graph leaf
-            if(!this.graphLeaf||!this.graphLeaf.view) {
-                new Notice('Graph view not found');
-                this.isApplyingFilter=false;
-                return;
-            }
-
-            //Get search input
-            const graphView=this.graphLeaf.view;
-            let searchInput=null;
-            let attempts=0;
-            const maxAttempts=3;
-
-            while(!searchInput&&attempts<maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve,100));
-                searchInput=this.findSearchInput(graphView.containerEl);
-                attempts++;
-                if(!searchInput&&attempts<maxAttempts) {
-                    console.log(`Search input not found, attempt ${attempts} of ${maxAttempts}`);
-                }
-            }
-
-            if(searchInput) {
-                searchInput.value=this.currentQuery;
-                console.log(searchInput.value);
-                searchInput.dispatchEvent(new Event('input',{ bubbles: false }));
-                //searchInput.dispatchEvent(new KeyboardEvent('keydown',{ key: 'Enter',bubbles: false }));
-                searchInput.dispatchEvent(new KeyboardEvent('keydown',{ key: 'Escape',bubbles: false }));
-                searchInput.blur();
-                this.leaf.setEphemeralState({ focus: true });
-            } else {
-                console.error('Could not find search input in graph view after multiple attempts');
-            }
-        } catch(error) {
-            console.error('Error applying filter to graph:',error);
-        } finally {
-            this.isApplyingFilter=false;
-        }
-    }
-
-    private findSearchInput(container: HTMLElement): HTMLInputElement|null {
-        //Get filter button and open filter collapsible
-        const filterButton=container.querySelector('.graph-control-section.mod-filter.is-collapsed .collapse-icon.is-collapsed');
-        if(filterButton) filterButton.click();
-        return container.querySelector('.graph-controls input[type="search"]');
-    }
-
-    private async loadTags() {
-        try {
-            this.tagsContainer.empty();
-            this.tagsContainer.setText('Loading tags...');
-
-            const allTags=await this.plugin.getAllTags();
-
-            const excludedTagsSet=new Set(this.plugin.settings.excludedTags.map(tag => tag.toLowerCase()));
-            const filteredTags=allTags.filter(tag => !excludedTagsSet.has(tag.toLowerCase()));
-
-            this.tagsContainer.empty();
-
-            if(filteredTags.length===0) {
-                this.tagsContainer.setText('No tags found in your vault.');
-                return;
-            }
-
-            // Add a checkbox for each tag
-            filteredTags.forEach(tag => {
-                const tagContainer=this.tagsContainer.createDiv('tag-checkbox-container');
-
-                const checkbox=tagContainer.createEl('input');
-                checkbox.type='checkbox';
-                checkbox.id=`tag-checkbox-${tag}`;
-                checkbox.dataset.tag=tag;
-                checkbox.checked=true; // All selected by default
-
-                checkbox.addEventListener('change',() => {
-                    this.updateQueryFromTags();
-                });
-
-                const label=tagContainer.createEl('label');
-                label.htmlFor=checkbox.id;
-                label.setText(tag);
-            });
-
-            this.updateQueryFromTags();
-
-        } catch(error) {
-            console.error('Error loading tags:',error);
-            this.tagsContainer.setText('Error loading tags. Please try again.');
-        }
-    }
-
-    private setAllTagsSelection(checked: boolean) {
-        this.tagsContainer.querySelectorAll('input[type="checkbox"]').forEach((checkbox: HTMLInputElement) => {
-            checkbox.checked=checked;
-        });
-        this.updateQueryFromTags();
-    }
-
-    private updateQueryFromTags() {
-        try {
-            const checkedTags=Array.from(this.tagsContainer.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => (checkbox as HTMLInputElement).dataset.tag);
-            const exclusions=`(${this.plugin.settings.excludedTags.map(tag => ` -#${tag}`).join('')} )`;
-            let query='';
-
-            //If nothing checked => filter out exluded
-            if(checkedTags.length===0) {
-                if(this.plugin.settings.excludedTags.length>0)
-                    query=exclusions;
-             //If something checked => filter wanted tags + filter out exluded
-            } else {
-                query=`( ${checkedTags.map(tag => `#${tag}`).join(' OR ')} )`;
-                if(this.plugin.settings.excludedTags.length>0)
-                    query+=` ${exclusions}`;
-            }
-
-            this.currentQuery=query;
-            console.log(query);
-            this.applyFilterToGraph();
-
-        } catch(error) {
-            console.error('Error updating query from tags:',error);
-        }
-    }
-
-    async onClose() {
-        if(this.refreshButton) {
-            this.refreshButton.removeEventListener('click',this.loadTags.bind(this));
-        }
-        if(this.openGraphButton) {
-            this.openGraphButton.removeEventListener('click',this.openGraphView.bind(this));
-        }
-    }
-}
-
-export default class CreatorPlugin extends Plugin {
-    settings: CreatorPluginSettings;
-
-    async onload() {
-        await this.loadSettings();
-
-        console.log("loading "+this.manifest.name+" plugin: v"+this.manifest.version)
-
-        this.registerView(
-            VIEW_TYPE_TAG_FILTER,
-            (leaf) => new TagFilterView(leaf,this)
-        );
-
-
-        const ribbonIconEl=this.addRibbonIcon('tag','Content Creation',(evt: MouseEvent) => {
-            this.activateView();
-        });
-        ribbonIconEl.addClass('creator-plugin-ribbon-class');
-
-        this.addCommand({
-            id: 'open-graph-tag-filter',
-            name: 'Open Graph Tag Filter',
-            callback: () => {
-                this.activateView();
-            }
-        });
-
-        this.addSettingTab(new CreatorSettingTab(this.app,this));
-    }
-
-
-    async activateView() {
-        const { workspace }=this.app;
-        let leaf=workspace.getLeavesOfType(VIEW_TYPE_TAG_FILTER)[0];
-
-        if(!leaf) {
-            leaf=workspace.getRightLeaf(false);
-            await leaf.setViewState({
-                type: VIEW_TYPE_TAG_FILTER,
-                active: true,
-            });
-        }
-        workspace.revealLeaf(leaf);
-    }
-
-    async getAllTags() {
-        return Object.keys(app.metadataCache.getTags()).map(t => t.substring(1)).sort();
-    }
-
-    onunload() {
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_TAG_FILTER);
-    }
-
-    async loadSettings() {
-        this.settings=Object.assign({},DEFAULT_SETTINGS,await this.loadData());
-    }
-
-    async saveSettings() {
-        await this.saveData(this.settings);
-    }
-}
-
+// Create setting tab
 class CreatorSettingTab extends PluginSettingTab {
-    plugin: CreatorPlugin;
-    private excludedTagsContainer: HTMLElement;
-    private tagDropdown: DropdownComponent;
-    private availableTags: string[]=[];
+  plugin: ContentCreatorPlugin;
 
-    constructor(app: App,plugin: CreatorPlugin) {
-        super(app,plugin);
-        this.plugin=plugin;
-    }
+  constructor(app: App, plugin: ContentCreatorPlugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
 
-    async display(): Promise<void> {
-        const { containerEl }=this;
+  display(): void {
+    const { containerEl } = this;
+    containerEl.empty();
 
-        containerEl.empty();
+    containerEl.createEl('h2', { text: 'Content Creator Settings' });
 
-        containerEl.createEl('h2',{ text: 'Graph Tag Filter Settings' });
+    // Characters folder setting
+    new Setting(containerEl)
+      .setName('Characters Folder')
+      .setDesc('The folder where new character files will be created')
+      .addText(text => text
+        .setPlaceholder('1. Characters')
+        .setValue(this.plugin.settings.defaultFolders.characters)
+        .onChange(async (value) => {
+          this.plugin.settings.defaultFolders.characters = value;
+          await this.plugin.saveSettings();
+        }));
 
-        const excludedTagsSetting=new Setting(containerEl)
-            .setName('Excluded Tags')
-            .setDesc('Those tag will be never be displayed in graph');
+    // Items folder setting
+    new Setting(containerEl)
+      .setName('Items Folder')
+      .setDesc('The folder where new item files will be created')
+      .addText(text => text
+        .setPlaceholder('2. Items')
+        .setValue(this.plugin.settings.defaultFolders.items)
+        .onChange(async (value) => {
+          this.plugin.settings.defaultFolders.items = value;
+          await this.plugin.saveSettings();
+        }));
 
-        excludedTagsSetting.settingEl.style.width='100%';
-        excludedTagsSetting.settingEl.style.display='grid';
-        excludedTagsSetting.settingEl.style.gridTemplateColumns='50% auto';
-        excludedTagsSetting.settingEl.style.gridTemplateRows='100%';
-        excludedTagsSetting.settingEl.style.maxHeight='20vh';
+    // Locations folder setting
+    new Setting(containerEl)
+      .setName('Locations Folder')
+      .setDesc('The folder where new location files will be created')
+      .addText(text => text
+        .setPlaceholder('3. Locations')
+        .setValue(this.plugin.settings.defaultFolders.locations)
+        .onChange(async (value) => {
+          this.plugin.settings.defaultFolders.locations = value;
+          await this.plugin.saveSettings();
+        }));
 
-        excludedTagsSetting.controlEl.style.display='grid';
-        excludedTagsSetting.controlEl.style.gridTemplateColumns='1fr 1fr';
-        excludedTagsSetting.controlEl.style.gridTemplateRows='100%';
-        excludedTagsSetting.controlEl.style.columnGap='5px';
-        excludedTagsSetting.controlEl.style.maxHeight='100%';
+    // Events folder setting
+    new Setting(containerEl)
+      .setName('Events Folder')
+      .setDesc('The folder where new event files will be created')
+      .addText(text => text
+        .setPlaceholder('5. Evenements')
+        .setValue(this.plugin.settings.defaultFolders.events)
+        .onChange(async (value) => {
+          this.plugin.settings.defaultFolders.events = value;
+          await this.plugin.saveSettings();
+        }));
 
-        const tagSelectionContainer=excludedTagsSetting.controlEl.createDiv('tag-selection-container');
-        tagSelectionContainer.style.width='100%';
-        tagSelectionContainer.style.display='grid';
-        tagSelectionContainer.style.gridTemplateColumns='1fr auto';
-        tagSelectionContainer.style.gridTemplateRows='100%';
-        tagSelectionContainer.style.columnGap='4px';
-
-
-
-        this.tagDropdown=new DropdownComponent(tagSelectionContainer);
-        this.tagDropdown.addOption('','Select a tag...');
-
-        const addButton=new ButtonComponent(tagSelectionContainer);
-        addButton.setButtonText('Add');
-        addButton.onClick(async () => {
-            const selectedTag=this.tagDropdown.getValue();
-            if(selectedTag&&!this.plugin.settings.excludedTags.includes(selectedTag)) {
-                this.plugin.settings.excludedTags.push(selectedTag);
-                await this.plugin.saveSettings();
-                this.updateTagsDropdown();
-                this.updateExcludedTagsList();
-                this.tagDropdown.setValue('');
-            }
-        });
-
-        this.excludedTagsContainer=excludedTagsSetting.controlEl.createDiv('excluded-tags-list');
-        this.excludedTagsContainer.style.maxHeight='100%';
-        this.excludedTagsContainer.style.overflowY='auto';
-
-        this.updateTagsDropdown();
-        this.updateExcludedTagsList();
-    }
-    private async updateTagsDropdown() {
-        this.availableTags=await this.plugin.getAllTags();
-        this.tagDropdown.selectEl.innerHTML='';
-
-        this.availableTags.forEach(tag => {
-            if(!this.plugin.settings.excludedTags.includes(tag))
-                this.tagDropdown.addOption(tag,tag);
-        });
-        console.log("update dropdown");
-    }
-
-    private updateExcludedTagsList() {
-        // Clear the container
-        this.excludedTagsContainer.empty();
-
-        // If no excluded tags, show a message
-        if(this.plugin.settings.excludedTags.length===0) {
-            const emptyMessage=this.excludedTagsContainer.createDiv('no-tags-message');
-            emptyMessage.setText('No excluded tags');
-            emptyMessage.style.fontStyle='italic';
-            emptyMessage.style.color='var(--text-muted)';
-            return;
-        }
-
-        // Create a list of excluded tags with delete buttons
-        this.plugin.settings.excludedTags.forEach(tag => {
-            const tagItem=this.excludedTagsContainer.createDiv('excluded-tag-item');
-            tagItem.style.display='grid';
-            tagItem.style.gridTemplateColumns='1fr auto';
-            tagItem.style.columnGap='2px';
-            tagItem.style.borderLeft="1px solid var(--color-base-35)";
-
-            // Tag name
-            const tagName=tagItem.createDiv('tag-name');
-            tagName.style.display="flex";
-            tagName.style.textAlign="center"
-            tagItem.style.alignItems="center";
-            tagName.style.justifyContent="center";
-            tagName.setText(tag);
-
-            // Delete button
-            const deleteButton=tagItem.createEl('button',{ cls: 'delete-tag-button' });
-            deleteButton.style.boxShadow="none"
-            deleteButton.style.background="none"
-            deleteButton.setText('✕');
-
-
-            deleteButton.addEventListener('click',async () => {
-                // Remove the tag from the settings
-                this.plugin.settings.excludedTags=this.plugin.settings.excludedTags.filter(t => t!==tag);
-                await this.plugin.saveSettings();
-
-                this.updateTagsDropdown();
-                this.updateExcludedTagsList();
-            });
-
-            // Hover state for delete button
-            deleteButton.addEventListener('mouseenter',() => {
-                deleteButton.style.color='var(--text-error)';
-            });
-
-            deleteButton.addEventListener('mouseleave',() => {
-                deleteButton.style.color='var(--text-muted)';
-            });
-        });
-    }
+    // Filename template setting
+    new Setting(containerEl)
+      .setName('Filename Template')
+      .setDesc('Template for filenames. Use {{name}} as a placeholder for the content name')
+      .addText(text => text
+        .setPlaceholder('{{name}}')
+        .setValue(this.plugin.settings.fileNameTemplate)
+        .onChange(async (value) => {
+          this.plugin.settings.fileNameTemplate = value || '{{name}}';
+          await this.plugin.saveSettings();
+        }));
+  }
 }

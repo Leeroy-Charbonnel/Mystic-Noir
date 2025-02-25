@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "5abc1cbd0348699c",
+        "id": "671cf014ee532ea5",
         "type": "tabs",
         "children": [
           {
-            "id": "b235e8a9bc30370f",
+            "id": "2b19bb2455afb189",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -183,8 +183,8 @@
             "state": {
               "type": "graph-tags",
               "state": {},
-              "icon": "tag",
-              "title": "Content Creation"
+              "icon": "lucide-file",
+              "title": "Plugin no longer active"
             }
           }
         ],
@@ -192,11 +192,10 @@
       }
     ],
     "direction": "horizontal",
-    "width": 492.5
+    "width": 365.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "content-creation-plugin:Content Creation": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
@@ -209,26 +208,26 @@
   },
   "active": "861ef1750cebe732",
   "lastOpenFiles": [
+    "1. Characters/_Template.md",
+    "2. Items/_Template.md",
+    "3. Locations/_Template.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "3. Locations/Dupont's Mansion.md",
+    "1. Characters/Samuel Blackwood.md",
+    "4. Stories/Silenced Testimony.md",
+    "99. Notes/Future.md",
+    "4. Stories/_Template.md",
+    "3. Locations/Samuel's Office.md",
     "5. Events/Mr Dupont's death.md",
     "5. Events/_Template.md",
-    "3. Locations/_Template.md",
     "2. Items/Dupont's Heirloom.md",
-    "2. Items/_Template.md",
-    "1. Characters/_Template.md",
     "4. Stories/The Last Gamble.md",
     "1. Characters/Evelyn Dupont.md",
     "1. Characters/Mr Dupont.md",
-    "1. Characters/Samuel Blackwood.md",
-    "4. Stories/Silenced Testimony.md",
     "5. Evenements/Mr Dupont's death 1.md",
-    "3. Locations/Dupont's Mansion.md",
-    "3. Locations/Samuel's Office.md",
     "3. Locations/Stardust Lounge.md",
     "1. Characters/The Shadow.md",
-    "4. Stories/_Template.md",
     "5. Events",
-    "99. Notes/Future.md",
-    "4. Stories/Shadows of the Crescent City.md",
     "New Location-17404156ffff83379.md",
     "New Item-1740415677979.md",
     "New Location-1740415698909.md",

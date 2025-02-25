@@ -8,7 +8,7 @@
   "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "tag:#Characters  ",
+      "query": "tag:#Character",
       "color": {
         "a": 1,
         "rgb": 14408667
@@ -29,7 +29,7 @@
       }
     },
     {
-      "query": "tag:#Locations  ",
+      "query": "tag:#Location",
       "color": {
         "a": 1,
         "rgb": 6381921
@@ -53,6 +53,6 @@
   "repelStrength": 3.90625,
   "linkStrength": 0.528645833333333,
   "linkDistance": 68,
-  "scale": 1.0000000000000415,
+  "scale": 1.000000000000048,
   "close": true
 }

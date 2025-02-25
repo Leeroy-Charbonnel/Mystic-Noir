@@ -1,5 +1,4 @@
 #Story
-
 # Shadows of the Crescent City
 
 ## Characters
