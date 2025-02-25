@@ -1,4 +1,4 @@
-#Characters 
+#Character
 
 ### Basic Information
 - **Full Name:** "The Shadow" (true identity concealed)  

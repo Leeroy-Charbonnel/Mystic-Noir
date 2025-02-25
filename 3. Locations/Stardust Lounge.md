@@ -1,4 +1,4 @@
-#Locations
+#Location
 
 ### Basic Information
 - **Name:** The Stardust Lounge
@@ -25,7 +25,6 @@
 
 ### Characters Associated
 - Criminal elites and their associates
-- [[Samuel Blackwood]] (occasional visitor for investigations)
 - Various informants and underworld figures
 - Performers and staff who may have valuable information
 

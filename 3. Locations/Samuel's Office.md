@@ -1,4 +1,4 @@
-#Locations
+#Location
 
 ### Basic Information
 - **Name:** Samuel Blackwood's Office

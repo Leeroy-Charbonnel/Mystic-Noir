@@ -1,4 +1,4 @@
-#Item #Template
+#Item #Template 
 
 ### Basic Information
 - **Name:** [Item Name]

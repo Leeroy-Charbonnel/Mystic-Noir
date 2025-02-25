@@ -1,4 +1,4 @@
-#Locations #Template
+#Location #Template
 
 ### Basic Information
 - **Name:** [Location Name]

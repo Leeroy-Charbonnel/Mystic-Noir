@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "e8d7a54a36f481da",
+        "id": "5abc1cbd0348699c",
         "type": "tabs",
         "children": [
           {
-            "id": "61cc09cbe702c334",
+            "id": "b235e8a9bc30370f",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -49,8 +49,8 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "The Stardust Lounge",
-                "matchingCase": false,
+                "query": "#Templ",
+                "matchingCase": true,
                 "explainSearch": false,
                 "collapseAll": false,
                 "extraContext": false,
@@ -148,7 +148,7 @@
             }
           },
           {
-            "id": "43e7edb9d66ee9c6",
+            "id": "c83838245521deb7",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -158,12 +158,12 @@
             }
           },
           {
-            "id": "1e542a45e4ede77c",
+            "id": "ffa883b69e3ba56f",
             "type": "leaf",
             "state": {
               "type": "graph-tags-view",
               "state": {},
-              "icon": "lucide-file",
+              "icon": "tag",
               "title": "Graph Tag Filter"
             }
           }
@@ -172,46 +172,50 @@
       }
     ],
     "direction": "horizontal",
-    "width": 537.5
+    "width": 470.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "content-creator-plugin:Graph Tag Filter": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
+      "content-creator-plugin:Graph Tag Filter": false,
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "43e7edb9d66ee9c6",
+  "active": "c83838245521deb7",
   "lastOpenFiles": [
-    "2. Items/_Template.md",
-    "99. Notes/Future.md",
-    "3. Locations/_Template.md",
-    "1. Characters/Samuel Blackwood.md",
     "2. Items/Dupont's Heirloom.md",
+    "5. Evenements/Mr Dupont's death.md",
+    "5. Evenements/_Template.md",
+    "5. Evenements/Mr Dupont's death 1.md",
+    "3. Locations/Dupont's Mansion.md",
+    "3. Locations/Samuel's Office.md",
     "3. Locations/Stardust Lounge.md",
+    "3. Locations/_Template.md",
+    "1. Characters/_Template.md",
+    "1. Characters/The Shadow.md",
+    "1. Characters/Samuel Blackwood.md",
     "1. Characters/Evelyn Dupont.md",
+    "4. Stories/_Template.md",
+    "2. Items/_Template.md",
+    "5. Evenements",
+    "99. Notes/Future.md",
+    "4. Stories/Shadows of the Crescent City.md",
     "New Location-17404156ffff83379.md",
     "New Item-1740415677979.md",
     "New Location-1740415698909.md",
     "New Character-1740415605250.md",
-    "1. Characters/_Template.md",
-    "4. Stories/Shadows of the Crescent City.md",
     "4. Stories/The Last Gamble.md",
     "The Stardust Lounge.md",
-    "3. Locations/Dupont's Mansion.md",
     "Dupont Mansion.md",
     "Untitled 1.canvas",
     "Untitled.canvas",
-    "1. Characters/The Shadow.md",
     "99. Notes",
     "4. Stories/The Missing Melody.md",
-    "3. Locations/Samuel's Office.md",
-    "4. Stories/_Template.md",
     "Stories/Story 2.md",
     "3. Locations",
     "Welcome.md",

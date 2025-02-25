@@ -1,4 +1,4 @@
-#Characters #Template
+#Character #Template
 
 ### Basic Information
 - **Full Name:** [Full Name]  

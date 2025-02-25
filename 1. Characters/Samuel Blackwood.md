@@ -1,4 +1,4 @@
-#Characters
+#Character
 
 ### Basic Information  
 - **Full Name:** Samuel Blackwood  

@@ -1,4 +1,8 @@
-/* Main container for the graph and tags view */
+.tag-filter-header {
+    width: 100%;
+    text-align: center;
+}
+
 .graph-tags-main-container {
     display: flex;
     flex-direction: row;
@@ -71,7 +75,7 @@
     flex-direction: column;
     flex-grow: 1;
     overflow-y: auto;
-    max-height: calc(100% - 80px);
+    width:100%;
   }
   
   /* Individual tag checkbox container */
@@ -116,3 +120,29 @@
   .graph-controls {
     z-index: 1;
   }
+  
+  .center {
+    margin-left: 50%;
+    transform: translateX(-50%);
+}
+
+.buttons-section button {
+    width: 100%;
+}
+
+.select-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap:10px;
+    padding: 10px 0px;
+}
+
+.tag-filter-main-container {
+    --width: 70%;
+    width: var(--width);
+}
+
+button.refresh-button {
+    width: 50%;
+}
