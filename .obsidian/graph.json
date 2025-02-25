@@ -1,6 +1,6 @@
 {
-  "collapse-filter": false,
-  "search": "(-tag:#Template) -path:\"99. Notes\"  ",
+  "collapse-filter": true,
+  "search": "(tag:Characters OR tag:Item OR tag:Locations OR tag:Story) AND( -tag:Template)",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -46,6 +46,6 @@
   "repelStrength": 9.79166666666667,
   "linkStrength": 0.90625,
   "linkDistance": 69,
-  "scale": 1.401982897776108,
-  "close": true
+  "scale": 0.25883865621816526,
+  "close": false
 }
