@@ -1,6 +1,6 @@
 import { App, Modal, Setting, TextAreaComponent, ButtonComponent, ToggleComponent, Notice } from 'obsidian';
 import ContentCreatorPlugin from './main';
-import { TEMPLATES, getDisplayName, isArray, isObject, isBoolean } from './templates';
+import { TEMPLATES, getDisplayName, isArray, isObject, isBoolean } from './template';
 
 export class DynamicFormModal extends Modal {
   plugin: ContentCreatorPlugin;
