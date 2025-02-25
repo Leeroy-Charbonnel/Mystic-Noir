@@ -1,4 +1,4 @@
-#Evenement 
+#Event
 
 [[Mr Dupont]]
 [[Dupont's Heirloom]]

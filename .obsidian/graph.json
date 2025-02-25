@@ -1,11 +1,11 @@
 {
   "collapse-filter": false,
-  "search": "( -#Template )",
+  "search": "( #Character OR #Event OR #Item OR #Location OR #Story ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
-  "collapse-color-groups": true,
+  "collapse-color-groups": false,
   "colorGroups": [
     {
       "query": "tag:#Characters  ",
@@ -36,7 +36,7 @@
       }
     },
     {
-      "query": "tag:#Evenement",
+      "query": "tag:#Event",
       "color": {
         "a": 1,
         "rgb": 13652704
@@ -53,6 +53,6 @@
   "repelStrength": 3.90625,
   "linkStrength": 0.528645833333333,
   "linkDistance": 68,
-  "scale": 1.0000000000000409,
-  "close": false
+  "scale": 1.0000000000000415,
+  "close": true
 }
