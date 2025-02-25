@@ -11,10 +11,14 @@
             "id": "78b13b950b66c6ff",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "3. Locations/Stardust Lounge.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Stardust Lounge"
             }
           }
         ]
@@ -90,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Welcome.md",
+                "file": "3. Locations/Stardust Lounge.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Welcome"
+              "title": "Backlinks for Stardust Lounge"
             }
           },
           {
@@ -138,21 +142,31 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Welcome.md",
+                "file": "3. Locations/Stardust Lounge.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Welcome"
+              "title": "Outline of Stardust Lounge"
+            }
+          },
+          {
+            "id": "43e7edb9d66ee9c6",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -162,18 +176,19 @@
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
-      "command-palette:Open command palette": false
+      "command-palette:Open command palette": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "78b13b950b66c6ff",
+  "active": "43e7edb9d66ee9c6",
   "lastOpenFiles": [
+    "1. Characters/Evelyn Dupont.md",
     "New Location-17404156ffff83379.md",
     "New Item-1740415677979.md",
     "New Location-1740415698909.md",
     "2. Items/Dupont's Heirloom.md",
     "2. Items/_Template.md",
     "New Character-1740415605250.md",
-    "1. Characters/Evelyn Dupont.md",
     "1. Characters/_Template.md",
     "1. Characters/Samuel Blackwood.md",
     "4. Stories/Shadows of the Crescent City.md",
