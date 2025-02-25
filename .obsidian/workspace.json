@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "a77eec76a219e0e1",
+        "id": "6941bce2dc804255",
         "type": "tabs",
         "children": [
           {
-            "id": "78b13b950b66c6ff",
+            "id": "81613f56162b6182",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "3. Locations/Stardust Lounge.md",
+                "file": "2. Items/_Template.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Stardust Lounge"
+              "title": "_Template"
             }
           }
         ]
@@ -160,17 +160,27 @@
               "icon": "git-pull-request",
               "title": "Source Control"
             }
+          },
+          {
+            "id": "1e542a45e4ede77c",
+            "type": "leaf",
+            "state": {
+              "type": "graph-tags-view",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "Graph & Tags View"
+            }
           }
         ],
         "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 817.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "content-creator-plugin:Creator Plugin": false,
+      "content-creator-plugin:Graph & Tags View": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
@@ -180,14 +190,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "43e7edb9d66ee9c6",
+  "active": "1e542a45e4ede77c",
   "lastOpenFiles": [
+    "2. Items/_Template.md",
+    "3. Locations/Stardust Lounge.md",
     "1. Characters/Evelyn Dupont.md",
     "New Location-17404156ffff83379.md",
     "New Item-1740415677979.md",
     "New Location-1740415698909.md",
     "2. Items/Dupont's Heirloom.md",
-    "2. Items/_Template.md",
     "New Character-1740415605250.md",
     "1. Characters/_Template.md",
     "1. Characters/Samuel Blackwood.md",
@@ -195,7 +206,6 @@
     "4. Stories/The Last Gamble.md",
     "The Stardust Lounge.md",
     "3. Locations/Dupont's Mansion.md",
-    "3. Locations/Stardust Lounge.md",
     "Dupont Mansion.md",
     "Untitled 1.canvas",
     "Untitled.canvas",
