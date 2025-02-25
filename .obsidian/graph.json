@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "( #Character OR #Item OR #Story ) ( -#Template )",
+  "search": "( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,

@@ -1,7 +1,7 @@
 import { App,Plugin,PluginSettingTab,Setting,WorkspaceLeaf,Notice,ItemView,TextAreaComponent,DropdownComponent,ButtonComponent } from 'obsidian';
 
 // Define the tag filter view ID
-const VIEW_TYPE_TAG_FILTER='graph-tags-view';
+const VIEW_TYPE_TAG_FILTER='graph-tags';
 
 interface CreatorPluginSettings {
     defaultCharactersFolder: string;
@@ -29,7 +29,7 @@ class TagFilterView extends ItemView {
     }
 
     getViewType(): string { return VIEW_TYPE_TAG_FILTER; }
-    getDisplayText(): string { return "Graph Tag Filter"; }
+    getDisplayText(): string { return "Content Creation"; }
     getIcon(): string { return "tag"; }
 
     async onOpen(): Promise<void> {
@@ -264,7 +264,7 @@ export default class CreatorPlugin extends Plugin {
         );
 
 
-        const ribbonIconEl=this.addRibbonIcon('tag','Graph Tag Filter',(evt: MouseEvent) => {
+        const ribbonIconEl=this.addRibbonIcon('tag','Content Creation',(evt: MouseEvent) => {
             this.activateView();
         });
         ribbonIconEl.addClass('creator-plugin-ribbon-class');

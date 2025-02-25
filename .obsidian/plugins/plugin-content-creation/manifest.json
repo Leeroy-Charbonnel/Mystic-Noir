@@ -1,10 +1,10 @@
 {
-	"id": "content-creator-plugin",
-	"name": "Content Creator Plugin",
+	"id": "content-creation-plugin",
+	"name": "Content Creation Plugin",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Create characters, items, and locations with predefined templates.",
-	"author": "Your Name",
-	"authorUrl": "https://yourwebsite.com",
+	"description": "Create characters, items, locations, etc. with predefined templates.",
+	"author": "Leeroy Charbonnel",
+	"authorUrl": "",
 	"isDesktopOnly": false
 }
