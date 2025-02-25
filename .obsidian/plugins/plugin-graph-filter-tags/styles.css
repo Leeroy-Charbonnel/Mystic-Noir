@@ -1,0 +1,148 @@
+.tag-filter-header {
+    width: 100%;
+    text-align: center;
+}
+
+.graph-tags-main-container {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Graph container (left side) */
+  .graph-container {
+    flex: 1;
+    min-width: 70%;
+    height: 100%;
+    border-right: 1px solid var(--background-modifier-border);
+    overflow: hidden;
+  }
+  
+  /* Graph container should display the graph content properly */
+  .graph-container .graph-view-container {
+    height: 100%;
+    width: 100%;
+  }
+  
+  /* Tags panel (right side) */
+  .tags-panel {
+    width: 30%;
+    min-width: 200px;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-primary);
+  }
+  
+  /* Title for the tags panel */
+  .tags-panel h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  /* Header row with select all/none buttons */
+  .tag-header-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  /* Buttons for select all/none */
+  .tag-button {
+    background-color: var(--interactive-normal);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-normal);
+  }
+  
+  .tag-button:hover {
+    background-color: var(--interactive-hover);
+  }
+  
+  /* Tags container */
+  .tags-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    width:100%;
+  }
+  
+  /* Individual tag checkbox container */
+  .tag-checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  
+  .tag-checkbox-container:hover {
+    background-color: var(--background-modifier-hover);
+  }
+  
+  .tag-checkbox-container input[type="checkbox"] {
+    margin-right: 8px;
+  }
+  
+  .tag-checkbox-container label {
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-normal);
+  }
+  
+  /* Style for the refresh button */
+  .tags-panel button {
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .tags-panel button:hover {
+    background-color: var(--interactive-accent-hover);
+  }
+  
+  /* Fix for any potential issues with the graph view controls */
+  .graph-controls {
+    z-index: 1;
+  }
+  
+  .center {
+    margin-left: 50%;
+    transform: translateX(-50%);
+}
+
+.buttons-section button {
+    width: 100%;
+}
+
+.select-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap:10px;
+    padding: 10px 0px;
+}
+
+.tag-filter-main-container {
+    --width: 70%;
+    width: var(--width);
+}
+
+button.refresh-button {
+    width: 50%;
+}

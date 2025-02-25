@@ -1,0 +1,10 @@
+{
+	"id": "graph-tags-filter",
+	"name": "Graph Tags Filter",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Filtre the Graph view using tags",
+	"author": "Leeroy Charbonnel",
+	"authorUrl": "",
+	"isDesktopOnly": false
+}
