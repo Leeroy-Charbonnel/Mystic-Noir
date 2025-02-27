@@ -1,6 +1,6 @@
 import { App, Modal, Setting } from 'obsidian';
 import ContentCreatorPlugin from './main';
-import { TEMPLATES } from './templates';
+import { TEMPLATES } from './template';
 
 export class ContentSelectorModal extends Modal {
   plugin: ContentCreatorPlugin;
@@ -21,6 +21,7 @@ export class ContentSelectorModal extends Modal {
       characters: 'Character',
       items: 'Item',
       locations: 'Location',
+      stories:"Story",
       events: 'Event'
     };
     

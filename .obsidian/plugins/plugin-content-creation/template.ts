@@ -3,148 +3,117 @@ export const TEMPLATES = {
     defaultFolder: '1. Characters',
     template: {
       BasicInformation: {
-        FullName: "",
-        Age: "",
-        Occupation: "",
-        Background: ""
+        FullName: "text",
+        Age: "text",
+        Occupation: "text",
+        Background: "textarea"
       },
       Appearance: {
-        Height: "",
-        Build: "",
-        Hair: "",
-        Eyes: "",
-        ClothingStyle: "",
-        DefiningFeatures: ""
+        Build: "text",
+        Description: "textarea",
+        Accessories: "text",
+      },
+      State:{
+          Dead:"boolean",
+          Injured:"boolean",
       },
       Personality: {
         GeneralTraits: "",
-        Strengths: [],
-        Weaknesses: [],
-        HabitsAndQuirks: []
+        Strengths: "array:text",
+        Weaknesses: "array:text",
       },
       Relationships: {
-        Family: [],
-        FriendsAndAllies: [],
-        EnemiesAndRivals: [],
-        RomanticInterests: []
+        Family: "array:text",
+        FriendsAndAllies: "array:text",
+        EnemiesAndRivals: "array:text",
+        RomanticInterests: "array:text",
       },
-      Belongings: [],
-      AdditionalNotes: ""
+      Belongings: "array:text",
+      AdditionalNotes: "textarea"
     }
   },
-  
+
   items: {
     defaultFolder: '2. Items',
     template: {
       BasicInformation: {
-        Name: "",
-        Owner: "",
-        Description: "",
-        Value: ""
+        Name: "text",
+        Description: "textarea",
+        Owner: "array:text",
       },
-      History: {
-        Origin: "",
-        Age: "",
-        PreviousOwners: []
-      },
-      Significance: {
-        Purpose: "",
-        CulturalMeaning: ""
-      },
-      CurrentStatus: {
-        Condition: "",
-        Location: "",
-        Accessibility: ""
-      },
-      AdditionalNotes: ""
+      AdditionalNotes: "textarea"
     }
   },
-  
+
   events: {
     defaultFolder: '5. Evenements',
     template: {
       BasicInformation: {
-        Name: "",
-        Type: "",
-        Description: "",
-        Date: "",
-        Location: ""
+        Name: "text",
+        Description: "textarea",
+        Date: "text",
+        Location: "text"
       },
-      Participants: {
-        MainParticipants: [],
-        Spectators: [],
-        KeyFigures: []
-      },
-      History: {
-        Origin: "",
-        SignificantPastOccurrences: [],
-        CulturalOrPoliticalImpact: ""
-      },
-      Details: {
-        Agenda: [],
-        TraditionsOrRituals: [],
-        RulesOrGuidelines: ""
-      },
-      CurrentStatus: {
-        Ongoing: false,
-        NextOccurrence: "",
-        PublicPerception: ""
-      },
-      AdditionalNotes: ""
+      AdditionalNotes: "textarea"
     }
   },
-  
+
   locations: {
     defaultFolder: '3. Locations',
     template: {
       BasicInformation: {
-        Name: "",
-        Type: "",
-        Address: "",
-        Owner: ""
+        Name: "text",
+        location: "text",
       },
       Appearance: {
-        Exterior: "",
-        Interior: "",
-        Size: "",
-        DistinguishingFeatures: ""
+        Description: "textarea",
+        Detail: "textarea",
       },
       Atmosphere: {
-        Lighting: "",
-        Sounds: "",
-        Smells: "",
-        Mood: ""
+        Description: "textarea"
       },
-      PurposeAndHistory: {
-        PrimaryUse: "",
-        History: "",
-        Significance: ""
+      AssociatedCharacters: "array:text",
+      AdditionalNotes: "textarea"
+    }
+  },
+
+  stories: {
+    defaultFolder: '4. Stories',
+    template: {
+      BasicInformation: {
+        Name: "text",
+        Synopsis: "textarea"
       },
-      AssociatedCharacters: [],
-      AdditionalNotes: ""
+      Characters: {
+        Characters: "array:text",
+      },
+      Locations: {
+        Locations: "array:text",
+      },
+      Items: {
+        Items: "array:text",
+      },
+      StoryDetails: {
+        StoryDetails: "array:textarea"
+      },
+      AdditionalNotes: "textarea"
     }
   }
+
 };
 
-// Helper to get a display name from a camelCase or PascalCase property
+
 export function getDisplayName(name: string): string {
-  // Convert camelCase or PascalCase to spaced words
   const result = name.replace(/([A-Z])/g, ' $1').trim();
   // Capitalize first letter
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
-// Helper function to check if a value is an array
-export function isArray(value: any): boolean {
-  return Array.isArray(value);
-}
 
-// Helper function to check if a value is an object
 export function isObject(value: any): boolean {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-// Helper function to check if a value is a boolean
 export function isBoolean(value: any): boolean {
   return typeof value === 'boolean';
 }

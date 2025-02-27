@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "671cf014ee532ea5",
+        "id": "7a359ee6a1119593",
         "type": "tabs",
         "children": [
           {
-            "id": "2b19bb2455afb189",
+            "id": "a0cdf702055624c6",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "1. Characters/Evelyn Dupont.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Evelyn Dupont"
             }
           }
         ]
@@ -176,26 +180,17 @@
               "icon": "tag",
               "title": "Graph Tag Filter"
             }
-          },
-          {
-            "id": "e4e8c8c6175f3768",
-            "type": "leaf",
-            "state": {
-              "type": "graph-tags",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "Plugin no longer active"
-            }
           }
         ],
         "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 365.5
+    "width": 438.5
   },
   "left-ribbon": {
     "hiddenItems": {
+      "content-creation-plugin:Create Content": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
@@ -208,22 +203,25 @@
   },
   "active": "861ef1750cebe732",
   "lastOpenFiles": [
-    "1. Characters/_Template.md",
-    "2. Items/_Template.md",
+    "1. Characters/Evelyn Dupont.md",
+    "5. Events/_Template.md",
+    "4. Stories/_Template.md",
     "3. Locations/_Template.md",
+    "2. Items/_Template.md",
+    "1. Characters/efezfezf.md",
     "4. Stories/Shadows of the Crescent City.md",
+    "1. Characters/text.md",
+    "1. Characters/Mr Dupont.md",
+    "1. Characters/New Content.md",
+    "1. Characters/_Template.md",
     "3. Locations/Dupont's Mansion.md",
     "1. Characters/Samuel Blackwood.md",
     "4. Stories/Silenced Testimony.md",
     "99. Notes/Future.md",
-    "4. Stories/_Template.md",
     "3. Locations/Samuel's Office.md",
     "5. Events/Mr Dupont's death.md",
-    "5. Events/_Template.md",
     "2. Items/Dupont's Heirloom.md",
     "4. Stories/The Last Gamble.md",
-    "1. Characters/Evelyn Dupont.md",
-    "1. Characters/Mr Dupont.md",
     "5. Evenements/Mr Dupont's death 1.md",
     "3. Locations/Stardust Lounge.md",
     "1. Characters/The Shadow.md",
@@ -232,12 +230,9 @@
     "New Item-1740415677979.md",
     "New Location-1740415698909.md",
     "New Character-1740415605250.md",
-    "The Stardust Lounge.md",
-    "Dupont Mansion.md",
     "Untitled 1.canvas",
     "Untitled.canvas",
     "99. Notes",
-    "4. Stories/The Missing Melody.md",
     "3. Locations",
     "4. Stories",
     "2. Items",
