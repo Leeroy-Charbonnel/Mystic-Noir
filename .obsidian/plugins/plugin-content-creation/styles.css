@@ -1,148 +1,175 @@
-.tag-filter-header {
-    width: 100%;
-    text-align: center;
+.content-selector-modal {
+  padding: 20px;
 }
 
-.graph-tags-main-container {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-  }
-  
-  /* Graph container (left side) */
-  .graph-container {
-    flex: 1;
-    min-width: 70%;
-    height: 100%;
-    border-right: 1px solid var(--background-modifier-border);
-    overflow: hidden;
-  }
-  
-  /* Graph container should display the graph content properly */
-  .graph-container .graph-view-container {
-    height: 100%;
-    width: 100%;
-  }
-  
-  /* Tags panel (right side) */
-  .tags-panel {
-    width: 30%;
-    min-width: 200px;
-    padding: 10px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--background-primary);
-  }
-  
-  /* Title for the tags panel */
-  .tags-panel h3 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--background-modifier-border);
-    font-size: 16px;
-    font-weight: 600;
-  }
-  
-  /* Header row with select all/none buttons */
-  .tag-header-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  
-  /* Buttons for select all/none */
-  .tag-button {
-    background-color: var(--interactive-normal);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--text-normal);
-  }
-  
-  .tag-button:hover {
-    background-color: var(--interactive-hover);
-  }
-  
-  /* Tags container */
-  .tags-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow-y: auto;
-    width:100%;
-  }
-  
-  /* Individual tag checkbox container */
-  .tag-checkbox-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    padding: 4px;
-    border-radius: 4px;
-  }
-  
-  .tag-checkbox-container:hover {
-    background-color: var(--background-modifier-hover);
-  }
-  
-  .tag-checkbox-container input[type="checkbox"] {
-    margin-right: 8px;
-  }
-  
-  .tag-checkbox-container label {
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-normal);
-  }
-  
-  /* Style for the refresh button */
-  .tags-panel button {
-    margin-top: 10px;
-    padding: 6px 12px;
-    background-color: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .tags-panel button:hover {
-    background-color: var(--interactive-accent-hover);
-  }
-  
-  /* Fix for any potential issues with the graph view controls */
-  .graph-controls {
-    z-index: 1;
-  }
-  
-  .center {
-    margin-left: 50%;
-    transform: translateX(-50%);
+.content-selector-modal .selector-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--text-normal);
 }
 
-.buttons-section button {
-    width: 100%;
+.content-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.select-buttons {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap:10px;
-    padding: 10px 0px;
+.content-option {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  padding: 10px;
+  transition: all 0.2s ease;
 }
 
-.tag-filter-main-container {
-    --width: 70%;
-    width: var(--width);
+.content-option:hover {
+  background-color: var(--background-secondary);
 }
 
-button.refresh-button {
-    width: 50%;
+.content-option .setting-item {
+  border: none;
+  padding: 0;
+}
+
+.content-option .setting-item-info {
+  margin-bottom: 8px;
+}
+
+.content-option .setting-item-name {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.content-option .setting-item-description {
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+/* Dynamic Form Modal */
+.dynamic-form-modal {
+  padding: 20px;
+  max-width: 600px;
+}
+
+.form-scroll-container {
+  max-height: 70vh;
+  background:"rgb(255 0 0 / 64%)";
+  overflow: auto;
+  padding-right: 20px;
+
+  padding: 10px;
+  border-radius: 5px;
+  background-color: var(--background-primary);
+}
+
+.form-scroll-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--text-normal);
+}
+
+.form-scroll-container h3 {
+  color: var(--text-accent);
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 5px;
+  margin-top: 20px;
+}
+
+.multi-value-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.multi-value-add-button {
+  border: none;
+  border-radius: 25%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+
+.multi-value-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.multi-value-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.multi-value-input-row .input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.multi-value-remove-button {
+  color: white;
+  border: none;
+  border-radius: 25%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  background: none !important;
+  box-shadow: 0 0 0 !important;
+}
+
+.button-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dynamic-form-modal .setting-item {
+  display: grid;
+  grid-template-columns: 30% auto;
+  border-top: none;
+  padding: 10px 0;
+}
+
+.dynamic-form-modal .setting-item-info {
+  font-size: 14px;
+}
+
+.dynamic-form-modal .setting-item-control input,
+.dynamic-form-modal .setting-item-control textarea {
+  width: 100%;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.dynamic-form-modal .setting-item-control textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+
+.content-name {
+  border: none !important;
+  background: none !important;
+  font-size: x-large !important;
+  font-weight: bold;
+  display: inline;
+  padding: 25px 0px !important;
+  margin: 0 !important;
 }

@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "( #Event OR #Item OR #Location OR #Story )",
+  "search": "( #Character OR #Event OR #Item OR #Location OR #Story )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,

@@ -1,4 +1,7 @@
-export const TEMPLATES = {
+export const templates = {
+  tests:{
+    name:"text",
+  },
   characters: {
     defaultFolder: '1. Characters',
     template: {
@@ -24,7 +27,7 @@ export const TEMPLATES = {
       },
       Relationships: {
         Family: "array:text",
-        FriendsAndAllies: "array:text",
+        FriendsAndAllies: "array:textarea",
         EnemiesAndRivals: "array:text",
         RomanticInterests: "array:text",
       },
@@ -46,7 +49,7 @@ export const TEMPLATES = {
   },
 
   events: {
-    defaultFolder: '5. Evenements',
+    defaultFolder: '5. Events',
     template: {
       BasicInformation: {
         Name: "text",
@@ -99,21 +102,4 @@ export const TEMPLATES = {
       AdditionalNotes: "textarea"
     }
   }
-
 };
-
-
-export function getDisplayName(name: string): string {
-  const result = name.replace(/([A-Z])/g, ' $1').trim();
-  // Capitalize first letter
-  return result.charAt(0).toUpperCase() + result.slice(1);
-}
-
-
-export function isObject(value: any): boolean {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-export function isBoolean(value: any): boolean {
-  return typeof value === 'boolean';
-}

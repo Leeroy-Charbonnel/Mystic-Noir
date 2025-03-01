@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from 'obsidian';
 import ContentCreatorPlugin from './main';
-import { TEMPLATES } from './template';
+import * as templates from './template';
+import { node, formatDisplayName } from './utils';
 
 export class ContentSelectorModal extends Modal {
   plugin: ContentCreatorPlugin;
@@ -13,32 +14,34 @@ export class ContentSelectorModal extends Modal {
   onOpen() {
     const { contentEl } = this;
     contentEl.empty();
+    
+    contentEl.addClass('content-selector-modal');
 
-    contentEl.createEl('h2', { text: 'Select Content Type to Create' });
+    contentEl.appendChild(node('h2', { 
+      text: 'Select Content Type to Create',
+      class: 'selector-title' 
+    }));
     
-    // Create options for each template type
-    const contentTypes = {
-      characters: 'Character',
-      items: 'Item',
-      locations: 'Location',
-      stories:"Story",
-      events: 'Event'
-    };
+    const optionsContainer = node('div', { class: 'content-options-container' });
+    contentEl.appendChild(optionsContainer);
     
-    // Generate a button for each content type
-    Object.entries(contentTypes).forEach(([type, label]) => {
-      if (TEMPLATES[type]) {
-        new Setting(contentEl)
-          .setName(label)
-          .setDesc(`Create a new ${label.toLowerCase()}`)
-          .addButton(button => button
-            .setButtonText('Create')
-            .setCta()
-            .onClick(() => {
-              this.close();
-              this.plugin.openFormForContentType(type);
-            }));
-      }
+    Object.entries(templates.templates).forEach(([type]) => {
+      // Convert the template type to a display name (e.g., 'characters' -> 'Character')
+      const label = type.charAt(0).toUpperCase() + type.slice(1, -1);
+
+      const optionContainer = node('div', { class: 'content-option' });
+      optionsContainer.appendChild(optionContainer);
+      
+      new Setting(optionContainer)
+        .setName(label)
+        .setDesc(`Create a new ${label.toLowerCase()}`)
+        .addButton(button => button
+          .setButtonText('Create')
+          .setCta()
+          .onClick(() => {
+            this.close();
+            this.plugin.openFormForContentType(type);
+          }));
     });
   }
 

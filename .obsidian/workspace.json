@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "1. Characters/Samuel Blackwood.md",
+                "file": "3. Locations/Dupont's Mansion.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Samuel Blackwood"
+              "title": "Dupont's Mansion"
             }
           }
         ]
@@ -142,23 +142,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "1. Characters/_Template.md",
+                "file": "3. Locations/Dupont's Mansion.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of _Template"
-            }
-          },
-          {
-            "id": "c83838245521deb7",
-            "type": "leaf",
-            "state": {
-              "type": "empty",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Outline of Dupont's Mansion"
             }
           },
           {
@@ -182,11 +172,11 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 428.5
+    "width": 222.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -203,7 +193,9 @@
   },
   "active": "861ef1750cebe732",
   "lastOpenFiles": [
+    "3. Locations/Dupont's Mansion.md",
     "1. Characters/Evelyn Dupont.md",
+    "1. Characters/Samuel Blackwood.md",
     "5. Events/_Template.md",
     "4. Stories/_Template.md",
     "3. Locations/_Template.md",
@@ -214,8 +206,6 @@
     "1. Characters/Mr Dupont.md",
     "1. Characters/New Content.md",
     "1. Characters/_Template.md",
-    "3. Locations/Dupont's Mansion.md",
-    "1. Characters/Samuel Blackwood.md",
     "4. Stories/Silenced Testimony.md",
     "99. Notes/Future.md",
     "3. Locations/Samuel's Office.md",
