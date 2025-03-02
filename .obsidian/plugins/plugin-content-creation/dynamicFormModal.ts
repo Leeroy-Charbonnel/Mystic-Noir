@@ -1,21 +1,193 @@
-import { App, Modal, Setting, TextAreaComponent, ButtonComponent, ToggleComponent, Notice } from 'obsidian';
+import { App, Modal, Setting, TextAreaComponent, ButtonComponent, ToggleComponent, Notice, PopoverSuggest, TextComponent } from 'obsidian';
 import ContentCreatorPlugin from './main';
 import * as templates from './template';
 import { node, formatDisplayName, isObject } from './utils';
 
+function getAllPages(app: App): string[] {
+  return app.vault.getMarkdownFiles().map(x => x.basename);
+}
+
+
+class SuggestComponent {
+  popover: PopoverSuggest;
+  parent: HTMLElement;
+  suggetsList: string[];
+  searchCriteria: string;
+  bracketsIndices: numer[];
+  renderCb: (value: any, element: HTMLElement) => void;
+  selectCb: (value: any) => void;
+  isBetweenBrackets: (value: string, pos: number) => number[];
+
+  constructor(parent: any) {
+    this.popover = new PopoverSuggest(app);
+    this.popover.selectSuggestion = this.selectSuggestion.bind(this);
+    this.popover.renderSuggestion = this.renderSuggestion.bind(this);
+    this.parent = parent.controlEl.children[0]
+    this.parent.addEventListener("input", (e) => this.onInputChange(e));
+    this.parent.addEventListener("focus", () => this.onInputChange());
+    this.parent.addEventListener("blur", () => this.popover.close());
+    this.popover.suggestEl.on("mousedown", ".suggestion-item", (e) => e.preventDefault());
+  }
+
+  onInputChange(e) {
+    let value = this.getValue();
+    const pos = e.target.selectionEnd
+    const closeChars = new Map([
+      ['{', '}'],
+      ['[', ']'],
+      ['(', ')']
+    ]);
+    const closeChar = closeChars.get(e.data);
+    if (closeChar) {
+      this.setValue([value.slice(0, pos), closeChar, value.slice(pos)].join(''))
+      e.target.setSelectionRange(pos, pos)
+    }
+
+    value = this.getValue();
+    this.bracketsIndices = this.isBetweenBrackets(value, pos);
+    if (this.bracketsIndices.length > 0) {
+      this.searchCriteria = value.slice(this.bracketsIndices[0], this.bracketsIndices[1]).toLocaleLowerCase().trim();
+      const suggests = this.searchCriteria == "" ? this.suggetsList : this.suggetsList.filter(e => e.toLowerCase().trim().includes(this.searchCriteria))
+
+      if (suggests.length > 0) {
+        this.popover.suggestions.setSuggestions(suggests);
+        this.popover.open();
+        this.popover.setAutoDestroy(this.parent);
+        this.popover.reposition(SuggestComponent.getPos(this.parent));
+      } else {
+        this.popover.close();
+      }
+    } else {
+      this.popover.close();
+    }
+
+    return
+  }
+  isBetweenBrackets(value: string, pos: number) {
+    // Find the last [[ before cursor
+    const lastOpenBracket = value.lastIndexOf("[[", pos - 1);
+    // Find the next ]] after cursor
+    const nextCloseBracket = value.indexOf("]]", pos);
+
+    console.log(value, pos)
+
+    // Special case: "[[]]""
+    if (value.substring(pos, pos - 2) === "[[" && value.substring(pos, pos + 2) === "]]") {
+      return [pos, pos];
+    }
+
+    // If either one is not found, return
+    if (lastOpenBracket === -1 || nextCloseBracket === -1) {
+      return [];
+    }
+
+    // Check if there's any closing bracket between the last open and cursor
+    const closeBracketBetween = value.indexOf("]]", lastOpenBracket);
+    if (closeBracketBetween !== -1 && closeBracketBetween < pos) {
+      return [];
+    }
+
+    // Check if there's any opening bracket between cursor and the next close
+    const openBracketBetween = value.indexOf("[[", pos);
+    if (openBracketBetween !== -1 && openBracketBetween < nextCloseBracket) {
+      return [];
+    }
+
+    return [lastOpenBracket + 2, nextCloseBracket];
+  }
+
+  selectSuggestion(value: string) {
+    console.log(value)
+    const oldValue = this.getValue();
+    this.setValue([oldValue.slice(0, this.bracketsIndices[0]), value, oldValue.slice(this.bracketsIndices[1])].join(''));
+    this.selectCb && this.selectCb(value);
+    this.parent.trigger("input");
+    this.popover.close();
+  }
+
+  renderSuggestion(value, elmt) {
+    if (this.renderCb)
+      this.renderCb(value, elmt);
+    else {
+      const strong = this.searchCriteria
+      const pos = value.toLowerCase().indexOf(strong.toLowerCase());
+
+      elmt.createDiv(void 0, (div) => {
+        div.createSpan({ text: value.substring(0, pos) });
+        div.createEl("strong", { text: value.substring(pos, pos + strong.length) });
+        div.createSpan({ text: value.substring(pos + strong.length) });
+      });
+    }
+  }
+
+  onRenderSuggest(cb: (value: string) => void) {
+    this.renderCb = cb;
+    return this;
+  }
+
+  setSuggestList(values: string[]) {
+    this.suggetsList = values;
+    return this;
+  }
+
+  getValue(): string {
+    return this.parent.value;
+  }
+
+  setValue(value: string) {
+    this.parent.value = value;
+  }
+
+  onSelect(cb: (value: string) => void) {
+    this.selectCb = cb;
+    return this;
+  }
+
+  static getPos(e) {
+    const elmt = e;
+    for (var n = 0, i = 0, r = null; e && e !== r;) {
+      n += e.offsetTop, i += e.offsetLeft;
+      for (var o = e.offsetParent, a = e.parentElement; a && a !== o;)
+        n -= a.scrollTop, i -= a.scrollLeft, a = a.parentElement;
+      o && o !== r && (n -= o.scrollTop, i -= o.scrollLeft), e = o;
+    }
+    return {
+      left: i,
+      right: i + elmt.offsetWidth,
+      top: n,
+      bottom: n + elmt.offsetHeight
+    };
+  }
+};
+
+
+
+
+
 export class DynamicFormModal extends Modal {
   plugin: ContentCreatorPlugin;
   contentType: string;
+  formTemplate: any;
   formData: any;
   contentName: string;
   containerElMapping: Map<string, HTMLElement> = new Map();
   multiValueFieldsMap: Map<string, MultiValueField> = new Map();
+  pages: string[];
 
   constructor(app: App, plugin: ContentCreatorPlugin, contentType: string) {
     super(app);
     this.plugin = plugin;
     this.contentType = contentType;
-    this.formData = JSON.parse(JSON.stringify(templates.templates[contentType]));
+    this.formTemplate = JSON.parse(JSON.stringify(templates.templates[contentType as keyof typeof templates.templates]));
+    this.formData = this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate)));
+    this.pages = getAllPages(app);
+
+
+
+
+
+
+
   }
 
   onOpen() {
@@ -43,7 +215,7 @@ export class DynamicFormModal extends Modal {
     scrollContainer.appendChild(contentNameInput);
 
 
-    this.generateForm(scrollContainer, this.formData);
+    this.generateForm(scrollContainer, this.formTemplate);
 
     const buttonContainer = node('div', { class: 'button-container' });
     contentEl.appendChild(buttonContainer);
@@ -63,7 +235,6 @@ export class DynamicFormModal extends Modal {
   generateForm(container: HTMLElement, data: any, path: string = '') {
     Object.entries(data).forEach(([key, value]) => {
       const currentPath = path ? `${path}.${key}` : key;
-
       if (isObject(value)) {
         container.appendChild(node('h3', { text: formatDisplayName(key) }));
 
@@ -73,7 +244,7 @@ export class DynamicFormModal extends Modal {
         this.containerElMapping.set(currentPath, sectionContainer);
         this.generateForm(sectionContainer, value, currentPath);
       } else {
-        const fieldType: string = value;
+        const fieldType: string = value as string;
 
         if (fieldType.startsWith("array")) {
           const fieldContainer = node('div', { class: `field-${key}` });
@@ -84,7 +255,6 @@ export class DynamicFormModal extends Modal {
               this.updateFormData(currentPath, newValues);
             }
           );
-
           this.multiValueFieldsMap.set(currentPath, multiField);
         } else if (fieldType === "boolean") {
           new Setting(container)
@@ -95,29 +265,57 @@ export class DynamicFormModal extends Modal {
               }));
         } else {
           if (fieldType === 'textarea') {
-            new Setting(container)
+            const field = new Setting(container)
               .setName(formatDisplayName(key))
-              .addTextArea(textarea => {
-                textarea
-                  .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
-                  .onChange(newValue => {
-                    this.updateFormData(currentPath, newValue);
-                  });
+              .addTextArea(textarea => textarea.setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`));
 
-              });
+            new SuggestComponent(field).setSuggestList(this.pages).onSelect((newValue: string) => {
+              this.updateFormData(currentPath, newValue);
+            })
           } else {
-            new Setting(container)
+
+            const field = new Setting(container)
               .setName(formatDisplayName(key))
-              .addText(text => text
-                .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
-                .onChange(newValue => {
-                  this.updateFormData(currentPath, newValue);
-                }));
+              .addText(text => text.setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`));
+
+            new SuggestComponent(field).setSuggestList(this.pages).onSelect((newValue: string) => {
+              this.updateFormData(currentPath, newValue);
+            })
+
           }
         }
       }
     });
   }
+
+
+  setNonObjectsToNull(obj: any): any {
+    if (typeof obj !== 'object' || obj === null) return obj;
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => {
+        if (typeof item === 'object' && item !== null) {
+          return this.setNonObjectsToNull(item);
+        } else {
+          return null;
+        }
+      });
+    }
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          obj[key] = this.setNonObjectsToNull(obj[key]);
+        } else {
+          obj[key] = null;
+        }
+      }
+    }
+    return obj;
+  }
+
+
+
+
   updateContentName(value: any) {
     this.contentName = value
   }
@@ -196,7 +394,7 @@ class MultiValueField {
       this.inputsContainer.appendChild(inputRow);
 
       const input = node(this.inputType == 'text' ? 'input' : 'textarea', {
-        class:'input',
+        class: 'input',
         attributes: {
           'type': 'text',
           'value': value,

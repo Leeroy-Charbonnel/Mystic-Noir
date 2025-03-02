@@ -1,6 +1,7 @@
 export const templates = {
   tests:{
     name:"text",
+    defaultFolder: '1. Characters',
   },
   characters: {
     defaultFolder: '1. Characters',

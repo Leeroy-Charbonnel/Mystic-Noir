@@ -23,7 +23,7 @@ export default class ContentCreatorPlugin extends Plugin {
   }
 
   openFormForContentType(contentType: string) {
-    if (!templates.templates[contentType]) {
+    if (!templates.templates[contentType as keyof typeof templates.templates]) {
       new Notice(`Unknown content type: ${contentType}`);
       return;
     }
@@ -31,37 +31,19 @@ export default class ContentCreatorPlugin extends Plugin {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   async createContentFile(contentType: string, formData: any, contentName: string) {
     try {
-      const folderPath = templateModule.templates[contentType].defaultFolder;
+      const folderPath = templates.templates[contentType as keyof typeof templates.templates].defaultFolder;
 
+      //Check if folder is specified
+      if (!folderPath || folderPath.trim() == '') {
+        new Notice(`No default folder : ${contentType}`);
+      }
+      //Check if folder exist, create it otherwise
       await this.ensureFolderExists(folderPath);
 
-      // Generate filename
-      const fileName = this.generateFileName(contentName);
+      // Remove spec
+      const fileName = contentName.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-');
       const filePath = normalizePath(`${folderPath}/${fileName}.md`);
 
       // Check if file already exists
@@ -71,16 +53,11 @@ export default class ContentCreatorPlugin extends Plugin {
         return null;
       }
 
-      // Generate content
-      const fileContent = this.generateFileContent(contentType, formData);
-
-      // Create file
+      const fileContent = this.generateFileContent(contentType, formData, contentName);
       const file = await this.app.vault.create(filePath, fileContent);
       new Notice(`Created ${contentType.slice(0, -1)}: ${contentName}`);
 
-      // Open the file
       this.app.workspace.getLeaf(false).openFile(file);
-
       return file;
     } catch (error) {
       console.error("Error creating content:", error);
@@ -88,6 +65,7 @@ export default class ContentCreatorPlugin extends Plugin {
       return null;
     }
   }
+
 
   private async ensureFolderExists(folderPath: string) {
     const folders = folderPath.split('/').filter(p => p.trim());
@@ -101,42 +79,37 @@ export default class ContentCreatorPlugin extends Plugin {
     }
   }
 
-  private generateFileName(name: string): string {
-    // Remove special characters and replace spaces with dashes
-    return name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-');
-  }
 
-  private generateFileContent(contentType: string, formData: any): string {
+
+  private generateFileContent(contentType: string, formData: any, contentName: string): string {
     const contentTypeTag = contentType.charAt(0).toUpperCase() + contentType.slice(1, -1);
-    let content = `#${contentTypeTag}\n\n`;
 
-    const contentName = this.getContentName(formData);
-    content += `# ${contentName}\n\n`;
+
+    let content = ""
+
+    content += `---\n\n`;
+    content += `data: ${JSON.stringify(formData)}\n\n`;
+    content += `---\n\n`;
+    
+
+    content += `#${contentTypeTag}\n\n`;
+    content += `#${contentName}\n\n`;
+
 
     content += this.formatContentData(formData);
     return content;
   }
 
-  private getContentName(formData: any): string {
-    // Try to find a sensible name from the form data
-    if (formData.BasicInformation && formData.BasicInformation.Name) {
-      return formData.BasicInformation.Name;
-    }
-    if (formData.BasicInformation && formData.BasicInformation.FullName) {
-      return formData.BasicInformation.FullName;
-    }
-    return "New Content";
-  }
+
 
   private formatContentData(data: any, depth: number = 2): string {
     let content = '';
+    console.log(data)
+
+    //get tempalte to check field type
+    //Remove list format "","","" but bullet list instead
 
     for (const [key, value] of Object.entries(data)) {
-      if (key === 'Name' || key === 'FullName') {
-        // Skip these as they're used in the heading
-        continue;
-      }
-
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         const heading = '#'.repeat(depth);
         const displayName = formatDisplayName(key);
