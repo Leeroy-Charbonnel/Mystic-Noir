@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "1. Characters/New-Characterrr.md",
-                "mode": "source",
+                "file": "1. Characters/New-Characterfff.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "New-Characterrr"
+              "title": "New-Characterfff"
             }
           }
         ]
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 284.5
   },
   "right": {
     "id": "0a66d986e691d328",
@@ -176,7 +176,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 213.5
+    "width": 452.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -191,10 +191,13 @@
       "graph-tags-filter:Graph Tag Filter": false
     }
   },
-  "active": "861ef1750cebe732",
+  "active": "78f3e74c6ff34e18",
   "lastOpenFiles": [
-    "1. Characters/Samuel Blackwood.md",
+    "1. Characters/Character.md",
+    "1. Characters/New-Characterfff.md",
     "1. Characters/New-Characterrr.md",
+    "1. Characters/Untitled.md",
+    "1. Characters/Samuel Blackwood.md",
     "1. Characters/New-Charactegggggr.md",
     "1. Characters/New-Characteraaa.md",
     "1. Characters/New-Charactergggg.md",
@@ -216,9 +219,6 @@
     "5. Events/_Template.md",
     "4. Stories/_Template.md",
     "3. Locations/_Template.md",
-    "2. Items/_Template.md",
-    "1. Characters/efezfezf.md",
-    "4. Stories/Shadows of the Crescent City.md",
     "5. Events",
     "Untitled 1.canvas",
     "Untitled.canvas",

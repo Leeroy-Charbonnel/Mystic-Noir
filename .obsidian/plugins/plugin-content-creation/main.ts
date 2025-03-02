@@ -90,7 +90,7 @@ export default class ContentCreatorPlugin extends Plugin {
     content += `---\n\n`;
     content += `data: ${JSON.stringify(formData)}\n\n`;
     content += `---\n\n`;
-    
+
 
     content += `#${contentTypeTag}\n\n`;
     content += `#${contentName}\n\n`;
@@ -100,34 +100,30 @@ export default class ContentCreatorPlugin extends Plugin {
     return content;
   }
 
-
-
   private formatContentData(data: any, depth: number = 2): string {
     let content = '';
     console.log(data)
 
-    //get tempalte to check field type
-    //Remove list format "","","" but bullet list instead
-
     for (const [key, value] of Object.entries(data)) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        const heading = '#'.repeat(depth);
-        const displayName = formatDisplayName(key);
-        content += `${heading} ${displayName}\n`;
-        content += this.formatContentData(value, depth + 1);
-      } else if (Array.isArray(value)) {
-        if (value.length > 0 && value.some(item => item.trim?.().length > 0)) {
+      if (key != "defaultFolder") {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          const heading = '#'.repeat(depth);
           const displayName = formatDisplayName(key);
-          content += `**${displayName}:** `;
-          content += value.filter(item => item.trim?.().length > 0).map(item => item.trim()).join(', ');
-          content += '\n\n';
+          content += `${heading} ${displayName}\n`;
+          content += this.formatContentData(value, depth + 1) + `\n`;
+        } else if (Array.isArray(value)) {
+          if (value.length > 0 && value.some(item => item.trim?.().length > 0)) {
+            const displayName = formatDisplayName(key);
+            content += `**${displayName}:** `;
+            content += value.filter(item => item.trim?.().length > 0).map(item => "- " + item.trim()).join('\n');
+            content += `\n\n`;
+          }
+        } else if (value !== null && value !== undefined && String(value).trim()) {
+          const displayName = formatDisplayName(key);
+          content += `**${displayName}:** ${value} \n`;
         }
-      } else if (value !== null && value !== undefined && String(value).trim()) {
-        const displayName = formatDisplayName(key);
-        content += `**${displayName}:** ${value}\n\n`;
       }
     }
-
     return content;
   }
 

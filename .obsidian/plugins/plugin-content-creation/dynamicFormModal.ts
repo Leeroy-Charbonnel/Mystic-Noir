@@ -13,16 +13,16 @@ class SuggestComponent {
   parent: HTMLElement;
   suggetsList: string[];
   searchCriteria: string;
-  bracketsIndices: numer[];
+  bracketsIndices: number[];
   renderCb: (value: any, element: HTMLElement) => void;
   selectCb: (value: any) => void;
-  isBetweenBrackets: (value: string, pos: number) => number[];
+
 
   constructor(parent: any) {
+    this.parent = parent;
     this.popover = new PopoverSuggest(app);
     this.popover.selectSuggestion = this.selectSuggestion.bind(this);
     this.popover.renderSuggestion = this.renderSuggestion.bind(this);
-    this.parent = parent.controlEl.children[0]
     this.parent.addEventListener("input", (e) => this.onInputChange(e));
     this.parent.addEventListener("focus", () => this.onInputChange());
     this.parent.addEventListener("blur", () => this.popover.close());
@@ -30,6 +30,8 @@ class SuggestComponent {
   }
 
   onInputChange(e) {
+    if (e == undefined) return
+
     let value = this.getValue();
     const pos = e.target.selectionEnd
     const closeChars = new Map([
@@ -69,8 +71,6 @@ class SuggestComponent {
     // Find the next ]] after cursor
     const nextCloseBracket = value.indexOf("]]", pos);
 
-    console.log(value, pos)
-
     // Special case: "[[]]""
     if (value.substring(pos, pos - 2) === "[[" && value.substring(pos, pos + 2) === "]]") {
       return [pos, pos];
@@ -97,10 +97,10 @@ class SuggestComponent {
   }
 
   selectSuggestion(value: string) {
-    console.log(value)
     const oldValue = this.getValue();
     this.setValue([oldValue.slice(0, this.bracketsIndices[0]), value, oldValue.slice(this.bracketsIndices[1])].join(''));
     this.selectCb && this.selectCb(value);
+    this.parent.setSelectionRange(this.bracketsIndices[1] + value.length, this.bracketsIndices[1] + value.length);
     this.parent.trigger("input");
     this.popover.close();
   }
@@ -181,13 +181,6 @@ export class DynamicFormModal extends Modal {
     this.formTemplate = JSON.parse(JSON.stringify(templates.templates[contentType as keyof typeof templates.templates]));
     this.formData = this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate)));
     this.pages = getAllPages(app);
-
-
-
-
-
-
-
   }
 
   onOpen() {
@@ -200,7 +193,6 @@ export class DynamicFormModal extends Modal {
     contentEl.appendChild(scrollContainer);
 
     const contentTypeDisplayName = this.contentType.charAt(0).toUpperCase() + this.contentType.slice(1, -1);
-
     const contentNameInput = node('input', {
       classes: ['content-name'],
       attributes: {
@@ -211,7 +203,7 @@ export class DynamicFormModal extends Modal {
     });
     contentNameInput.addEventListener('input', (e) => this.updateContentName((e.target as HTMLInputElement).value),
     );
-
+    this.contentName = contentTypeDisplayName;
     scrollContainer.appendChild(contentNameInput);
 
 
@@ -269,7 +261,7 @@ export class DynamicFormModal extends Modal {
               .setName(formatDisplayName(key))
               .addTextArea(textarea => textarea.setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`));
 
-            new SuggestComponent(field).setSuggestList(this.pages).onSelect((newValue: string) => {
+            new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages).onSelect((newValue: string) => {
               this.updateFormData(currentPath, newValue);
             })
           } else {
@@ -278,7 +270,7 @@ export class DynamicFormModal extends Modal {
               .setName(formatDisplayName(key))
               .addText(text => text.setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`));
 
-            new SuggestComponent(field).setSuggestList(this.pages).onSelect((newValue: string) => {
+            new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages).onSelect((newValue: string) => {
               this.updateFormData(currentPath, newValue);
             })
 
@@ -350,6 +342,7 @@ class MultiValueField {
   private values: string[];
   private inputsContainer: HTMLElement;
   private onValuesChanged: (values: string[]) => void;
+  private pages: string[];
 
   constructor(
     containerEl: HTMLElement,
@@ -359,6 +352,7 @@ class MultiValueField {
   ) {
     this.container = containerEl;
     this.values = [];
+    this.pages = getAllPages(app);
     this.inputType = inputType;
     this.onValuesChanged = onChange;
 
@@ -407,6 +401,10 @@ class MultiValueField {
         this.values[index] = (e.target as HTMLInputElement).value;
         this.onValuesChanged(this.values);
       });
+
+
+      new SuggestComponent(input).setSuggestList(this.pages).onSelect((newValue: string) => {
+      })
 
       if (this.values.length > 1) {
         const removeButton = node('button', {
