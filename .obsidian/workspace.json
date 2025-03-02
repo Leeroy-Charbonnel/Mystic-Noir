@@ -176,7 +176,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 452.5
+    "width": 384.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -191,7 +191,7 @@
       "graph-tags-filter:Graph Tag Filter": false
     }
   },
-  "active": "78f3e74c6ff34e18",
+  "active": "861ef1750cebe732",
   "lastOpenFiles": [
     "1. Characters/Character.md",
     "1. Characters/New-Characterfff.md",
