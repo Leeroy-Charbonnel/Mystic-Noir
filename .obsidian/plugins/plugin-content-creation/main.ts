@@ -13,6 +13,7 @@ export default class ContentCreatorPlugin extends Plugin {
         });
         ribbonIconEl.addClass('creator-plugin-ribbon-class');
 
+        //Create new content
         this.addCommand({
             id: 'open-content-creator',
             name: 'Create new content',
@@ -69,23 +70,22 @@ export default class ContentCreatorPlugin extends Plugin {
                 console.error("Error editing content:","Could not find properties");
                 new Notice("Error editing content: Could not find properties");
             }
-            new DynamicFormModal(this.app,this,properties.contentType,properties.template,properties.data).open();
+            new DynamicFormModal(this.app,this,properties?.contentType,properties?.template,properties?.data).open();
         } catch(error) {
             console.error("Error editing content:",error);
             new Notice(`Error editing content: ${error.message}`);
         }
     }
-    getFileProperties(app,file) {
-        const cache=app.metadataCache.getFileCache(file);
 
+    getFileProperties(app: App,file: TFile) {
+        const cache=app.metadataCache.getFileCache(file);
         if(cache&&cache.frontmatter) {
             return cache.frontmatter;
         }
-
         return null;
     }
 
-    async createContentFile(contentType: string,formData: any,formTemplate: any) {
+    async createContentFile(contentType: string,formData: any,formTemplate: any,overwrite: boolean=false) {
         try {
             const folderPath=formTemplate.defaultFolder;
 
@@ -97,19 +97,26 @@ export default class ContentCreatorPlugin extends Plugin {
             await this.ensureFolderExists(folderPath);
 
             // Remove spec
-            const fileName=formData.name;
-            const filePath=normalizePath(`${folderPath}/${fileName}.md`);
-
-            // Check if file already exists
-            const exists=await this.app.vault.adapter.exists(filePath);
-            if(exists) {
-                new Notice(`File already exists: ${filePath}`);
-                return null;
-            }
 
             const fileContent=this.generateFileContent(contentType,formData,formTemplate);
-            const file=await this.app.vault.create(filePath,fileContent);
-            new Notice(`Created ${contentType.slice(0,-1)}: ${fileName}`);
+            let fileName;
+            let filePath;
+            
+            if(overwrite) {
+                fileName=formData.oldName;
+                filePath=normalizePath(`${folderPath}/${fileName}.md`);
+                const file=this.app.vault.getAbstractFileByPath(filePath) as TFile;
+                
+                app                          
+                
+            } else {
+                fileName=formData.name;
+                filePath=normalizePath(`${folderPath}/${fileName}.md`);
+                const file=await this.app.vault.create(filePath,fileContent);
+            }
+
+
+            new Notice(`Saved ${contentType.slice(0,-1)}: ${fileName}`);
 
             this.app.workspace.getLeaf(false).openFile(file);
             return file;
@@ -151,7 +158,7 @@ export default class ContentCreatorPlugin extends Plugin {
         content+=`#${contentTypeTag}\n\n`;
 
 
-        content+=this.formatContentData(formData);
+        content+=this.formatContentData(formData.template);
         console.log(content)
         return content;
     }

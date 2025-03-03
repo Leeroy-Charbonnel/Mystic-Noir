@@ -9,8 +9,8 @@ function getAllPages(app: App): string[] {
 
 
 class SuggestComponent {
-    popover: PopoverSuggest;
-    parent: HTMLElement;
+    popover: any;
+    parent: any;
     suggetsList: string[];
     searchCriteria: string;
     bracketsIndices: number[];
@@ -18,18 +18,18 @@ class SuggestComponent {
     selectCb: (value: any) => void;
 
 
-    constructor(parent: any) {
+    constructor(app: App,parent: any) {
         this.parent=parent;
         this.popover=new PopoverSuggest(app);
         this.popover.selectSuggestion=this.selectSuggestion.bind(this);
         this.popover.renderSuggestion=this.renderSuggestion.bind(this);
-        this.parent.addEventListener("input",(e) => this.onInputChange(e));
-        this.parent.addEventListener("focus",() => this.onInputChange());
+        this.parent.addEventListener("input",(e: Event) => this.onInputChange(e));
+        this.parent.addEventListener("focus",(e: Event) => this.onInputChange(e));
         this.parent.addEventListener("blur",() => this.popover.close());
-        this.popover.suggestEl.on("mousedown",".suggestion-item",(e) => e.preventDefault());
+        this.popover.suggestEl.on("mousedown",".suggestion-item",(e: MouseEvent) => e.preventDefault());
     }
 
-    onInputChange(e) {
+    onInputChange(e: any) {
         if(e==undefined) return
 
         let value=this.getValue();
@@ -104,7 +104,7 @@ class SuggestComponent {
         this.popover.close();
     }
 
-    renderSuggestion(value,elmt) {
+    renderSuggestion(value: string,elmt: HTMLElement) {
         const strong=this.searchCriteria
         const pos=value.toLowerCase().indexOf(strong.toLowerCase());
 
@@ -160,6 +160,7 @@ export class DynamicFormModal extends Modal {
     contentType: string;
     formTemplate: any;
     formData: any;
+    newContent: boolean;
     containerElMapping: Map<string,HTMLElement>=new Map();
     multiValueFieldsMap: Map<string,MultiValueField>=new Map();
     pages: string[];
@@ -167,34 +168,31 @@ export class DynamicFormModal extends Modal {
     constructor(app: App,plugin: ContentCreatorPlugin,contentType: string,formTemplate: any,formData?: any) {
         super(app);
         this.plugin=plugin;
-        this.contentType=contentType
+        this.contentType=contentType;
         this.formTemplate=formTemplate;
-        this.formData=formData? formData:this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate)));
+        this.newContent=formData? false:true;
+
+        this.formData=this.newContent? this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate))):formData;
+        this.formData.name=this.newContent? `New ${this.contentType.charAt(0).toUpperCase()+this.contentType.slice(1,-1)}`:formData.name;
+        this.formData.oldName=this.formData.name
+
         this.pages=getAllPages(app);
     }
 
     onOpen() {
         const { contentEl }=this;
-        contentEl.empty();
-
-        contentEl.addClass('dynamic-form-modal');
-
         const scrollContainer=node('div',{ class: 'form-scroll-container' });
-        contentEl.appendChild(scrollContainer);
 
-        const contentTypeDisplayName=this.contentType.charAt(0).toUpperCase()+this.contentType.slice(1,-1);
+        //Name input
         const contentNameInput=node('input',{
             classes: ['content-name'],
-            attributes: {
-                'type': 'text',
-                'value': `New ${contentTypeDisplayName}`,
-                'placeholder': 'Enter a name'
-            }
+            attributes: { 'type': 'text','value': this.formData.name,'placeholder': 'Enter a name' }
         });
-        contentNameInput.addEventListener('input',(e) => this.updateContentName((e.target as HTMLInputElement).value),
-        );
-        this.formData.name=`New ${contentTypeDisplayName}`;
+        contentNameInput.addEventListener('input',(e) => this.updateContentName((e.target as HTMLInputElement).value));
 
+        contentEl.empty();
+        contentEl.addClass('dynamic-form-modal');
+        contentEl.appendChild(scrollContainer);
         scrollContainer.appendChild(contentNameInput);
 
 
@@ -210,7 +208,7 @@ export class DynamicFormModal extends Modal {
 
         // Create button
         new ButtonComponent(buttonContainer)
-            .setButtonText('Create')
+            .setButtonText(this.newContent? 'Create':'Save')
             .setCta()
             .onClick(() => this.handleSubmit());
     }
@@ -233,7 +231,7 @@ export class DynamicFormModal extends Modal {
                     const fieldContainer=node('div',{ class: `field-${key}` });
                     const inputType=field.split(':')[1]
                     container.appendChild(fieldContainer);
-                    const multiField=new MultiValueField(fieldContainer,formatDisplayName(key),inputType,
+                    const multiField=new MultiValueField(this.app,fieldContainer,formatDisplayName(key),inputType,value,
                         (newValues) => {
                             this.updateFormData(currentPath,newValues);
                         }
@@ -258,7 +256,7 @@ export class DynamicFormModal extends Modal {
                                 })
                                 .setValue(value as string));
 
-                        new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages)
+                        new SuggestComponent(this.app,field.controlEl.children[0]).setSuggestList(this.pages)
                     } else {
 
                         const field=new Setting(container)
@@ -270,7 +268,7 @@ export class DynamicFormModal extends Modal {
                                 })
                                 .setValue(value as string));
 
-                        new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages)
+                        new SuggestComponent(this.app,field.controlEl.children[0]).setSuggestList(this.pages)
 
                     }
                 }
@@ -337,7 +335,7 @@ export class DynamicFormModal extends Modal {
             new Notice("Please provide a name for the content");
             return;
         }
-        const file=await this.plugin.createContentFile(this.contentType,this.formData,this.formTemplate);
+        const file=await this.plugin.createContentFile(this.contentType,this.formData,this.formTemplate,!this.newContent);
         if(file)
             this.close();
     }
@@ -351,19 +349,22 @@ class MultiValueField {
     private inputsContainer: HTMLElement;
     private onValuesChanged: (values: string[]) => void;
     private pages: string[];
+    private app: App;
 
     constructor(
+        app: App,
         containerEl: HTMLElement,
         labelText: string,
         inputType: string,
+        values: string[],
         onChange: (values: string[]) => void
     ) {
+        this.app=app;
         this.container=containerEl;
-        this.values=[];
-        this.pages=getAllPages(app);
+        this.values=values||[];
+        this.pages=getAllPages(this.app);
         this.inputType=inputType;
         this.onValuesChanged=onChange;
-
         const labelContainer=node('div',{ class: 'multi-value-label' });
         this.container.appendChild(labelContainer);
         labelContainer.appendChild(node('span',{ text: labelText }));
@@ -411,7 +412,7 @@ class MultiValueField {
             });
 
 
-            new SuggestComponent(input).setSuggestList(this.pages);
+            new SuggestComponent(this.app,input).setSuggestList(this.pages);
 
             if(this.values.length>1) {
                 const removeButton=node('button',{
