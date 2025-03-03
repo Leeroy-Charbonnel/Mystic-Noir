@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "1. Characters/New-Characterfff.md",
-                "mode": "preview",
+                "file": "1. Characters/Samuel Blackwood.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "New-Characterfff"
+              "title": "Samuel Blackwood"
             }
           }
         ]
@@ -176,11 +176,10 @@
       }
     ],
     "direction": "horizontal",
-    "width": 384.5
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
-      "content-creation-plugin:Create Content": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
@@ -188,13 +187,26 @@
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
       "obsidian-git:Open Git source control": false,
-      "graph-tags-filter:Graph Tag Filter": false
+      "graph-tags-filter:Graph Tag Filter": false,
+      "content-creation-plugin:Create Content": false
     }
   },
   "active": "861ef1750cebe732",
   "lastOpenFiles": [
+    "1. Characters/Evelyn Dupont.md",
+    "1. Characters/New Characterr é& eéé.md",
+    "1. Characters/&uyg-èr# 'sjoeoe.md",
+    "1. Characters/New Character.md",
+    "1. Characters/New-Character.md",
     "1. Characters/Character.md",
     "1. Characters/New-Characterfff.md",
+    "1. Characters/New-Character4.md",
+    "1. Characters/New-Character2.md",
+    "1. Characters/New-Character5.md",
+    "3. Locations/Dupont's Mansion.md",
+    "99. Notes/Future.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "1. Characters/New-Character1.md",
     "1. Characters/New-Characterrr.md",
     "1. Characters/Untitled.md",
     "1. Characters/Samuel Blackwood.md",
@@ -207,18 +219,6 @@
     "1. Characters/New-Characterbbb.md",
     "1. Characters/Mr Dupont.md",
     "1. Characters/New-Characterzeffzfezefz.md",
-    "1. Characters/New-Characterfe.md",
-    "1. Characters/Evelyn Dupont.md",
-    "1. Characters/New-Characteraaaaa.md",
-    "1. Characters/New-Charactertest.md",
-    "1. Characters/New-Characterf.md",
-    "1. Characters/New-Characteraaaaaaaa.md",
-    "1. Characters/eddeNew-Character.md",
-    "1. Characters/fefeefefefefNew-Character.md",
-    "3. Locations/Dupont's Mansion.md",
-    "5. Events/_Template.md",
-    "4. Stories/_Template.md",
-    "3. Locations/_Template.md",
     "5. Events",
     "Untitled 1.canvas",
     "Untitled.canvas",
