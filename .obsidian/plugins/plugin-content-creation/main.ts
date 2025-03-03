@@ -1,4 +1,4 @@
-import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder } from 'obsidian';
+import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder,Menu,MenuItem } from 'obsidian';
 import { DynamicFormModal } from './dynamicFormModal';
 import { ContentSelectorModal } from './contentSelectorModal';
 import * as templates from './template';
@@ -20,20 +20,74 @@ export default class ContentCreatorPlugin extends Plugin {
                 new ContentSelectorModal(this.app,this).open();
             }
         });
+
+        //Top right menu, and right click on page
+        this.registerEvent(
+            this.app.workspace.on('file-menu',(menu,file) => {
+                if(file instanceof TFile&&file.extension==='md') {
+                    menu.addItem((item: MenuItem) => {
+                        item.setTitle('Edit content')
+                            .setIcon('pencil')
+                            .onClick(async () => {
+                                await this.editExistingContent(file as TFile);
+                            });
+                    });
+                }
+            })
+        );
+
+        //Right click on page itself
+        this.registerEvent(
+            this.app.workspace.on("editor-menu",(menu,editor,view) => {
+                if(view.file instanceof TFile&&view.file.extension==='md') {
+                    menu.addItem((item: MenuItem) => {
+                        item.setTitle('Edit content')
+                            .setIcon('pencil')
+                            .onClick(async () => {
+                                await this.editExistingContent(view.file as TFile);
+                            });
+                    });
+                }
+            })
+        );
     }
 
     openFormForContentType(contentType: string) {
-        if(!templates.templates[contentType as keyof typeof templates.templates]) {
+        const formTemplate=JSON.parse(JSON.stringify(templates.templates[contentType as keyof typeof templates.templates]));
+        if(!formTemplate) {
             new Notice(`Unknown content type: ${contentType}`);
             return;
         }
-        new DynamicFormModal(this.app,this,contentType).open();
+        new DynamicFormModal(this.app,this,contentType,formTemplate).open();
     }
 
-
-    async createContentFile(contentType: string,formData: any,contentName: string,modal?: DynamicFormModal) {
+    async editExistingContent(file: TFile) {
         try {
-            const folderPath=templates.templates[contentType as keyof typeof templates.templates].defaultFolder;
+            const properties=this.getFileProperties(this.app,file);
+
+            if(properties==null) {
+                console.error("Error editing content:","Could not find properties");
+                new Notice("Error editing content: Could not find properties");
+            }
+            new DynamicFormModal(this.app,this,properties.contentType,properties.template,properties.data).open();
+        } catch(error) {
+            console.error("Error editing content:",error);
+            new Notice(`Error editing content: ${error.message}`);
+        }
+    }
+    getFileProperties(app,file) {
+        const cache=app.metadataCache.getFileCache(file);
+
+        if(cache&&cache.frontmatter) {
+            return cache.frontmatter;
+        }
+
+        return null;
+    }
+
+    async createContentFile(contentType: string,formData: any,formTemplate: any) {
+        try {
+            const folderPath=formTemplate.defaultFolder;
 
             //Check if folder is specified
             if(!folderPath||folderPath.trim()=='') {
@@ -43,7 +97,7 @@ export default class ContentCreatorPlugin extends Plugin {
             await this.ensureFolderExists(folderPath);
 
             // Remove spec
-            const fileName=contentName;
+            const fileName=formData.name;
             const filePath=normalizePath(`${folderPath}/${fileName}.md`);
 
             // Check if file already exists
@@ -53,17 +107,11 @@ export default class ContentCreatorPlugin extends Plugin {
                 return null;
             }
 
-            const fileContent=this.generateFileContent(contentType,formData,contentName);
+            const fileContent=this.generateFileContent(contentType,formData,formTemplate);
             const file=await this.app.vault.create(filePath,fileContent);
-            new Notice(`Created ${contentType.slice(0,-1)}: ${contentName}`);
+            new Notice(`Created ${contentType.slice(0,-1)}: ${fileName}`);
 
             this.app.workspace.getLeaf(false).openFile(file);
-
-
-            // Only close the modal if file creation was successful
-            if(modal) {
-                modal.close();
-            }
             return file;
 
         } catch(error) {
@@ -88,19 +136,19 @@ export default class ContentCreatorPlugin extends Plugin {
 
 
 
-    private generateFileContent(contentType: string,formData: any,contentName: string): string {
+    private generateFileContent(contentType: string,formData: any,formTemplate: any): string {
         const contentTypeTag=contentType.charAt(0).toUpperCase()+contentType.slice(1,-1);
 
 
         let content=""
 
         content+=`---\n\n`;
+        content+=`contentType: ${contentType}\n\n`;
         content+=`data: ${JSON.stringify(formData)}\n\n`;
+        content+=`template: ${JSON.stringify(formTemplate)}\n\n`;
         content+=`---\n\n`;
 
-
         content+=`#${contentTypeTag}\n\n`;
-        content+=`${contentName}\n\n`;
 
 
         content+=this.formatContentData(formData);

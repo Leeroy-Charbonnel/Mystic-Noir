@@ -4,6 +4,7 @@ export const templates = {
     defaultFolder: '1. Characters',
   },
   characters: {
+    name:"text",
     defaultFolder: '1. Characters',
     template: {
       BasicInformation: {
@@ -38,6 +39,7 @@ export const templates = {
   },
 
   items: {
+    name:"text",
     defaultFolder: '2. Items',
     template: {
       BasicInformation: {
@@ -50,6 +52,7 @@ export const templates = {
   },
 
   events: {
+    name:"text",
     defaultFolder: '5. Events',
     template: {
       BasicInformation: {
@@ -63,6 +66,7 @@ export const templates = {
   },
 
   locations: {
+    name:"text",
     defaultFolder: '3. Locations',
     template: {
       BasicInformation: {
@@ -82,6 +86,7 @@ export const templates = {
   },
 
   stories: {
+    name:"text",
     defaultFolder: '4. Stories',
     template: {
       BasicInformation: {

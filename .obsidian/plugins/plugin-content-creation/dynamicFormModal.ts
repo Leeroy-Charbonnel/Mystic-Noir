@@ -99,25 +99,20 @@ class SuggestComponent {
     selectSuggestion(value: string) {
         const oldValue=this.getValue();
         this.setValue([oldValue.slice(0,this.bracketsIndices[0]),value,oldValue.slice(this.bracketsIndices[1])].join(''));
-        this.selectCb&&this.selectCb(this.getValue());
         this.parent.setSelectionRange(this.bracketsIndices[1]+value.length,this.bracketsIndices[1]+value.length);
         this.parent.trigger("input");
         this.popover.close();
     }
 
     renderSuggestion(value,elmt) {
-        if(this.renderCb)
-            this.renderCb(value,elmt);
-        else {
-            const strong=this.searchCriteria
-            const pos=value.toLowerCase().indexOf(strong.toLowerCase());
+        const strong=this.searchCriteria
+        const pos=value.toLowerCase().indexOf(strong.toLowerCase());
 
-            elmt.createDiv(void 0,(div) => {
-                div.createSpan({ text: value.substring(0,pos) });
-                div.createEl("strong",{ text: value.substring(pos,pos+strong.length) });
-                div.createSpan({ text: value.substring(pos+strong.length) });
-            });
-        }
+        elmt.createDiv(void 0,(div) => {
+            div.createSpan({ text: value.substring(0,pos) });
+            div.createEl("strong",{ text: value.substring(pos,pos+strong.length) }).style.color="var(--text-accent)";
+            div.createSpan({ text: value.substring(pos+strong.length) });
+        });
     }
 
     onRenderSuggest(cb: (value: string) => void) {
@@ -138,10 +133,6 @@ class SuggestComponent {
         this.parent.value=value;
     }
 
-    onSelect(cb: (value: string) => void) {
-        this.selectCb=cb;
-        return this;
-    }
 
     static getPos(e) {
         const elmt=e;
@@ -169,17 +160,16 @@ export class DynamicFormModal extends Modal {
     contentType: string;
     formTemplate: any;
     formData: any;
-    contentName: string;
     containerElMapping: Map<string,HTMLElement>=new Map();
     multiValueFieldsMap: Map<string,MultiValueField>=new Map();
     pages: string[];
 
-    constructor(app: App,plugin: ContentCreatorPlugin,contentType: string) {
+    constructor(app: App,plugin: ContentCreatorPlugin,contentType: string,formTemplate: any,formData?: any) {
         super(app);
         this.plugin=plugin;
-        this.contentType=contentType;
-        this.formTemplate=JSON.parse(JSON.stringify(templates.templates[contentType as keyof typeof templates.templates]));
-        this.formData=this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate)));
+        this.contentType=contentType
+        this.formTemplate=formTemplate;
+        this.formData=formData? formData:this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate)));
         this.pages=getAllPages(app);
     }
 
@@ -203,12 +193,12 @@ export class DynamicFormModal extends Modal {
         });
         contentNameInput.addEventListener('input',(e) => this.updateContentName((e.target as HTMLInputElement).value),
         );
-        this.contentName=`New ${contentTypeDisplayName}`;
+        this.formData.name=`New ${contentTypeDisplayName}`;
 
         scrollContainer.appendChild(contentNameInput);
 
 
-        this.generateForm(scrollContainer,this.formTemplate);
+        this.generateForm(scrollContainer,this.formTemplate.template,this.formData.template,"template");
 
         const buttonContainer=node('div',{ class: 'button-container' });
         contentEl.appendChild(buttonContainer);
@@ -225,23 +215,23 @@ export class DynamicFormModal extends Modal {
             .onClick(() => this.handleSubmit());
     }
 
-    generateForm(container: HTMLElement,data: any,path: string='') {
+    generateForm(container: HTMLElement,template: any,data: any,path: string='') {
         Object.entries(data).forEach(([key,value]) => {
             const currentPath=path? `${path}.${key}`:key;
-            if(isObject(value)) {
+            const field=this.getValueObjectFromPath(this.formTemplate,currentPath)
+
+            if(isObject(field)) {
                 container.appendChild(node('h3',{ text: formatDisplayName(key) }));
 
                 const sectionContainer=node('div',{ class: `section-${key}` });
                 container.appendChild(sectionContainer);
 
                 this.containerElMapping.set(currentPath,sectionContainer);
-                this.generateForm(sectionContainer,value,currentPath);
+                this.generateForm(sectionContainer,template,value,currentPath);
             } else {
-                const fieldType: string=value as string;
-
-                if(fieldType.startsWith("array")) {
+                if(field.startsWith("array")) {
                     const fieldContainer=node('div',{ class: `field-${key}` });
-                    const inputType=fieldType.split(':')[1]
+                    const inputType=field.split(':')[1]
                     container.appendChild(fieldContainer);
                     const multiField=new MultiValueField(fieldContainer,formatDisplayName(key),inputType,
                         (newValues) => {
@@ -249,31 +239,38 @@ export class DynamicFormModal extends Modal {
                         }
                     );
                     this.multiValueFieldsMap.set(currentPath,multiField);
-                } else if(fieldType==="boolean") {
+                } else if(field==="boolean") {
                     new Setting(container)
                         .setName(formatDisplayName(key))
                         .addToggle(toggle => toggle
                             .onChange(newValue => {
                                 this.updateFormData(currentPath,newValue);
-                            }));
+                            })
+                            .setValue(value as boolean));
                 } else {
-                    if(fieldType==='textarea') {
+                    if(field==='textarea') {
                         const field=new Setting(container)
                             .setName(formatDisplayName(key))
-                            .addTextArea(textarea => textarea.setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`));
+                            .addTextArea(textarea => textarea
+                                .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
+                                .onChange(newValue => {
+                                    this.updateFormData(currentPath,newValue);
+                                })
+                                .setValue(value as string));
 
-                        new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages).onSelect((newValue: string) => {
-                            this.updateFormData(currentPath,newValue);
-                        })
+                        new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages)
                     } else {
 
                         const field=new Setting(container)
                             .setName(formatDisplayName(key))
-                            .addText(text => text.setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`));
+                            .addText(text => text
+                                .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
+                                .onChange(newValue => {
+                                    this.updateFormData(currentPath,newValue);
+                                })
+                                .setValue(value as string));
 
-                        new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages).onSelect((newValue: string) => {
-                            this.updateFormData(currentPath,newValue);
-                        })
+                        new SuggestComponent(field.controlEl.children[0]).setSuggestList(this.pages)
 
                     }
                 }
@@ -310,7 +307,7 @@ export class DynamicFormModal extends Modal {
 
 
     updateContentName(value: any) {
-        this.contentName=value
+        this.formData.name=value
     }
 
     updateFormData(path: string,value: any) {
@@ -325,12 +322,24 @@ export class DynamicFormModal extends Modal {
         current[pathParts[pathParts.length-1]]=value;
     }
 
+    getValueObjectFromPath(obj: any,path: string) {
+        const pathParts=path.split('.');
+        let current=obj;
+
+        for(let i=0;i<pathParts.length-1;i++) {
+            current=current[pathParts[i]];
+        }
+        return current[pathParts[pathParts.length-1]]
+    }
+
     async handleSubmit() {
-        if(!this.contentName||this.contentName.trim()==="") {
+        if(!this.formData.name||this.formData.name.trim()==="") {
             new Notice("Please provide a name for the content");
             return;
         }
-        const file=await this.plugin.createContentFile(this.contentType,this.formData,this.contentName,this);
+        const file=await this.plugin.createContentFile(this.contentType,this.formData,this.formTemplate);
+        if(file)
+            this.close();
     }
 }
 
@@ -402,8 +411,7 @@ class MultiValueField {
             });
 
 
-            new SuggestComponent(input).setSuggestList(this.pages).onSelect((newValue: string) => {
-            })
+            new SuggestComponent(input).setSuggestList(this.pages);
 
             if(this.values.length>1) {
                 const removeButton=node('button',{
