@@ -134,11 +134,11 @@ class SuggestComponent {
     }
 
 
-    static getPos(e) {
+    static getPos(e: HTMLElement) {
         const elmt=e;
         for(var n=0,i=0,r=null;e&&e!==r;) {
             n+=e.offsetTop,i+=e.offsetLeft;
-            for(var o=e.offsetParent,a=e.parentElement;a&&a!==o;)
+            for(var o: any=e.offsetParent,a=e.parentElement;a&&a!==o;)
                 n-=a.scrollTop,i-=a.scrollLeft,a=a.parentElement;
             o&&o!==r&&(n-=o.scrollTop,i-=o.scrollLeft),e=o;
         }
@@ -182,6 +182,9 @@ export class DynamicFormModal extends Modal {
     onOpen() {
         const { contentEl }=this;
         const scrollContainer=node('div',{ class: 'form-scroll-container' });
+
+        this.modalEl.style.width="50%"
+        this.contentEl.style.maxWidth="100%";
 
         //Name input
         const contentNameInput=node('input',{
@@ -231,7 +234,7 @@ export class DynamicFormModal extends Modal {
                     const fieldContainer=node('div',{ class: `field-${key}` });
                     const inputType=field.split(':')[1]
                     container.appendChild(fieldContainer);
-                    const multiField=new MultiValueField(this.app,fieldContainer,formatDisplayName(key),inputType,value,
+                    const multiField=new MultiValueField(this.app,fieldContainer,formatDisplayName(key),inputType,value as string[],
                         (newValues) => {
                             this.updateFormData(currentPath,newValues);
                         }
@@ -249,13 +252,17 @@ export class DynamicFormModal extends Modal {
                     if(field==='textarea') {
                         const field=new Setting(container)
                             .setName(formatDisplayName(key))
-                            .addTextArea(textarea => textarea
-                                .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
-                                .onChange(newValue => {
-                                    this.updateFormData(currentPath,newValue);
-                                })
-                                .setValue(value as string));
-
+                            .addTextArea(textarea => {
+                                textarea
+                                    .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
+                                    .onChange(newValue => {
+                                        this.updateFormData(currentPath,newValue);
+                                        this.adjustTextAreaSize(textarea.inputEl)
+                                    })
+                                    .setValue(value as string);
+                                this.adjustTextAreaSize(textarea.inputEl)
+                                return textarea;
+                            });
                         new SuggestComponent(this.app,field.controlEl.children[0]).setSuggestList(this.pages)
                     } else {
 
@@ -276,6 +283,10 @@ export class DynamicFormModal extends Modal {
         });
     }
 
+    adjustTextAreaSize(textarea: HTMLTextAreaElement) {
+        textarea.style.height = "auto";
+        textarea.style.height=(textarea.scrollHeight+2)+'px'
+    }
 
     setNonObjectsToNull(obj: any): any {
         if(typeof obj!=='object'||obj===null) return obj;

@@ -1,1 +1,7 @@
-{}
+{
+  "enabledCssSnippets": [
+    "hideProperties",
+    "pageStyle"
+  ],
+  "accentColor": "#5cf5c2"
+}

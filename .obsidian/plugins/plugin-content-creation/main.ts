@@ -1,4 +1,4 @@
-import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder,Menu,MenuItem } from 'obsidian';
+import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder,Menu,MenuItem,FileManager } from 'obsidian';
 import { DynamicFormModal } from './dynamicFormModal';
 import { ContentSelectorModal } from './contentSelectorModal';
 import * as templates from './template';
@@ -99,24 +99,19 @@ export default class ContentCreatorPlugin extends Plugin {
             // Remove spec
 
             const fileContent=this.generateFileContent(contentType,formData,formTemplate);
-            let fileName;
-            let filePath;
-            
+            let file
             if(overwrite) {
-                fileName=formData.oldName;
-                filePath=normalizePath(`${folderPath}/${fileName}.md`);
-                const file=this.app.vault.getAbstractFileByPath(filePath) as TFile;
-                
-                app                          
-                
+                let fileOldPath=normalizePath(`${folderPath}/${formData.oldName}.md`);
+                let fileNewPath=normalizePath(`${folderPath}/${formData.name}.md`);
+                file=this.app.vault.getAbstractFileByPath(fileOldPath) as TFile;
+                await this.app.vault.modify(file,fileContent);
+                await this.app.fileManager.renameFile(file,fileNewPath);
             } else {
-                fileName=formData.name;
-                filePath=normalizePath(`${folderPath}/${fileName}.md`);
-                const file=await this.app.vault.create(filePath,fileContent);
+                let filePath=normalizePath(`${folderPath}/${formData.name}.md`);
+                file=await this.app.vault.create(filePath,fileContent);
             }
 
-
-            new Notice(`Saved ${contentType.slice(0,-1)}: ${fileName}`);
+            new Notice(`Saved ${contentType.slice(0,-1)}: ${formData.name}`);
 
             this.app.workspace.getLeaf(false).openFile(file);
             return file;
@@ -158,36 +153,82 @@ export default class ContentCreatorPlugin extends Plugin {
         content+=`#${contentTypeTag}\n\n`;
 
 
-        content+=this.formatContentData(formData.template);
-        console.log(content)
+        content+=this.formatContentData(formTemplate,formData.template,3,"template");
         return content;
     }
 
-    private formatContentData(data: any,depth: number=2): string {
+    private formatContentData(template: any,data: any,depth: number,path: string=''): string {
         let content='';
-        console.log(data)
 
         for(const [key,value] of Object.entries(data)) {
-            if(key!="defaultFolder") {
-                if(typeof value==='object'&&value!==null&&!Array.isArray(value)) {
-                    const heading='#'.repeat(depth);
-                    const displayName=formatDisplayName(key);
-                    content+=`${heading} ${displayName}\n`;
-                    content+=this.formatContentData(value,depth+1)+`\n`;
-                } else if(Array.isArray(value)) {
-                    if(value.length>0&&value.some(item => item.trim?.().length>0)) {
-                        const displayName=formatDisplayName(key);
-                        content+=`**${displayName}:** \n`;
-                        content+=value.filter(item => item.trim?.().length>0).map(item => "- "+item.trim()).join('\n');
-                        content+=`\n\n`;
+            const currentPath=path? `${path}.${key}`:key;
+            const field=this.getValueObjectFromPath(template,currentPath)
+
+
+            if(typeof value==='object'&&value!==null&&!Array.isArray(value)) {
+                const heading='#'.repeat(depth);
+                const displayName=formatDisplayName(key);
+                content+=`${heading} ${displayName}\n`;
+                content+=this.formatContentData(template,value,depth+1,currentPath)+`\n`;
+                content+="---\n"
+            } else {
+                const displayName=formatDisplayName(key);
+                let prefix=">";
+                content+=prefix;
+
+
+                let style_header=[
+                    "display: inline-flex;",
+                    "font-weight: bold;",
+                    "white-space: nowrap;",
+                    "overflow: hidden;",
+                    "margin: 3px 0px;"
+                ]
+                let style_header_array=[
+                    "display: inline-flex;",
+                    "font-weight: bold;",
+                    "white-space: nowrap;",
+                    "overflow: hidden;",
+                    "margin: 3px 0px;"
+                ]
+
+                content+=` <span style='${style_header.join("")}'>${displayName} : </span> `
+
+
+
+                if(field.startsWith("array")) {
+                    let values=(value as string[]).filter((item: string) => item.trim?.().length>0)
+                    if(values.length>0) {
+                        if(values.length==1) {
+                            content+=`${values[0]} \n`;
+                        }
+                        else {
+                            content+=`\n`;
+                            content+=values.map(item => `>+ ${item.trim()} `).join('\n')+"\n\n";
+                        }
                     }
-                } else if(value!==null&&value!==undefined&&String(value).trim()) {
-                    const displayName=formatDisplayName(key);
-                    content+=`**${displayName}:** ${value} \n`;
+                } else if(field==='textarea') {
+                    content+=`\n> \n`;
+                    content+=`${(value as string).split("\n").map((x: string) => ">     "+(x.trim()==""? "":`${x}`)).join("\n")} \n`;
+
                 }
+                else if(value!==null&&value!==undefined&&String(value).trim()) {
+                    content+=`${value} \n`;
+                }
+                //content+=">\n"
             }
         }
         return content;
+    }
+
+    getValueObjectFromPath(obj: any,path: string) {
+        const pathParts=path.split('.');
+        let current=obj;
+
+        for(let i=0;i<pathParts.length-1;i++) {
+            current=current[pathParts[i]];
+        }
+        return current[pathParts[pathParts.length-1]]
     }
 
     onunload() {
