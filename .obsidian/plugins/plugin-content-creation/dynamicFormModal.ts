@@ -284,8 +284,15 @@ export class DynamicFormModal extends Modal {
     }
 
     adjustTextAreaSize(textarea: HTMLTextAreaElement) {
-        textarea.style.height = "auto";
-        textarea.style.height=(textarea.scrollHeight+2)+'px'
+        const scrollContainer=this.modalEl.querySelector('.form-scroll-container');
+        if(scrollContainer==null) return
+        const scrollTop=scrollContainer.scrollTop;
+
+
+        textarea.style.height="auto";
+        textarea.style.height=(textarea.scrollHeight+2)+'px';
+
+        scrollContainer.scrollTop=scrollTop;
     }
 
     setNonObjectsToNull(obj: any): any {
