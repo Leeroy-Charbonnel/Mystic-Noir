@@ -26,15 +26,14 @@ export class ContentSelectorModal extends Modal {
     contentEl.appendChild(optionsContainer);
     
     Object.entries(templates.templates).forEach(([type]) => {
-      // Convert the template type to a display name (e.g., 'characters' -> 'Character')
-      const label = type.charAt(0).toUpperCase() + type.slice(1, -1);
+      const label = type.charAt(0).toUpperCase() + type.slice(1);
 
       const optionContainer = node('div', { class: 'content-option' });
       optionsContainer.appendChild(optionContainer);
       
       new Setting(optionContainer)
         .setName(label)
-        .setDesc(`Create a new ${label.toLowerCase()}`)
+        .setDesc(`Create ${label.toLowerCase()}`)
         .addButton(button => button
           .setButtonText('Create')
           .setCta()

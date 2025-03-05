@@ -1,3 +1,14 @@
 ul, ol, p, blockquote{
     margin: 0 !important;
 }
+
+.content-creation-textarea{
+    position: relative;
+    padding: var(--size-4-3) var(--size-4-4);
+    min-height: 38px;
+    background-color: var(--code-background);
+    border-radius: var(--code-radius);
+    white-space: var(--code-white-space);
+    border: var(--code-border-width) solid var(--code-border-color);
+    overflow-x: auto;
+}

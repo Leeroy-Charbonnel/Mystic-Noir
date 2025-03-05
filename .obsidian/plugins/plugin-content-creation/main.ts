@@ -1,11 +1,71 @@
-import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder,Menu,MenuItem,FileManager } from 'obsidian';
+import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder,Menu,MenuItem,FileManager,SuggestModal } from 'obsidian';
 import { DynamicFormModal } from './dynamicFormModal';
 import { ContentSelectorModal } from './contentSelectorModal';
-import * as templates from './template';
-import { node,formatDisplayName } from './utils';
+import { node,formatDisplayName,convertTemplateFormat,FormTemplate,getTemplates,hasValueAndType } from './utils';
 import './styles.css';
 
+
+
+class ContentCreatorSettingTab extends PluginSettingTab {
+    plugin: ContentCreatorPlugin;
+
+    constructor(app: App,plugin: ContentCreatorPlugin) {
+        super(app,plugin);
+        this.plugin=plugin;
+    }
+
+    display(): void {
+        const { containerEl }=this;
+        containerEl.empty();
+
+        containerEl.createEl('h2',{ text: 'Content Creator Settings' });
+        containerEl.createEl('h3',{ text: 'Default Folders' });
+        containerEl.createEl('p',{ text: 'Specify the default folder path for each content type (e.g., "1. Characters").' });
+
+        const contentTypes=Object.keys(this.plugin.templates).map((key: string) => (this.plugin.templates[key as keyof typeof this.plugin.templates] as FormTemplate).contentType);
+        const folders=this.getAllFolders();
+
+        contentTypes.forEach(type => {
+            const readableType=type.charAt(0).toUpperCase()+type.slice(1);
+
+            new Setting(containerEl)
+                .setName(readableType)
+                .setDesc(`Default folder for ${readableType.toLowerCase()}`)
+                .addDropdown(dropdown => {
+                    folders.forEach(folder => { dropdown.addOption(folder,folder); });
+                    dropdown.setValue(this.plugin.settings.defaultFolders[type]||'');
+                    dropdown.onChange(async (value) => {
+                        this.plugin.settings.defaultFolders[type]=value;
+                        await this.plugin.saveSettings();
+                    })
+                });
+        });
+    }
+    getAllFolders(): string[] {
+        const folders: string[]=[];
+        this.app.vault.getAllLoadedFiles().forEach(file => {
+            if(file instanceof TFolder&&file.path!=='/') {
+                folders.push(file.path);
+            }
+        });
+        folders.sort((a,b) => a.localeCompare(b));
+        return folders;
+    }
+}
+
+interface ContentCreatorPluginSettings {
+    defaultFolders: { [key: string]: string }
+}
+
+const DEFAULT_SETTINGS: ContentCreatorPluginSettings={
+    defaultFolders: {}
+}
+
+
 export default class ContentCreatorPlugin extends Plugin {
+    settings: ContentCreatorPluginSettings;
+    templates: { [key: string]: FormTemplate };
+
     async onload() {
         console.log("loading "+this.manifest.name+" plugin: v"+this.manifest.version)
         const ribbonIconEl=this.addRibbonIcon('file-plus','Create Content',(evt: MouseEvent) => {
@@ -37,29 +97,52 @@ export default class ContentCreatorPlugin extends Plugin {
             })
         );
 
-        //Right click on page itself
-        this.registerEvent(
-            this.app.workspace.on("editor-menu",(menu,editor,view) => {
-                if(view.file instanceof TFile&&view.file.extension==='md') {
-                    menu.addItem((item: MenuItem) => {
-                        item.setTitle('Edit content')
-                            .setIcon('pencil')
-                            .onClick(async () => {
-                                await this.editExistingContent(view.file as TFile);
-                            });
-                    });
-                }
-            })
-        );
+        const statusBarItem=this.addStatusBarItem();
+        const statusBarItemEl=statusBarItem.createEl('span',{
+            text: 'Edit Content',
+            cls: 'clickable-icon'
+        });
+
+        statusBarItemEl.addEventListener('click',async () => {
+            const activeFile=this.app.workspace.getActiveFile();
+
+            if(activeFile&&activeFile.extension==='md') {
+                await this.editExistingContent(activeFile);
+            } else {
+                new Notice('No markdown file is currently active');
+            }
+        });
+
+        this.templates=getTemplates();
+        await this.loadSettings();
+        Object.keys(this.templates).forEach(type => {
+            if(this.settings.defaultFolders[type]) {
+                (this.templates[type as keyof typeof this.templates] as FormTemplate).defaultFolder=this.settings.defaultFolders[type];
+            }
+        });
+
+        this.addSettingTab(new ContentCreatorSettingTab(this.app,this));
+    }
+
+    async loadSettings() {
+        this.settings=Object.assign({},DEFAULT_SETTINGS,await this.loadData());
+    }
+
+    async saveSettings() {
+        await this.saveData(this.settings);
+
+        Object.keys(this.templates).forEach(type => {
+            if(this.settings.defaultFolders[type]) {
+                (this.templates[type as keyof typeof this.templates] as FormTemplate).defaultFolder=this.settings.defaultFolders[type];
+            }
+        });
     }
 
     openFormForContentType(contentType: string) {
-        const formTemplate=JSON.parse(JSON.stringify(templates.templates[contentType as keyof typeof templates.templates]));
-        if(!formTemplate) {
-            new Notice(`Unknown content type: ${contentType}`);
-            return;
-        }
-        new DynamicFormModal(this.app,this,contentType,formTemplate).open();
+        let data=JSON.parse(JSON.stringify(this.templates[contentType as keyof typeof this.templates]));
+        data.name=`New (${contentType.charAt(0).toUpperCase()+contentType.slice(1)})`
+        data.oldName=null;
+        new DynamicFormModal(this.app,this,data).open();
     }
 
     async editExistingContent(file: TFile) {
@@ -67,51 +150,51 @@ export default class ContentCreatorPlugin extends Plugin {
             const properties=this.getFileProperties(this.app,file);
 
             if(properties==null) {
-                console.error("Error editing content:","Could not find properties");
                 new Notice("Error editing content: Could not find properties");
+                return
             }
-            new DynamicFormModal(this.app,this,properties?.contentType,properties?.template,properties?.data).open();
+            const data=properties?.data;
+            new DynamicFormModal(this.app,this,data).open();
         } catch(error) {
-            console.error("Error editing content:",error);
             new Notice(`Error editing content: ${error.message}`);
         }
     }
 
     getFileProperties(app: App,file: TFile) {
         const cache=app.metadataCache.getFileCache(file);
-        if(cache&&cache.frontmatter) {
-            return cache.frontmatter;
-        }
+        if(cache&&cache.frontmatter) return cache.frontmatter;
         return null;
     }
 
-    async createContentFile(contentType: string,formData: any,formTemplate: any,overwrite: boolean=false) {
+    async createContentFile(data: any) {
         try {
-            const folderPath=formTemplate.defaultFolder;
+            const folderPath=data.defaultFolder;
 
             //Check if folder is specified
-            if(!folderPath||folderPath.trim()=='') {
-                new Notice(`No default folder : ${contentType}`);
-            }
+            if(!folderPath||folderPath.trim()=='') { new Notice(`No default folder : ${data.contentType}`); }
+
             //Check if folder exist, create it otherwise
             await this.ensureFolderExists(folderPath);
 
-            // Remove spec
-
-            const fileContent=this.generateFileContent(contentType,formData,formTemplate);
+            // Generate content markdown
             let file
-            if(overwrite) {
-                let fileOldPath=normalizePath(`${folderPath}/${formData.oldName}.md`);
-                let fileNewPath=normalizePath(`${folderPath}/${formData.name}.md`);
+            let newContent=(data.oldName==null);
+            const fileOldPath=normalizePath(`${folderPath}/${data.oldName}.md`);
+            const fileNewPath=normalizePath(`${folderPath}/${data.name}.md`);
+            
+            data.oldName=data.name;
+            const fileContent=this.generateFileContent(data);
+
+            if(newContent) {
+                file=await this.app.vault.create(fileNewPath,fileContent);
+            } else {
+                //If exist, modify content and rename to keep link
                 file=this.app.vault.getAbstractFileByPath(fileOldPath) as TFile;
                 await this.app.vault.modify(file,fileContent);
                 await this.app.fileManager.renameFile(file,fileNewPath);
-            } else {
-                let filePath=normalizePath(`${folderPath}/${formData.name}.md`);
-                file=await this.app.vault.create(filePath,fileContent);
             }
 
-            new Notice(`Saved ${contentType.slice(0,-1)}: ${formData.name}`);
+            new Notice(`Saved ${data.contentType.slice(0,-1)}: ${data.name}`);
 
             this.app.workspace.getLeaf(false).openFile(file);
             return file;
@@ -138,40 +221,37 @@ export default class ContentCreatorPlugin extends Plugin {
 
 
 
-    private generateFileContent(contentType: string,formData: any,formTemplate: any): string {
-        const contentTypeTag=contentType.charAt(0).toUpperCase()+contentType.slice(1,-1);
+    private generateFileContent(data: FormTemplate): string {
+        const contentTypeTag=data.contentType;
 
 
         let content=""
-
         content+=`---\n\n`;
-        content+=`contentType: ${contentType}\n\n`;
-        content+=`data: ${JSON.stringify(formData)}\n\n`;
-        content+=`template: ${JSON.stringify(formTemplate)}\n\n`;
+        content+=`contentType: ${data.contentType}\n\n`;
+        content+=`data: ${JSON.stringify(data)}\n\n`;
         content+=`---\n\n`;
 
         content+=`#${contentTypeTag}\n\n`;
 
 
-        content+=this.formatContentData(formTemplate,formData.template,3,"template");
+        content+=this.formatContentData(data.template,3,"template");
         return content;
     }
 
-    private formatContentData(template: any,data: any,depth: number,path: string=''): string {
+    private formatContentData(data: any,depth: number,path: string=''): string {
         let content='';
-
-        for(const [key,value] of Object.entries(data)) {
+        Object.entries(data).forEach(([key,field]: [string,{ value: any,type: string }]) => {
             const currentPath=path? `${path}.${key}`:key;
-            const field=this.getValueObjectFromPath(template,currentPath)
 
-
-            if(typeof value==='object'&&value!==null&&!Array.isArray(value)) {
+            if(!hasValueAndType(field)) {
                 const heading='#'.repeat(depth);
                 const displayName=formatDisplayName(key);
                 content+=`${heading} ${displayName}\n`;
-                content+=this.formatContentData(template,value,depth+1,currentPath)+`\n`;
+                content+=this.formatContentData(field,depth+1,currentPath)+`\n`;
                 content+="---\n"
             } else {
+                if(field.value==null||field.value==undefined) return ""
+
                 const displayName=formatDisplayName(key);
                 let prefix=">";
                 content+=prefix;
@@ -184,20 +264,10 @@ export default class ContentCreatorPlugin extends Plugin {
                     "overflow: hidden;",
                     "margin: 3px 0px;"
                 ]
-                let style_header_array=[
-                    "display: inline-flex;",
-                    "font-weight: bold;",
-                    "white-space: nowrap;",
-                    "overflow: hidden;",
-                    "margin: 3px 0px;"
-                ]
 
                 content+=` <span style='${style_header.join("")}'>${displayName} : </span> `
-
-
-
-                if(field.startsWith("array")) {
-                    let values=(value as string[]).filter((item: string) => item.trim?.().length>0)
+                if(field.type.startsWith("array")) {
+                    let values=(field.value as string[]).filter((item: string) => item.trim?.().length>0)
                     if(values.length>0) {
                         if(values.length==1) {
                             content+=`${values[0]} \n`;
@@ -207,28 +277,22 @@ export default class ContentCreatorPlugin extends Plugin {
                             content+=values.map(item => `>+ ${item.trim()} `).join('\n')+"\n\n";
                         }
                     }
-                } else if(field==='textarea') {
-                    content+=`\n> \n`;
-                    content+=`${(value as string).split("\n").map((x: string) => ">     "+(x.trim()==""? "":`${x}`)).join("\n")} \n`;
+
+                } else if(field.type.startsWith("textarea")) {
+                    if(!String(field.value).trim()) return ""
+
+                    //content+=`\n> \n`;
+                    //content+=`${(field.value as string).split("\n").map((x: string) => ">     "+(x.trim()==""? "":`${x}`)).join("\n")} \n`;
+                    content+=`> <span class='content-creation-textarea'>${field.value}</span>`;
 
                 }
-                else if(value!==null&&value!==undefined&&String(value).trim()) {
-                    content+=`${value} \n`;
+                else if(String(field.value).trim()) {
+                    content+=`${field.value} \n`;
                 }
                 //content+=">\n"
             }
-        }
+        })
         return content;
-    }
-
-    getValueObjectFromPath(obj: any,path: string) {
-        const pathParts=path.split('.');
-        let current=obj;
-
-        for(let i=0;i<pathParts.length-1;i++) {
-            current=current[pathParts[i]];
-        }
-        return current[pathParts[pathParts.length-1]]
     }
 
     onunload() {

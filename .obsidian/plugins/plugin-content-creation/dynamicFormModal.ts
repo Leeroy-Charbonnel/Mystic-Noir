@@ -1,7 +1,7 @@
 import { App,Modal,Setting,TextAreaComponent,ButtonComponent,ToggleComponent,Notice,PopoverSuggest,TextComponent } from 'obsidian';
 import ContentCreatorPlugin from './main';
 import * as templates from './template';
-import { node,formatDisplayName,isObject } from './utils';
+import { node,formatDisplayName,isObject, FormTemplate, hasValueAndType } from './utils';
 
 function getAllPages(app: App): string[] {
     return app.vault.getMarkdownFiles().map(x => x.basename);
@@ -20,7 +20,7 @@ class SuggestComponent {
 
     constructor(app: App,parent: any) {
         this.parent=parent;
-        this.popover=new PopoverSuggest(app);
+        this.popover= new (PopoverSuggest as any)(app);
         this.popover.selectSuggestion=this.selectSuggestion.bind(this);
         this.popover.renderSuggestion=this.renderSuggestion.bind(this);
         this.parent.addEventListener("input",(e: Event) => this.onInputChange(e));
@@ -153,29 +153,16 @@ class SuggestComponent {
 
 
 
-
-
 export class DynamicFormModal extends Modal {
     plugin: ContentCreatorPlugin;
-    contentType: string;
-    formTemplate: any;
-    formData: any;
-    newContent: boolean;
-    containerElMapping: Map<string,HTMLElement>=new Map();
+    data: FormTemplate;
     multiValueFieldsMap: Map<string,MultiValueField>=new Map();
     pages: string[];
 
-    constructor(app: App,plugin: ContentCreatorPlugin,contentType: string,formTemplate: any,formData?: any) {
+    constructor(app: App,plugin: ContentCreatorPlugin,data: FormTemplate) {
         super(app);
         this.plugin=plugin;
-        this.contentType=contentType;
-        this.formTemplate=formTemplate;
-        this.newContent=formData? false:true;
-
-        this.formData=this.newContent? this.setNonObjectsToNull(JSON.parse(JSON.stringify(this.formTemplate))):formData;
-        this.formData.name=this.newContent? `New ${this.contentType.charAt(0).toUpperCase()+this.contentType.slice(1,-1)}`:formData.name;
-        this.formData.oldName=this.formData.name
-
+        this.data=data;
         this.pages=getAllPages(app);
     }
 
@@ -189,7 +176,7 @@ export class DynamicFormModal extends Modal {
         //Name input
         const contentNameInput=node('input',{
             classes: ['content-name'],
-            attributes: { 'type': 'text','value': this.formData.name,'placeholder': 'Enter a name' }
+            attributes: { 'type': 'text','value': this.data.name,'placeholder': 'Enter a name' }
         });
         contentNameInput.addEventListener('input',(e) => this.updateContentName((e.target as HTMLInputElement).value));
 
@@ -199,7 +186,7 @@ export class DynamicFormModal extends Modal {
         scrollContainer.appendChild(contentNameInput);
 
 
-        this.generateForm(scrollContainer,this.formTemplate.template,this.formData.template,"template");
+        this.generateForm(scrollContainer,this.data.template,"template");
 
         const buttonContainer=node('div',{ class: 'button-container' });
         contentEl.appendChild(buttonContainer);
@@ -211,71 +198,63 @@ export class DynamicFormModal extends Modal {
 
         // Create button
         new ButtonComponent(buttonContainer)
-            .setButtonText(this.newContent? 'Create':'Save')
+            .setButtonText('Save')
             .setCta()
             .onClick(() => this.handleSubmit());
     }
 
-    generateForm(container: HTMLElement,template: any,data: any,path: string='') {
-        Object.entries(data).forEach(([key,value]) => {
+    generateForm(container: HTMLElement,data: any,path: string='') {
+        Object.entries(data).forEach(([key,field]: [string,{ value: any,type: string }]) => {
             const currentPath=path? `${path}.${key}`:key;
-            const field=this.getValueObjectFromPath(this.formTemplate,currentPath)
 
-            if(isObject(field)) {
-                container.appendChild(node('h3',{ text: formatDisplayName(key) }));
-
+            if(!hasValueAndType(field)) {
                 const sectionContainer=node('div',{ class: `section-${key}` });
+                container.appendChild(node('h3',{ text: formatDisplayName(key) }));
                 container.appendChild(sectionContainer);
-
-                this.containerElMapping.set(currentPath,sectionContainer);
-                this.generateForm(sectionContainer,template,value,currentPath);
+                this.generateForm(sectionContainer,field,currentPath);
             } else {
-                if(field.startsWith("array")) {
+                if(field.type.startsWith("array")) {
                     const fieldContainer=node('div',{ class: `field-${key}` });
-                    const inputType=field.split(':')[1]
+                    const inputType=field.type.split(':')[1]
                     container.appendChild(fieldContainer);
-                    const multiField=new MultiValueField(this.app,fieldContainer,formatDisplayName(key),inputType,value as string[],
-                        (newValues) => {
-                            this.updateFormData(currentPath,newValues);
-                        }
+                    const multiField=new MultiValueField(this.app,fieldContainer,formatDisplayName(key),inputType,field.value as string[],
+                        (newValues) => { this.updateData(currentPath,newValues); }
                     );
                     this.multiValueFieldsMap.set(currentPath,multiField);
-                } else if(field==="boolean") {
+                } else if(field.type==="boolean") {
                     new Setting(container)
                         .setName(formatDisplayName(key))
                         .addToggle(toggle => toggle
-                            .onChange(newValue => {
-                                this.updateFormData(currentPath,newValue);
-                            })
-                            .setValue(value as boolean));
+                            .onChange(newValue => { this.updateData(currentPath,newValue); })
+                            .setValue(field.value as boolean));
                 } else {
-                    if(field==='textarea') {
-                        const field=new Setting(container)
+                    if(field.type==='textarea') {
+                        const fieldInput=new Setting(container)
                             .setName(formatDisplayName(key))
                             .addTextArea(textarea => {
                                 textarea
                                     .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
                                     .onChange(newValue => {
-                                        this.updateFormData(currentPath,newValue);
+                                        this.updateData(currentPath,newValue);
                                         this.adjustTextAreaSize(textarea.inputEl)
                                     })
-                                    .setValue(value as string);
+                                    .setValue(field.value as string);
                                 this.adjustTextAreaSize(textarea.inputEl)
                                 return textarea;
                             });
-                        new SuggestComponent(this.app,field.controlEl.children[0]).setSuggestList(this.pages)
+                        new SuggestComponent(this.app,fieldInput.controlEl.children[0]).setSuggestList(this.pages)
                     } else {
 
-                        const field=new Setting(container)
+                        const fieldInput=new Setting(container)
                             .setName(formatDisplayName(key))
                             .addText(text => text
                                 .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
                                 .onChange(newValue => {
-                                    this.updateFormData(currentPath,newValue);
+                                    this.updateData(currentPath,newValue);
                                 })
-                                .setValue(value as string));
+                                .setValue(field.value as string));
 
-                        new SuggestComponent(this.app,field.controlEl.children[0]).setSuggestList(this.pages)
+                        new SuggestComponent(this.app,fieldInput.controlEl.children[0]).setSuggestList(this.pages)
 
                     }
                 }
@@ -283,77 +262,36 @@ export class DynamicFormModal extends Modal {
         });
     }
 
+
     adjustTextAreaSize(textarea: HTMLTextAreaElement) {
         const scrollContainer=this.modalEl.querySelector('.form-scroll-container');
         if(scrollContainer==null) return
         const scrollTop=scrollContainer.scrollTop;
-
-
         textarea.style.height="auto";
         textarea.style.height=(textarea.scrollHeight+2)+'px';
-
         scrollContainer.scrollTop=scrollTop;
     }
 
-    setNonObjectsToNull(obj: any): any {
-        if(typeof obj!=='object'||obj===null) return obj;
-
-        if(Array.isArray(obj)) {
-            return obj.map(item => {
-                if(typeof item==='object'&&item!==null) {
-                    return this.setNonObjectsToNull(item);
-                } else {
-                    return null;
-                }
-            });
-        }
-        for(const key in obj) {
-            if(Object.prototype.hasOwnProperty.call(obj,key)) {
-                if(typeof obj[key]==='object'&&obj[key]!==null) {
-                    obj[key]=this.setNonObjectsToNull(obj[key]);
-                } else {
-                    obj[key]=null;
-                }
-            }
-        }
-        return obj;
-    }
-
-
-
 
     updateContentName(value: any) {
-        this.formData.name=value
+        this.data.name=value
     }
 
-    updateFormData(path: string,value: any) {
-        console.log(path)
-        const pathParts=path.split('.');
-        let current=this.formData;
-
+    updateData(path: string,value: any) {
+        const pathParts: string[]=path.split('.');
+        let current: any=this.data;
         for(let i=0;i<pathParts.length-1;i++) {
             current=current[pathParts[i]];
         }
-
-        current[pathParts[pathParts.length-1]]=value;
-    }
-
-    getValueObjectFromPath(obj: any,path: string) {
-        const pathParts=path.split('.');
-        let current=obj;
-
-        for(let i=0;i<pathParts.length-1;i++) {
-            current=current[pathParts[i]];
-        }
-        return current[pathParts[pathParts.length-1]]
+        current[pathParts[pathParts.length-1]].value=value;
     }
 
     async handleSubmit() {
-        if(!this.formData.name||this.formData.name.trim()==="") {
+        if(!this.data.name||this.data.name.trim()==="") {
             new Notice("Please provide a name for the content");
             return;
         }
-        const file=await this.plugin.createContentFile(this.contentType,this.formData,this.formTemplate,!this.newContent);
+        const file=await this.plugin.createContentFile(this.data);
         if(file)
             this.close();
     }
