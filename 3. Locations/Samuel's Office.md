@@ -4,7 +4,7 @@
 - **Name:** Samuel Blackwood's Office
 - **Type:** Private Detective Office
 - **Address/Location:** Third floor of an aging building in downtown Crescent City
-- **Owner/Proprietor:** [[Samuel Blackwood]]
+- **Owner/Proprietor:** [[Samuel Blackwood3]]
 
 ### Appearance
 - **Exterior:** Weathered brick building with a faded sign, accessible by a narrow staircase
@@ -19,12 +19,12 @@
 - **Mood:** Worn but comfortable, intimate, slightly melancholic
 
 ### Purpose & History
-- **Primary Use:** Base of operations for [[Samuel Blackwood]]'s detective work
-- **History:** Rented for several years since [[Samuel Blackwood]] left the police force
+- **Primary Use:** Base of operations for [[Samuel Blackwood3]]'s detective work
+- **History:** Rented for several years since [[Samuel Blackwood3]] left the police force
 - **Significance:** Serves as both workplace and sanctuary for the detective
 
 ### Characters Associated
-- [[Samuel Blackwood]]
+- [[Samuel Blackwood3]]
 - Various clients who seek his services
 
 ### Additional Notes

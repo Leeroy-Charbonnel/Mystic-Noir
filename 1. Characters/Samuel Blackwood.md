@@ -1,121 +1,39 @@
 ---
+
 contentType: characters
-data:
-  name: Samuel Blackwood
-  defaultFolder: 
-  template:
-    BasicInformation:
-      FullName: Samuel Blackwood
-      Age: Late 30s to early 40s
-      Occupation: Private Investigator
-      Background: |-
-        Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.
 
-        FIN DU BACKGROUND
-    Appearance:
-      Build: Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times
-      Description: |-
-        Height: 6'0" (1.82m)
-        Hair: Dark brown, unkempt, hidden under a fedora
-        Eyes: Steel-gray, and always analyzing
+data: {"defaultFolder":"1. Characters","name":"Samuel Blackwood","oldName":"Samuel Blackwood","contentType":"characters","template":{"BasicInformation":{"FullName":{"value":"Samuel Blackwood","type":"text"},"Age":{"value":"Late 30s to early 40s","type":"text"},"Occupation":{"value":"Private Investigator","type":"text"},"Background":{"value":"Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.","type":"textarea"}},"Appearance":{"Build":{"value":"Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times","type":"text"},"Description":{"value":"    Height: 6'0\" (1.82m) [[Future]]\nHair: Dark brown, unkempt, hidden under a fedora\nEyes: Steel-gray, and always analyzing\n\n    Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes\n\n    Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. Smells of smoke and alcohol most of the time. Has various scars ranging from light to severe across his body.\n\n\n\n\n\nFIN DE LA DESCRIPTION","type":"textarea"},"Accessories":{"value":["Fedora","Cigar"],"type":"array:text"}},"State":{"Dead":{"value":true,"type":"boolean"},"Injured":{"value":false,"type":"boolean"}},"Personality":{"GeneralTraits":{"value":"Cynical,-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way","type":""},"Strengths":{"value":["Highly observant","Skilled at reading people","Resourceful in tough situations"],"type":"array:text"},"Weaknesses":{"value":["Drinks too much","Pushes people away","Reckless when chasing the truth","Difficulty controlling his temper ","around people he despises",""],"type":"array:text"}},"Relationships":{"Family":{"value":["Unknown"],"type":"array:text"},"FriendsAndAllies":{"value":["A few trusted informants in the city's underworld","Former colleagues who still respect him"],"type":"array:textarea"},"EnemiesAndRivals":{"value":[" Corrupt police officers","Criminals he's put behind bars","Anyone who stands in his way",""],"type":"array:text"},"RomanticInterests":{"value":["Unknown"],"type":"array:text"}},"Other":{"Belongings":{"value":["Worn leather holster with a .38 revolver","Silver lighter with an engraving (origin unknown)","Dog-eared notebook filled with case notes","",""],"type":"array:text"},"AdditionalNotes":{"value":"Has a reputation in the city—people either respect or fear him\n        Knows how to blend into both high society and the criminal underworld\n        Haunted by a past case that still lingers in his mind\n        His office doubles as his living quarters during intense cases","type":"textarea"}}}}
 
-        Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes
-
-        Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. Smells of smoke and alcohol most of the time. Has various scars ranging from light to severe across his body.
-      Accessories:
-        - Fedora
-        - Cigar
-    State:
-      Dead: false
-      Injured: false
-    Personality:
-      GeneralTraits: Cynical,-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way
-      Strengths:
-        - Highly observant
-        - Skilled at reading people"
-        - Resourceful in tough situations"
-      Weaknesses:
-        - Drinks too much
-        - Pushes people away
-        - Reckless when chasing the truth
-        - Difficulty controlling his temper around people he despises
-    Relationships:
-      Family:
-        - Unknown
-      FriendsAndAllies:
-        - A few trusted informants in the city's underworld
-        - Former colleagues who still respect him"
-      EnemiesAndRivals:
-        - Corrupt police officers
-        - Criminals he's put behind bars
-        - Anyone who stands in his way
-      RomanticInterests:
-        - Unknown
-    Other:
-      Belongings:
-        - Worn leather holster with a .38 revolver
-        - Silver lighter with an engraving (origin unknown)
-        - Dog-eared notebook filled with case notes
-      AdditionalNotes: |-
-        Has a reputation in the city—people either respect or fear him
-        Knows how to blend into both high society and the criminal underworld
-        Haunted by a past case that still lingers in his mind
-        His office doubles as his living quarters during intense cases
-  oldName: Samuel Blackwood
-template:
-  name: text
-  defaultFolder: 1. Characters
-  template:
-    BasicInformation:
-      FullName: text
-      Age: text
-      Occupation: text
-      Background: textarea
-    Appearance:
-      Build: text
-      Description: textarea
-      Accessories: array:text
-    State:
-      Dead: boolean
-      Injured: boolean
-    Personality:
-      GeneralTraits: ""
-      Strengths: array:text
-      Weaknesses: array:text
-    Relationships:
-      Family: array:text
-      FriendsAndAllies: array:textarea
-      EnemiesAndRivals: array:text
-      RomanticInterests: array:text
-    Other:
-      Belongings: array:text
-      AdditionalNotes: textarea
 ---
 
-#Character
+#characters
 
 ### Basic Information
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Full Name : </span> Samuel Blackwood 
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Age : </span> Late 30s to early 40s 
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Occupation : </span> Private Investigator 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Background : </span> 
-> 
->     Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.
->     
->     FIN DU BACKGROUND 
+> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Background : </span> <span class='content-creation-textarea'><span>Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.</span> 
+</span>
+
 
 ---
 ### Appearance
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Build : </span> Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Description : </span> 
-> 
->     Height: 6'0" (1.82m)
->     Hair: Dark brown, unkempt, hidden under a fedora
->     Eyes: Steel-gray, and always analyzing
->     
->     Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes
->     
->     Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. Smells of smoke and alcohol most of the time. Has various scars ranging from light to severe across his body. 
+> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Description : </span> <span class='content-creation-textarea'><span>    Height: 6'0" (1.82m) [[Future]]</span>
+<span>Hair: Dark brown, unkempt, hidden under a fedora</span>
+<span>Eyes: Steel-gray, and always analyzing</span>
+</span></span>
+<span>    Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes</span>
+</span></span>
+<span>    Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. Smells of smoke and alcohol most of the time. Has various scars ranging from light to severe across his body.</span>
+</span></span>
+</span></span>
+</span></span>
+</span></span>
+</span></span>
+<span>FIN DE LA DESCRIPTION</span> 
+</span>
+
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Accessories : </span> 
 >+ Fedora 
 >+ Cigar 
@@ -123,22 +41,23 @@ template:
 
 ---
 ### State
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Dead : </span> false 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Injured : </span> false 
+> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Dead : </span>  <input type="checkbox" checked>
+> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Injured : </span>  <input type="checkbox" >
 
 ---
 ### Personality
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>General Traits : </span> Cynical,-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way 
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Strengths : </span> 
 >+ Highly observant 
->+ Skilled at reading people" 
->+ Resourceful in tough situations" 
+>+ Skilled at reading people 
+>+ Resourceful in tough situations 
 
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Weaknesses : </span> 
 >+ Drinks too much 
 >+ Pushes people away 
 >+ Reckless when chasing the truth 
->+ Difficulty controlling his temper around people he despises 
+>+ Difficulty controlling his temper 
+>+ around people he despises 
 
 
 ---
@@ -146,7 +65,7 @@ template:
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Family : </span> Unknown 
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Friends And Allies : </span> 
 >+ A few trusted informants in the city's underworld 
->+ Former colleagues who still respect him" 
+>+ Former colleagues who still respect him 
 
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Enemies And Rivals : </span> 
 >+ Corrupt police officers 
@@ -162,11 +81,11 @@ template:
 >+ Silver lighter with an engraving (origin unknown) 
 >+ Dog-eared notebook filled with case notes 
 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Additional Notes : </span> 
-> 
->     Has a reputation in the city—people either respect or fear him
->     Knows how to blend into both high society and the criminal underworld
->     Haunted by a past case that still lingers in his mind
->     His office doubles as his living quarters during intense cases 
+> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Additional Notes : </span> <span class='content-creation-textarea'><span>Has a reputation in the city—people either respect or fear him</span>
+<span>        Knows how to blend into both high society and the criminal underworld</span>
+<span>        Haunted by a past case that still lingers in his mind</span>
+<span>        His office doubles as his living quarters during intense cases</span> 
+</span>
+
 
 ---

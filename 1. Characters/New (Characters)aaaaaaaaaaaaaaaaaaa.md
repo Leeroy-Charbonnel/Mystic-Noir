@@ -10,12 +10,14 @@ data: {"defaultFolder":"1. Characters","name":"New (Characters)aaaaaaaaaaaaaaaaa
 
 ### Basic Information
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Occupation : </span> zzzzzzzzzzzz 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Background : </span> > <span class='content-creation-textarea'>[[New (Characters)3]]
+> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Background : </span> <span class='content-creation-textarea'>[[New (Characters)3]]
 test
 [[New (Characters)3]]
-
+</br>
 test2
-[[New (Characters)3]]</span>
+[[New (Characters)3]] 
+</span>
+
 ---
 ### Appearance
 > <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Build : </span> [[New (Characters)3]] 

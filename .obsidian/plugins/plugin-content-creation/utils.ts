@@ -61,7 +61,7 @@ export function convertTemplateFormat(template: any) {
             return newObj;
         } else {
             return {
-                value: null,
+                value: value=="boolean"? false:null,
                 type: value
             };
         }

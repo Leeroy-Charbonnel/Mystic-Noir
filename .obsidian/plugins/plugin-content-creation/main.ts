@@ -181,7 +181,7 @@ export default class ContentCreatorPlugin extends Plugin {
             let newContent=(data.oldName==null);
             const fileOldPath=normalizePath(`${folderPath}/${data.oldName}.md`);
             const fileNewPath=normalizePath(`${folderPath}/${data.name}.md`);
-            
+
             data.oldName=data.name;
             const fileContent=this.generateFileContent(data);
 
@@ -282,9 +282,14 @@ export default class ContentCreatorPlugin extends Plugin {
                     if(!String(field.value).trim()) return ""
 
                     //content+=`\n> \n`;
-                    //content+=`${(field.value as string).split("\n").map((x: string) => ">     "+(x.trim()==""? "":`${x}`)).join("\n")} \n`;
-                    content+=`> <span class='content-creation-textarea'>${field.value}</span>`;
+                    console.log(field.value)
+                    //content += `<div></div>`;
+                    content+=`<span class='content-creation-textarea'>`;
+                    content+=`${(field.value as string).split("\n").map((x: string) => (x.trim()==""? "</br>":`<span>${x}</span>`)).join("\n")} \n`;
+                    content+=`</span>\n\n`;
 
+                } else if(field.type=="boolean") {
+                    content+=` <input type="checkbox" ${field.value? "checked":""}>\n`;
                 }
                 else if(String(field.value).trim()) {
                     content+=`${field.value} \n`;
