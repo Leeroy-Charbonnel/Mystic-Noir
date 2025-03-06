@@ -11,7 +11,7 @@
       "query": "tag:#Story",
       "color": {
         "a": 1,
-        "rgb": 11413801
+        "rgb": 12793655
       }
     },
     {
@@ -32,7 +32,14 @@
       "query": "tag:#Location",
       "color": {
         "a": 1,
-        "rgb": 5197647
+        "rgb": 4539717
+      }
+    },
+    {
+      "query": "tag:#Characters",
+      "color": {
+        "a": 1,
+        "rgb": 6092226
       }
     }
   ],
@@ -46,6 +53,6 @@
   "repelStrength": 3.90625,
   "linkStrength": 0.528645833333333,
   "linkDistance": 68,
-  "scale": 1.0000000000000517,
+  "scale": 1.0000000000000524,
   "close": true
 }

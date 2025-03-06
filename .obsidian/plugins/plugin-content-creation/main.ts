@@ -197,7 +197,7 @@ export default class ContentCreatorPlugin extends Plugin {
                 await this.app.fileManager.renameFile(file, fileNewPath);
             }
 
-            new Notice(`Saved ${data.contentType.slice(0, -1)}: ${data.name}`);
+            new Notice(`Saved : ${data.name}`);
 
             this.app.workspace.getLeaf(false).openFile(file);
             return file;
@@ -283,10 +283,6 @@ export default class ContentCreatorPlugin extends Plugin {
 
                 } else if (field.type.startsWith("textarea")) {
                     if (!String(field.value).trim()) return ""
-
-                    //content+=`\n> \n`;
-                    console.log(field.value)
-                    //content += `<div></div>`;
                     content += `<span class='content-creation-textarea'>`;
                     content += `${(field.value as string).split("\n").map((x: string) => (x.trim() == "" ? "</br>" : `<span>${x}</span>`)).join("\n")} \n`;
                     content += `</span>\n\n`;

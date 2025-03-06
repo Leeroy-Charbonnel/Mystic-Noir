@@ -79,10 +79,7 @@ class TagFilterView extends ItemView {
         this.openGraphButton = buttonsSection.createEl('button', { cls: 'mod-cta' });
         this.openGraphButton.setText('Open Graph View');
         this.openGraphButton.addClass('center');
-        this.openGraphButton.addEventListener('click', () => {
-            if (!this.graphLeaf?.view._loaded)
-                this.openGraphView();
-        });
+        this.openGraphButton.addEventListener('click', () => { this.getGraphView(); });
 
         const tagsSection = mainContainer.createDiv('tags-section');
         const selectButtons = tagsSection.createDiv('select-buttons');
@@ -108,13 +105,13 @@ class TagFilterView extends ItemView {
         this.refreshButton.addEventListener('click', () => { this.loadTags(); });
 
         await this.loadTags();
-        await this.openGraphView();
+        this.getGraphView()
         this.applyFilterToGraph();
         this.applyColorsToGraph();
     }
 
     private async applyColorsToGraph() {
-        if (!this.graphLeaf.view._loaded) { await this.openGraphView(); }
+        await this.getGraphView();
         const colorGroups: { query: string, color: { a: number, rgb: number } }[] = [];
         Object.entries(this.plugin.settings.tagColors).forEach(([tag, colorHex]) => {
             if (colorHex) {
@@ -125,17 +122,16 @@ class TagFilterView extends ItemView {
                 });
             }
         });
-        this.graphLeaf.view.dataEngine.colorGroupOptions.setColorQueries(colorGroups)
-        this.graphLeaf.view.dataEngine.requestUpdateSearch()
+        (this.graphLeaf as any).view.dataEngine.colorGroupOptions.setColorQueries(colorGroups);
+        (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
     }
 
-    private async openGraphView() {
-        console.log("openGraphView")
+    private async getGraphView() {
+        if (this.graphLeaf && (this.graphLeaf as any).view._loaded && this.graphLeaf.getViewState().type == "graph") return
         try {
-            const leaf = this.app.workspace.getLeaf('tab');
-            await leaf.setViewState({ type: 'graph', state: {} });
-            this.graphLeaf = leaf;
-            this.app.workspace.revealLeaf(leaf);
+            this.graphLeaf = this.app.workspace.getLeaf('tab');
+            await this.graphLeaf.setViewState({ type: 'graph', state: {} });
+            this.app.workspace.revealLeaf(this.graphLeaf);
         } catch (error) {
             console.error('Error opening graph view in new tab:', error);
         }
@@ -146,9 +142,9 @@ class TagFilterView extends ItemView {
         this.isApplyingFilter = true;
 
         try {
-            if (!this.graphLeaf?.view._loaded) { await this.openGraphView(); }
-            this.graphLeaf.view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
-            this.graphLeaf.view.dataEngine.requestUpdateSearch()
+            await this.getGraphView();
+            (this.graphLeaf as any).view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
+            (this.graphLeaf as any).view.dataEngine.requestUpdateSearch()
 
         } catch (error) {
             console.error('Error applying filter to graph:', error);
@@ -251,7 +247,7 @@ class TagFilterView extends ItemView {
             this.refreshButton.removeEventListener('click', this.loadTags.bind(this));
         }
         if (this.openGraphButton) {
-            this.openGraphButton.removeEventListener('click', this.openGraphView.bind(this));
+            this.openGraphButton.removeEventListener('click', this.getGraphView.bind(this));
         }
     }
 }
@@ -290,7 +286,7 @@ export default class GraphFilterPlugin extends Plugin {
         let leaf = workspace.getLeavesOfType(VIEW_TYPE_TAG_FILTER)[0];
 
         if (!leaf) {
-            leaf = workspace.getRightLeaf(false);
+            leaf = workspace.getRightLeaf(false) as WorkspaceLeaf;
             await leaf.setViewState({
                 type: VIEW_TYPE_TAG_FILTER,
                 active: true,
@@ -300,7 +296,7 @@ export default class GraphFilterPlugin extends Plugin {
     }
 
     async getAllTags() {
-        return Object.keys(this.app.metadataCache.getTags()).map(t => t.substring(1)).sort();
+        return Object.keys((this.app.metadataCache as any).getTags()).map(t => t.substring(1)).sort();
     }
 
     onunload() {
