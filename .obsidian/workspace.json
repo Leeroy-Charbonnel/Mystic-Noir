@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "0663ca89085e1f3c",
+        "id": "865cb63256b03254",
         "type": "tabs",
         "children": [
           {
-            "id": "78f3e74c6ff34e18",
+            "id": "27054e8696f2997f",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,8 +20,19 @@
               "icon": "lucide-file",
               "title": "Samuel Blackwood"
             }
+          },
+          {
+            "id": "1d47cacb4c5fdbce",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -147,7 +158,17 @@
             }
           },
           {
-            "id": "22a60148fccdba0f",
+            "id": "f868524779a01a4e",
+            "type": "leaf",
+            "state": {
+              "type": "graph-tags-view",
+              "state": {},
+              "icon": "tag",
+              "title": "Graph Tag Filter"
+            }
+          },
+          {
+            "id": "cdf5b143429aa02a",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -166,7 +187,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 362.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -181,15 +202,25 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "78f3e74c6ff34e18",
+  "active": "861ef1750cebe732",
   "lastOpenFiles": [
-    "1. Characters/Samuel Blackwood3.md",
-    "3. Locations/Samuel's Office.md",
-    "99. Notes/Future.md",
+    "1. Characters/The Shadow.md",
+    "1. Characters/Mr Dupont.md",
+    "1. Characters/Evelyn Dupont.md",
     "1. Characters/Samuel Blackwood.md",
+    "2. Items/Dupont's Heirloom.md",
+    "3. Locations/Dupont's Mansion.md",
+    "3. Locations/Samuel's Office.md",
+    "4. Stories/The Last Gamble.md",
+    "Home.md",
+    "4. Stories/The Missing Melody.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "New (Characters).md",
     "1. Characters/New (Characters).md",
-    "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
     "1. Characters/New (Characters)3.md",
+    "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
+    "5. Events/Mr Dupont's death.md",
+    "99. Notes/Future.md",
     "1. Characters/New [Characters].md",
     "1. Characters/New [Characters]2.md",
     "1. Characters/New [Characters]v8.md",
@@ -198,17 +229,7 @@
     "1. Characters/New [Characters]aaaaaaabb.md",
     "1. Characters/New [Characters]aaaaa.md",
     "1. Characters/New [Characters]a.md",
-    "1. Characters/The Shadow.md",
-    "1. Characters/Mr Dupont.md",
-    "3. Locations/Dupont's Mansion.md",
     "1. Characters/New Character2.md",
-    "1. Characters/New Characteraaaaaaaaa.md",
-    "1. Characters/fergtdhyjkuglhjaaaaaaaaa.md",
-    "1. Characters/TEST DE NEW PERSO V3.md",
-    "1. Characters/EIUHU9EJGIEGP.md",
-    "1. Characters/TEST DE NEW PERSO V1000.md",
-    "1. Characters/TEST DE NEW PERSO V2 LE RETOUR.md",
-    "1. Characters/TEST DE NEW PERSO V.md",
     "5. Events",
     "Untitled 1.canvas",
     "Untitled.canvas",

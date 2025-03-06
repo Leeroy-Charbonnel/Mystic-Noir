@@ -1,18 +1,18 @@
-import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, Notice, ItemView, TextAreaComponent, DropdownComponent, ButtonComponent } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, Notice, ItemView, TextAreaComponent, DropdownComponent, ButtonComponent, ColorComponent } from 'obsidian';
 
 const VIEW_TYPE_TAG_FILTER = 'graph-tags-view';
 
-interface GraphFilterGraphFilterPluginSettings {
+interface GraphFilterPluginSettings {
     defaultCharactersFolder: string;
     excludedTags: string[];
+    tagColors: Record<string, string>; // Store color for each tag
 }
 
-const DEFAULT_SETTINGS: GraphFilterGraphFilterPluginSettings = {
-    defaultCharactersFolder: '1. Characters',
-    excludedTags: ['Template']
+const DEFAULT_SETTINGS: GraphFilterPluginSettings = {
+    defaultCharactersFolder: '',
+    excludedTags: [],
+    tagColors: {}
 }
-
-
 
 export interface NodeProperties {
     children?: HTMLElement[];
@@ -21,7 +21,6 @@ export interface NodeProperties {
     class?: string;
     style?: Record<string, string>;
 }
-
 
 export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?: NodeProperties): HTMLElementTagNameMap[K] {
     const element = document.createElement(tag);
@@ -45,7 +44,6 @@ export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?:
 }
 
 
-// Create a custom view for our tag filter panel
 class TagFilterView extends ItemView {
     private tagsContainer: HTMLElement;
     private refreshButton: HTMLElement;
@@ -82,13 +80,13 @@ class TagFilterView extends ItemView {
         this.openGraphButton.setText('Open Graph View');
         this.openGraphButton.addClass('center');
         this.openGraphButton.addEventListener('click', () => {
-            this.openGraphView();
+            if (!this.graphLeaf?.view._loaded)
+                this.openGraphView();
         });
 
         const tagsSection = mainContainer.createDiv('tags-section');
         const selectButtons = tagsSection.createDiv('select-buttons');
         selectButtons.addClass('center');
-
 
         //Select All
         const selectAllBtn = selectButtons.createEl('button', { cls: 'tag-button' });
@@ -108,21 +106,41 @@ class TagFilterView extends ItemView {
         this.refreshButton = mainContainer.createEl('button', { cls: 'refresh-button' });
         this.refreshButton.setText('Refresh Tags');
         this.refreshButton.addEventListener('click', () => {
-            this.loadTags();
+            // this.loadTags();
+            console.log(this.graphLeaf);
         });
 
         await this.loadTags();
         await this.openGraphView();
         this.applyFilterToGraph();
+        this.applyColorsToGraph();
+    }
+
+    private async applyColorsToGraph() {
+        if (!this.graphLeaf.view._loaded) { await this.openGraphView(); }
+        const colorGroups: { query: string, color: { a: number, rgb: number } }[] = [];
+        Object.entries(this.plugin.settings.tagColors).forEach(([tag, colorHex]) => {
+            if (colorHex) {
+                const rgb = parseInt(colorHex.replace('#', ''), 16);
+                colorGroups.push({
+                    query: `tag:#${tag}`,
+                    color: { a: 1, rgb }
+                });
+            }
+        });
+        this.graphLeaf.view.dataEngine.colorGroupOptions.setColorQueries(colorGroups)
+        this.graphLeaf.view.dataEngine.requestUpdateSearch()
     }
 
     private async openGraphView() {
+        console.log("openGraphView")
         try {
-            await this.app.commands.executeCommandById('graph:open');
-            const graphLeaves = this.app.workspace.getLeavesOfType('graph');
-            if (graphLeaves.length > 0) { this.graphLeaf = graphLeaves[0]; }
+            const leaf = this.app.workspace.getLeaf('tab');
+            await leaf.setViewState({ type: 'graph', state: {} });
+            this.graphLeaf = leaf;
+            this.app.workspace.revealLeaf(leaf);
         } catch (error) {
-            console.error('Error opening graph view:', error);
+            console.error('Error opening graph view in new tab:', error);
         }
     }
 
@@ -131,65 +149,15 @@ class TagFilterView extends ItemView {
         this.isApplyingFilter = true;
 
         try {
-            // Make sure the graph view is open
-            if (!this.graphLeaf || !this.app.workspace.getLeavesOfType('graph').length) {
-                await this.openGraphView();
+            if (!this.graphLeaf?.view._loaded) { await this.openGraphView(); }
+            this.graphLeaf.view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
+            this.graphLeaf.view.dataEngine.requestUpdateSearch()
 
-                // Get the graph leaf
-                const graphLeaves = this.app.workspace.getLeavesOfType('graph');
-                if (graphLeaves.length > 0) {
-                    this.graphLeaf = graphLeaves[0];
-                } else {
-                    new Notice('Could not find graph view to apply filter');
-                    this.isApplyingFilter = false;
-                    return;
-                }
-            }
-
-            if (!this.graphLeaf || !this.graphLeaf.view) {
-                new Notice('Graph view not found');
-                this.isApplyingFilter = false;
-                return;
-            }
-
-            //Get search input
-            const graphView = this.graphLeaf.view;
-            let searchInput = null;
-            let attempts = 0;
-            const maxAttempts = 3;
-
-            while (!searchInput && attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                searchInput = this.findSearchInput(graphView.containerEl);
-                attempts++;
-                if (!searchInput && attempts < maxAttempts) {
-                    console.log(`Search input not found, attempt ${attempts} of ${maxAttempts}`);
-                }
-            }
-
-            if (searchInput) {
-                searchInput.value = this.currentQuery;
-                console.log(searchInput.value);
-                searchInput.dispatchEvent(new Event('input', { bubbles: false }));
-                //searchInput.dispatchEvent(new KeyboardEvent('keydown',{ key: 'Enter',bubbles: false }));
-                searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: false }));
-                searchInput.blur();
-                this.leaf.setEphemeralState({ focus: true });
-            } else {
-                console.error('Could not find search input in graph view after multiple attempts');
-            }
         } catch (error) {
             console.error('Error applying filter to graph:', error);
         } finally {
             this.isApplyingFilter = false;
         }
-    }
-
-    private findSearchInput(container: HTMLElement): HTMLInputElement | null {
-        //Get filter button and open filter collapsible
-        const filterButton = container.querySelector('.graph-control-section.mod-filter.is-collapsed .collapse-icon.is-collapsed');
-        if (filterButton) filterButton.click();
-        return container.querySelector('.graph-controls input[type="search"]');
     }
 
     private async loadTags() {
@@ -209,27 +177,40 @@ class TagFilterView extends ItemView {
                 return;
             }
 
-            // Add a checkbox for each tag
             filteredTags.forEach(tag => {
                 const tagContainer = this.tagsContainer.createDiv('tag-checkbox-container');
 
+                //Checboxes
                 const checkbox = tagContainer.createEl('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = `tag-checkbox-${tag}`;
                 checkbox.dataset.tag = tag;
-                checkbox.checked = true; // All selected by default
+                checkbox.checked = true;
+                checkbox.addEventListener('change', () => { this.updateQueryFromTags(); });
 
-                checkbox.addEventListener('change', () => {
-                    this.updateQueryFromTags();
-                });
-
+                // Labels
                 const label = tagContainer.createEl('label');
                 label.htmlFor = checkbox.id;
                 label.setText(tag);
+
+                //Color picker
+                const colorPickerContainer = tagContainer.createDiv('tag-color-picker-container');
+                const storedColor = this.plugin.settings.tagColors[tag] || '#ffffff';
+
+                const colorPicker = colorPickerContainer.createEl('input');
+                colorPicker.type = 'color';
+                colorPicker.value = storedColor;
+                colorPicker.classList.add('tag-color-picker');
+                colorPicker.dataset.tag = tag;
+
+                colorPicker.addEventListener('input', async (e) => {
+                    const colorValue = (e.target as HTMLInputElement).value;
+                    this.plugin.settings.tagColors[tag] = colorValue;
+                    await this.plugin.saveSettings();
+                    this.applyColorsToGraph();
+                });
             });
-
             this.updateQueryFromTags();
-
         } catch (error) {
             console.error('Error loading tags:', error);
             this.tagsContainer.setText('Error loading tags. Please try again.');
@@ -261,7 +242,6 @@ class TagFilterView extends ItemView {
             }
 
             this.currentQuery = query;
-            console.log(query);
             this.applyFilterToGraph();
 
         } catch (error) {
@@ -280,7 +260,7 @@ class TagFilterView extends ItemView {
 }
 
 export default class GraphFilterPlugin extends Plugin {
-    settings: GraphFilterGraphFilterPluginSettings;
+    settings: GraphFilterPluginSettings;
 
     async onload() {
         await this.loadSettings();
@@ -291,7 +271,6 @@ export default class GraphFilterPlugin extends Plugin {
             VIEW_TYPE_TAG_FILTER,
             (leaf) => new TagFilterView(leaf, this)
         );
-
 
         const ribbonIconEl = this.addRibbonIcon('tag', 'Graph Tag Filter', (evt: MouseEvent) => {
             this.activateView();
@@ -306,9 +285,8 @@ export default class GraphFilterPlugin extends Plugin {
             }
         });
 
-        this.addSettingTab(new CreatorSettingTab(this.app, this));
+        this.addSettingTab(new GraphFilterSettingTab(this.app, this));
     }
-
 
     async activateView() {
         const { workspace } = this.app;
@@ -325,7 +303,7 @@ export default class GraphFilterPlugin extends Plugin {
     }
 
     async getAllTags() {
-        return Object.keys(app.metadataCache.getTags()).map(t => t.substring(1)).sort();
+        return Object.keys(this.app.metadataCache.getTags()).map(t => t.substring(1)).sort();
     }
 
     onunload() {
@@ -341,7 +319,7 @@ export default class GraphFilterPlugin extends Plugin {
     }
 }
 
-class CreatorSettingTab extends PluginSettingTab {
+class GraphFilterSettingTab extends PluginSettingTab {
     plugin: GraphFilterPlugin;
     private excludedTagsContainer: HTMLElement;
     private tagDropdown: DropdownComponent;
@@ -361,7 +339,7 @@ class CreatorSettingTab extends PluginSettingTab {
 
         const excludedTagsSetting = new Setting(containerEl)
             .setName('Excluded Tags')
-            .setDesc('Those tag will be never be displayed in graph');
+            .setDesc('These tags will never be displayed in graph');
 
         excludedTagsSetting.settingEl.style.width = '100%';
         excludedTagsSetting.settingEl.style.display = 'grid';
@@ -381,8 +359,6 @@ class CreatorSettingTab extends PluginSettingTab {
         tagSelectionContainer.style.gridTemplateColumns = '1fr auto';
         tagSelectionContainer.style.gridTemplateRows = '100%';
         tagSelectionContainer.style.columnGap = '4px';
-
-
 
         this.tagDropdown = new DropdownComponent(tagSelectionContainer);
         this.tagDropdown.addOption('', 'Select a tag...');
@@ -407,6 +383,7 @@ class CreatorSettingTab extends PluginSettingTab {
         this.updateTagsDropdown();
         this.updateExcludedTagsList();
     }
+
     private async updateTagsDropdown() {
         this.availableTags = await this.plugin.getAllTags();
         this.tagDropdown.selectEl.innerHTML = '';
@@ -452,7 +429,6 @@ class CreatorSettingTab extends PluginSettingTab {
             deleteButton.style.boxShadow = "none"
             deleteButton.style.background = "none"
             deleteButton.setText('✕');
-
 
             deleteButton.addEventListener('click', async () => {
                 // Remove the tag from the settings

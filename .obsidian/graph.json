@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "( #Character OR #Event OR #Item OR #Location OR #Story ) ( -#Template )",
+  "search": "( #Characters OR #Event OR #Item OR #Location OR #Story ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -8,42 +8,35 @@
   "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "tag:#Character",
+      "query": "tag:#Story",
       "color": {
         "a": 1,
-        "rgb": 14408667
+        "rgb": 11413801
       }
     },
     {
-      "query": "tag:#Story  ",
+      "query": "tag:#Item",
       "color": {
         "a": 1,
-        "rgb": 14701138
-      }
-    },
-    {
-      "query": "tag:#Item  ",
-      "color": {
-        "a": 1,
-        "rgb": 14731602
-      }
-    },
-    {
-      "query": "tag:#Location",
-      "color": {
-        "a": 1,
-        "rgb": 6381921
+        "rgb": 16756224
       }
     },
     {
       "query": "tag:#Event",
       "color": {
         "a": 1,
-        "rgb": 13652704
+        "rgb": 10115245
+      }
+    },
+    {
+      "query": "tag:#Location",
+      "color": {
+        "a": 1,
+        "rgb": 5197647
       }
     }
   ],
-  "collapse-display": true,
+  "collapse-display": false,
   "showArrow": false,
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1,
@@ -53,6 +46,6 @@
   "repelStrength": 3.90625,
   "linkStrength": 0.528645833333333,
   "linkDistance": 68,
-  "scale": 1.4019828977761706,
+  "scale": 1.0000000000000517,
   "close": true
 }
