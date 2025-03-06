@@ -105,10 +105,7 @@ class TagFilterView extends ItemView {
         // Refresh button
         this.refreshButton = mainContainer.createEl('button', { cls: 'refresh-button' });
         this.refreshButton.setText('Refresh Tags');
-        this.refreshButton.addEventListener('click', () => {
-            // this.loadTags();
-            console.log(this.graphLeaf);
-        });
+        this.refreshButton.addEventListener('click', () => { this.loadTags(); });
 
         await this.loadTags();
         await this.openGraphView();
