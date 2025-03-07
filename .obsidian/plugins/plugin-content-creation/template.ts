@@ -10,7 +10,6 @@ export const templates={
             Background: "textarea"
         },
         Appearance: {
-            Build: "text",
             Description: "textarea",
             Accessories: "array:text",
         },
@@ -19,13 +18,13 @@ export const templates={
             Injured: "boolean",
         },
         Personality: {
-            GeneralTraits: "",
+            GeneralTraits: "textarea",
             Strengths: "array:text",
             Weaknesses: "array:text",
         },
         Relationships: {
             Family: "array:text",
-            FriendsAndAllies: "array:textarea",
+            FriendsAndAllies: "array:text",
             EnemiesAndRivals: "array:text",
             RomanticInterests: "array:text",
         },
@@ -39,7 +38,7 @@ export const templates={
         BasicInformation: {
             Name: "text",
             Description: "textarea",
-            Owner: "array:text",
+            Owner: "array:textarea",
         },
         AdditionalNotes: "textarea"
     },
@@ -47,9 +46,9 @@ export const templates={
     events: {
         BasicInformation: {
             Name: "text",
-            Description: "textarea",
             Date: "text",
-            Location: "text"
+            Location: "text",
+            Description: "textarea"
         },
         AdditionalNotes: "textarea"
     },

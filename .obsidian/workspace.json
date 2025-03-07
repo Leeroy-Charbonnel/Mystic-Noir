@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "edb587840ec131a1",
+        "id": "06eba310ca498657",
         "type": "tabs",
         "children": [
           {
-            "id": "f7434bf4fbd328a6",
+            "id": "10925b55c1488eb4",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -16,8 +16,29 @@
               "icon": "lucide-git-fork",
               "title": "Graph view"
             }
+          },
+          {
+            "id": "17792a3d12f9bb39",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          },
+          {
+            "id": "3e8b9815be74d5c5",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -49,7 +70,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#Evenement",
+                "query": "",
                 "matchingCase": true,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -93,12 +114,85 @@
               "icon": "git-pull-request",
               "title": "Source Control"
             }
+          },
+          {
+            "id": "506cd1b572e7f3de",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "1. Characters/Evelyn 1.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Evelyn 1"
+            }
+          },
+          {
+            "id": "3b601744f2df145c",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "1. Characters/Evelyn 1.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Evelyn 1"
+            }
+          },
+          {
+            "id": "d010c046163e001d",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "9b52943ab8723785",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "4. Stories/Shadows of the Crescent City.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Shadows of the Crescent City"
+            }
+          },
+          {
+            "id": "5217b030b56fdc2b",
+            "type": "leaf",
+            "state": {
+              "type": "graph-tags-view",
+              "state": {},
+              "icon": "tag",
+              "title": "Graph Tag Filter"
+            }
           }
         ]
       }
     ],
     "direction": "horizontal",
-    "width": 362.5
+    "width": 396.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -116,34 +210,33 @@
   "active": "861ef1750cebe732",
   "lastOpenFiles": [
     "1. Characters/Evelyn Dupont.md",
+    "Untitled.canvas",
     "1. Characters/Samuel Blackwood.md",
-    "1. Characters/The Shadow.md",
-    "3. Locations/Dupont's Mansion.md",
-    "5. Events/Mr Dupont's death.md",
-    "1. Characters/Mr Dupont.md",
-    "2. Items/Dupont's Heirloom.md",
-    "3. Locations/Samuel's Office.md",
-    "4. Stories/The Last Gamble.md",
-    "Home.md",
-    "4. Stories/The Missing Melody.md",
     "4. Stories/Shadows of the Crescent City.md",
-    "New (Characters).md",
+    "4. Stories/The Missing Melody.md",
+    "Home.md",
+    "4. Stories/The Last Gamble.md",
+    "4. Stories/Silenced Testimony.md",
+    "4. Stories/New (Stories).md",
+    "3. Locations/Stardust Lounge.md",
+    "3. Locations/Samuel's Office.md",
+    "3. Locations/Dupont's Mansion.md",
+    "2. Items/Dupont's Heirloom.md",
+    "1. Characters/The Shadow.md",
+    "1. Characters/Mr Dupont.md",
     "1. Characters/New (Characters).md",
+    "5. Events/Mr Dupont's death.md",
+    "99. Notes/Future.md",
+    "5. Events/New (Events).md",
+    "3. Locations/New (Locations).md",
+    "2. Items/New (Items)r.md",
+    "1. Characters/Template.md",
+    "1. Characters/Evelyn 1.md",
+    "New (Characters).md",
     "1. Characters/New (Characters)3.md",
     "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
-    "99. Notes/Future.md",
-    "1. Characters/New [Characters].md",
-    "1. Characters/New [Characters]2.md",
-    "1. Characters/New [Characters]v8.md",
-    "1. Characters/New [Characters]v5.md",
-    "1. Characters/New [Characters]v4.md",
-    "1. Characters/New [Characters]aaaaaaabb.md",
-    "1. Characters/New [Characters]aaaaa.md",
-    "1. Characters/New [Characters]a.md",
-    "1. Characters/New Character2.md",
     "5. Events",
     "Untitled 1.canvas",
-    "Untitled.canvas",
     "99. Notes",
     "3. Locations",
     "4. Stories",

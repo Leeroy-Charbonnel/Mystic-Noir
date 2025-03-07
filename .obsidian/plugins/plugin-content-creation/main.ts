@@ -230,7 +230,6 @@ export default class ContentCreatorPlugin extends Plugin {
 
         let content = ""
         content += `---\n\n`;
-        content += `contentType: ${data.contentType}\n\n`;
         content += `data: ${JSON.stringify(data)}\n\n`;
         content += `---\n\n`;
 

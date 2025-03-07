@@ -360,10 +360,10 @@ class MultiValueField {
                 class: 'input',
                 attributes: {
                     'type': 'text',
-                    'value': value,
                     'placeholder': 'Enter value...'
                 }
             });
+            input.value = value;
             inputRow.appendChild(input);
 
             input.addEventListener('input', (e) => {

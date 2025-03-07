@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "( #Characters OR #Event OR #Item OR #Location OR #Story ) ( -#Template )",
+  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories OR #Story ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -39,7 +39,35 @@
       "query": "tag:#Characters",
       "color": {
         "a": 1,
-        "rgb": 6092226
+        "rgb": 6422474
+      }
+    },
+    {
+      "query": "tag:#Items",
+      "color": {
+        "a": 1,
+        "rgb": 16766208
+      }
+    },
+    {
+      "query": "tag:#Locations",
+      "color": {
+        "a": 1,
+        "rgb": 6184542
+      }
+    },
+    {
+      "query": "tag:#Events",
+      "color": {
+        "a": 1,
+        "rgb": 12058859
+      }
+    },
+    {
+      "query": "tag:#Stories",
+      "color": {
+        "a": 1,
+        "rgb": 12793655
       }
     }
   ],
@@ -49,10 +77,10 @@
   "nodeSizeMultiplier": 1,
   "lineSizeMultiplier": 1,
   "collapse-forces": false,
-  "centerStrength": 0,
-  "repelStrength": 3.90625,
-  "linkStrength": 0.528645833333333,
-  "linkDistance": 68,
-  "scale": 1.0000000000000524,
+  "centerStrength": 0.518713248970312,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 1.0000000000000573,
   "close": true
 }

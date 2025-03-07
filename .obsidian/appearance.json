@@ -3,5 +3,6 @@
     "hideProperties",
     "pageStyle"
   ],
-  "accentColor": "#5cf5c2"
+  "accentColor": "#5cf5c2",
+  "cssTheme": ""
 }

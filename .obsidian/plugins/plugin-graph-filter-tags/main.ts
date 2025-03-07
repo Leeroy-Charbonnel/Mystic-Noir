@@ -105,9 +105,9 @@ class TagFilterView extends ItemView {
         this.refreshButton.addEventListener('click', () => { this.loadTags(); });
 
         await this.loadTags();
-        this.getGraphView()
-        this.applyFilterToGraph();
-        this.applyColorsToGraph();
+        // this.getGraphView()
+        // this.applyFilterToGraph();
+        // this.applyColorsToGraph();
     }
 
     private async applyColorsToGraph() {
@@ -122,11 +122,21 @@ class TagFilterView extends ItemView {
                 });
             }
         });
+
+        //For main graph
         (this.graphLeaf as any).view.dataEngine.colorGroupOptions.setColorQueries(colorGroups);
         (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
+
+        //for local graph
+        // (this.graphLeaf as any).view.engine.colorGroupOptions.setColorQueries(colorGroups);
+        // (this.graphLeaf as any).view.engine.requestUpdateSearch();
     }
 
     private async getGraphView() {
+        //For local graph
+        // this.graphLeaf = this.app.workspace.getLeavesOfType('localgraph')[0]
+        // return
+
         if (this.graphLeaf && (this.graphLeaf as any).view._loaded && this.graphLeaf.getViewState().type == "graph") return
         try {
             this.graphLeaf = this.app.workspace.getLeaf('tab');
@@ -143,8 +153,13 @@ class TagFilterView extends ItemView {
 
         try {
             await this.getGraphView();
+            //For main graph
             (this.graphLeaf as any).view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
             (this.graphLeaf as any).view.dataEngine.requestUpdateSearch()
+
+            //for local graph
+            // (this.graphLeaf as any).view.engine.filterOptions.search.inputEl.value = this.currentQuery;
+            // (this.graphLeaf as any).view.engine.requestUpdateSearch()
 
         } catch (error) {
             console.error('Error applying filter to graph:', error);
@@ -279,8 +294,54 @@ export default class GraphFilterPlugin extends Plugin {
         });
 
         this.addSettingTab(new GraphFilterSettingTab(this.app, this));
+
+
+        this.registerEvent(
+            this.app.workspace.on('layout-change', () => {
+                const graphLeaves = this.app.workspace.getLeavesOfType('graph');
+                if (graphLeaves.length > 0) {
+                    this.addButtonToGraphControls();
+                }
+            })
+        );
+
     }
 
+    // In your GraphFilterPlugin class or TagFilterView class:
+
+    private addButtonToGraphControls() {
+        // Wait a moment for the graph view to be fully loaded
+        setTimeout(() => {
+            // Find the graph controls container
+            const graphView = this.app.workspace.getLeavesOfType('graph')[0]?.view;
+            if (!graphView) return;
+            
+            const controlsContainer = graphView.containerEl.querySelector('.graph-controls');
+            if (!controlsContainer) return;
+            
+            // Create your custom button
+            const customButton = document.createElement('button');
+            customButton.className = 'clickable-icon graph-control-button';
+            customButton.setAttribute('aria-label', 'Filter by Tags');
+            
+            // Add a tag icon (using Lucide icon style that Obsidian uses)
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'svg-icon';
+            iconSpan.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>`;
+            customButton.appendChild(iconSpan);
+            
+            // Add click listener
+            customButton.addEventListener('click', () => {
+                // Your button action here, e.g., opening your filter modal
+                this.activateView();
+            });
+            
+            // Add the button to the controls
+            controlsContainer.appendChild(customButton);
+        }, 1000); // Delay to ensure graph is loaded
+    }
+
+    
     async activateView() {
         const { workspace } = this.app;
         let leaf = workspace.getLeavesOfType(VIEW_TYPE_TAG_FILTER)[0];
