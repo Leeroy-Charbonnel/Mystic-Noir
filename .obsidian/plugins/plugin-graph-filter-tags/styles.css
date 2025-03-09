@@ -1,87 +1,36 @@
-.tag-filter-panel {
-  padding: 12px;
-  overflow-y: auto;
-  z-index: 1000;
-}
-
-
-.tree-item-children {
+.mod-tag-filter>.tree-item-children {
   max-height: 1000px;
-  overflow: hidden;
+
   transition: max-height 300ms ease-in-out;
 }
 
-.tree-item.is-collapsed .tree-item-children {
+.mod-tag-filter.tree-item.is-collapsed .tree-item-children {
   max-height: 0;
   transition: max-height 200ms ease-in-out;
 }
 
-.tags-section {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 15px;
-  flex-grow: 1;
-  overflow-y: auto;
-}
 
 .tag-filter-buttons {
   margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 5px;
 }
 
-.tag-button {
-  background-color: var(--interactive-normal);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  color: var(--text-normal);
-  margin: 0 5px;
-}
-
-.tag-button:first-child {
-  margin-left: 0;
-}
-
-.tag-button:last-child {
-  margin-right: 0;
-}
-
-.tag-button:hover {
-  background-color: var(--interactive-hover);
-}
-
-.setting-item-control {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
 
 .tags-container {
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 15px;
   max-height: 500px;
   overflow-y: auto;
-  background-color: var(--background-primary);
 }
 
 .tag-checkbox-container {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   padding: 4px;
-  border-radius: 4px;
 }
 
-.tag-checkbox-container:hover {
-  background-color: var(--background-modifier-hover);
-}
 
-.tag-checkbox-container input[type="checkbox"] {
-  margin-right: 8px;
-}
 
 .tag-checkbox-container label {
   cursor: pointer;
@@ -91,37 +40,16 @@
   margin-right: 8px;
 }
 
-.tag-color-picker-container {
-  display: flex;
-  align-items: center;
-}
 
 .tag-color-picker {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 3px;
-  cursor: pointer;
+  transform: scale(0.75);
 }
 
 .refresh-button {
   width: 100%;
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
   border: none;
-  border-radius: 4px;
-  padding: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  width: 100%;
 }
 
-.refresh-button:hover {
-  background-color: var(--interactive-accent-hover);
-}
 
 .excluded-tag-item {
   padding: 6px;

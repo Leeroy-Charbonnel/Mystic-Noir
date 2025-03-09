@@ -2,7 +2,7 @@ import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, Notice, ButtonCo
 
 interface GraphFilterPluginSettings {
     excludedTags: string[];
-    tagColors: Record<string, string>; // Store color for each tag
+    tagColors: Record<string, string>; //Store color for each tag
 }
 
 const DEFAULT_SETTINGS: GraphFilterPluginSettings = {
@@ -20,26 +20,21 @@ export interface NodeProperties {
 
 export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?: NodeProperties): HTMLElementTagNameMap[K] {
     const element = document.createElement(tag);
-
     if (properties?.children)
         for (const c of properties.children) element.appendChild(c);
-
     if (properties?.class)
         element.setAttribute('class', properties.class);
-
     if (properties?.attributes)
         for (const [k, v] of Object.entries(properties.attributes)) element.setAttribute(k, v);
-
     if (properties?.text)
         element.textContent = properties.text;
-
     if (properties?.style)
         for (const [k, v] of Object.entries(properties.style)) element.attributeStyleMap.set(k, v);
 
     return element;
 }
 
-class TagFilterPanel {
+class TagFilterCollapsible {
     private containerEl: HTMLElement;
     private tagsContainer: HTMLElement;
     private collapseEl: HTMLElement;
@@ -47,15 +42,21 @@ class TagFilterPanel {
     private plugin: GraphFilterPlugin;
     private currentQuery: string = '';
     private graphLeaf: WorkspaceLeaf;
+    private graphType: string;
     private isApplyingFilter: boolean = false;
-    private isCollapsed: boolean = false;
+    private isCollapsed: boolean = true;
 
-    constructor(app: App, plugin: GraphFilterPlugin, graphLeaf: WorkspaceLeaf) {
+    constructor(app: App, plugin: GraphFilterPlugin, graphLeaf: WorkspaceLeaf, graphType: string) {
         this.plugin = plugin;
         this.graphLeaf = graphLeaf;
+        this.graphType = graphType;
 
-        this.containerEl = node("div", { class: "tree-item graph-control-section mod-tag-filter", });
-        (this.graphLeaf.view as any).dataEngine.controlsEl.appendChild(this.containerEl);
+        this.containerEl = node("div", { class: "tree-item graph-control-section mod-tag-filter is-collapsed" });
+        if (this.graphType == "local")
+            (this.graphLeaf.view as any).engine.controlsEl.appendChild(this.containerEl);
+        else
+            (this.graphLeaf.view as any).dataEngine.controlsEl.appendChild(this.containerEl);
+
         this.buildUI();
     }
 
@@ -65,12 +66,8 @@ class TagFilterPanel {
         const headerEl = node("div", { class: "tree-item-self mod-collapsible" });
         this.containerEl.appendChild(headerEl);
 
-        // Add the collapse icon
-        this.collapseEl = node("div", { class: "tree-item-icon collapse-icon" });
-
-        // Add the triangle SVG
+        this.collapseEl = node("div", { class: "tree-item-icon collapse-icon is-collapsed" });
         const triangleSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        triangleSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         triangleSvg.setAttribute("width", "24");
         triangleSvg.setAttribute("height", "24");
         triangleSvg.setAttribute("viewBox", "0 0 24 24");
@@ -80,7 +77,6 @@ class TagFilterPanel {
         triangleSvg.setAttribute("stroke-linecap", "round");
         triangleSvg.setAttribute("stroke-linejoin", "round");
         triangleSvg.setAttribute("class", "svg-icon right-triangle");
-
         const trianglePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         trianglePath.setAttribute("d", "M3 8L12 17L21 8");
 
@@ -88,107 +84,47 @@ class TagFilterPanel {
         this.collapseEl.appendChild(triangleSvg);
         headerEl.appendChild(this.collapseEl);
 
-        // Add the title in header
-        const titleContainerEl = node("div", {
-            class: "tree-item-inner"
-        });
+        const titleContainerEl = node("div", { class: "tree-item-inner" });
+
+        const headerTitle = node("header", { class: "graph-control-section-header", text: "Filter by Tags" });
+        headerEl.addEventListener('click', () => { this.toggleCollapse(); });
+        this.childrenEl = node("div", { class: "tree-item-children" });
+
         headerEl.appendChild(titleContainerEl);
-
-        const headerTitle = node("header", {
-            class: "graph-control-section-header",
-            text: "Filter by Tags"
-        });
         titleContainerEl.appendChild(headerTitle);
-
-        // Add click listener to toggle collapse
-        headerEl.addEventListener('click', () => {
-            this.toggleCollapse();
-        });
-
-        // Create the children container
-        this.childrenEl = node("div", {
-            class: "tree-item-children"
-        });
         this.containerEl.appendChild(this.childrenEl);
+        this.childrenEl.style.display = "none"
 
-        // Build the content inside the children container
         this.buildPanelContent();
-
-        // Initialize as expanded
-        this.expandPanel();
+        this.applyColorsToGraph();
     }
 
     private buildPanelContent(): void {
         this.childrenEl.empty();
 
-        // Select All/None buttons in a container
-        const buttonContainer = node("div", {
-            class: "tag-filter-buttons"
-        });
+        const buttonContainer = node("div", { class: "tag-filter-buttons" });
+        const selectAllBtn = node("button", { class: 'tag-button', text: 'Select All' });
+        const selectNoneBtn = node("button", { class: 'tag-button', text: 'Select None' });
+
         this.childrenEl.appendChild(buttonContainer);
+        buttonContainer.appendChild(selectAllBtn);
+        buttonContainer.appendChild(selectNoneBtn);
 
-        // Use setting-item style for consistency
-        const buttonsSetting = node("div", {
-            class: "setting-item"
-        });
-        buttonContainer.appendChild(buttonsSetting);
-
-        const buttonsControl = node("div", {
-            class: "setting-item-control"
-        });
-        buttonsSetting.appendChild(buttonsControl);
-
-        // Select All button
-        const selectAllBtn = node("button", {
-            class: 'tag-button',
-            text: 'Select All'
-        });
-        buttonsControl.appendChild(selectAllBtn);
-        selectAllBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.setAllTagsSelection(true);
-        });
-
-        // Select None button
-        const selectNoneBtn = node("button", {
-            class: 'tag-button',
-            text: 'Select None'
-        });
-        buttonsControl.appendChild(selectNoneBtn);
-        selectNoneBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.setAllTagsSelection(false);
-        });
-
-        // Tags container
-        this.tagsContainer = node("div", {
-            class: 'tags-container'
-        });
+        this.tagsContainer = node("div", { class: 'tags-container' });
         this.childrenEl.appendChild(this.tagsContainer);
         this.tagsContainer.setText('Loading tags...');
-
-        // Add Refresh button at the bottom
-        const refreshContainer = node("div", {
-            class: "setting-item"
-        });
-        this.childrenEl.appendChild(refreshContainer);
-
-        const refreshControl = node("div", {
-            class: "setting-item-control"
-        });
-        refreshContainer.appendChild(refreshControl);
 
         const refreshButton = node("button", {
             class: 'refresh-button',
             text: 'Refresh Tags'
         });
-        refreshControl.appendChild(refreshButton);
-        refreshButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.loadTags();
-        });
+        this.childrenEl.appendChild(refreshButton);
 
-        // Initial load of tags
+
+        selectAllBtn.addEventListener('click', (e) => { this.setAllTagsSelection(true); });
+        selectNoneBtn.addEventListener('click', (e) => { this.setAllTagsSelection(false); });
+        refreshButton.addEventListener('click', (e) => { this.loadTags(); });
+
         this.loadTags();
     }
 
@@ -205,20 +141,13 @@ class TagFilterPanel {
         this.containerEl.addClass("is-collapsed");
         this.collapseEl.addClass("is-collapsed");
 
-        // The display:none will be applied after the transition completes
-        setTimeout(() => {
-            if (this.isCollapsed) {
-                this.childrenEl.style.display = "none";
-            }
-        }, 200); // Match this with the CSS transition duration
+        //display:none after the transition completes
+        setTimeout(() => { if (this.isCollapsed) { this.childrenEl.style.display = "none"; } }, 200);
     }
 
     public expandPanel(): void {
         this.isCollapsed = false;
-        // Set display before the transition starts
         this.childrenEl.style.display = "";
-
-        // Use setTimeout with 0ms to ensure the display change takes effect first
         setTimeout(() => {
             this.containerEl.removeClass("is-collapsed");
             this.collapseEl.removeClass("is-collapsed");
@@ -236,10 +165,15 @@ class TagFilterPanel {
                 });
             }
         });
+        if (this.graphType == "local") {
+            (this.graphLeaf as any).view.engine.colorGroupOptions.setColorQueries(colorGroups);
+            (this.graphLeaf as any).view.engine.requestUpdateSearch();
+        }
+        else {
+            (this.graphLeaf as any).view.dataEngine.colorGroupOptions.setColorQueries(colorGroups);
+            (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
+        }
 
-        // For main graph
-        (this.graphLeaf as any).view.dataEngine.colorGroupOptions.setColorQueries(colorGroups);
-        (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
     }
 
     private async applyFilterToGraph() {
@@ -247,9 +181,14 @@ class TagFilterPanel {
         this.isApplyingFilter = true;
 
         try {
-            // For main graph
-            (this.graphLeaf as any).view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
-            (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
+            if (this.graphType == "local") {
+                (this.graphLeaf as any).view.engine.filterOptions.search.inputEl.value = this.currentQuery;
+                (this.graphLeaf as any).view.engine.requestUpdateSearch();
+            } else {
+                (this.graphLeaf as any).view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
+                (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
+            }
+
         } catch (error) {
             console.error('Error applying filter to graph:', error);
         } finally {
@@ -263,7 +202,6 @@ class TagFilterPanel {
             this.tagsContainer.setText('Loading tags...');
 
             const allTags = await this.plugin.getAllTags();
-
             const excludedTagsSet = new Set(this.plugin.settings.excludedTags.map(tag => tag.toLowerCase()));
             const filteredTags = allTags.filter(tag => !excludedTagsSet.has(tag.toLowerCase()));
 
@@ -277,7 +215,7 @@ class TagFilterPanel {
             filteredTags.forEach(tag => {
                 const tagContainer = this.tagsContainer.createDiv('tag-checkbox-container');
 
-                // Checkboxes
+                //Checkboxes
                 const checkbox = tagContainer.createEl('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = `tag-checkbox-${tag}`;
@@ -288,12 +226,12 @@ class TagFilterPanel {
                     this.updateQueryFromTags();
                 });
 
-                // Labels
+                //Labels
                 const label = tagContainer.createEl('label');
                 label.htmlFor = checkbox.id;
                 label.setText(tag);
 
-                // Color picker
+                //Color picker
                 const colorPickerContainer = tagContainer.createDiv('tag-color-picker-container');
                 const storedColor = this.plugin.settings.tagColors[tag] || '#ffffff';
 
@@ -307,6 +245,7 @@ class TagFilterPanel {
                     e.stopPropagation();
                     const colorValue = (e.target as HTMLInputElement).value;
                     this.plugin.settings.tagColors[tag] = colorValue;
+                    this.applyColorsToGraph();
                     await this.plugin.saveSettings();
                 });
             });
@@ -330,11 +269,11 @@ class TagFilterPanel {
             const exclusions = `(${this.plugin.settings.excludedTags.map(tag => ` -#${tag}`).join('')} )`;
             let query = '';
 
-            // If nothing checked => filter out excluded
+            //If nothing checked => filter out excluded
             if (checkedTags.length === 0) {
                 if (this.plugin.settings.excludedTags.length > 0)
                     query = exclusions;
-                // If something checked => filter wanted tags + filter out excluded
+                //If something checked => filter wanted tags + filter out excluded
             } else {
                 query = `( ${checkedTags.map(tag => `#${tag}`).join(' OR ')} )`;
                 if (this.plugin.settings.excludedTags.length > 0)
@@ -349,7 +288,6 @@ class TagFilterPanel {
     }
 
     public destroy() {
-        // Remove the element from DOM
         if (this.containerEl && this.containerEl.parentNode) {
             this.containerEl.remove();
         }
@@ -358,40 +296,33 @@ class TagFilterPanel {
 
 export default class GraphFilterPlugin extends Plugin {
     settings: GraphFilterPluginSettings;
-    private graphButtons: Map<string, HTMLElement> = new Map();
-    private tagFilterPanels: Map<string, TagFilterPanel> = new Map();
+    private tagFilterCollapsibles: Map<string, TagFilterCollapsible> = new Map();
 
     async onload() {
         await this.loadSettings();
-
         console.log("loading " + this.manifest.name + " plugin: v" + this.manifest.version);
-
         this.addSettingTab(new GraphFilterSettingTab(this.app, this));
-
         this.registerEvent(
             this.app.workspace.on('layout-change', () => {
                 this.app.workspace.getLeavesOfType('graph').forEach(leaf => {
-                    this.addFilterToGraph(leaf);
+                    if (!(leaf.view as any).dataEngine) return
+                    this.addFilterToGraph(leaf, "graph");
                 });
-                // You can add support for local graphs too
                 this.app.workspace.getLeavesOfType('localgraph').forEach(leaf => {
-                    this.addFilterToLocalGraph(leaf);
+                    if (!(leaf.view as any).engine) return
+                    this.addFilterToGraph(leaf, "local");
                 });
             })
         );
     }
 
-    private addFilterToLocalGraph(leaf: any) {
-        // Implement if needed for local graphs
-    }
 
-    private addFilterToGraph(leaf: any) {
-        if (this.tagFilterPanels.has(leaf.id)) return;
+    private addFilterToGraph(leaf: any, type: string) {
+        if (this.tagFilterCollapsibles.has(leaf.id)) return;
 
         try {
-            // Create panel if it doesn't exist
-            const panel = new TagFilterPanel(this.app, this, leaf);
-            this.tagFilterPanels.set(leaf.id, panel);
+            const panel = new TagFilterCollapsible(this.app, this, leaf, type);
+            this.tagFilterCollapsibles.set(leaf.id, panel);
         } catch (error) {
             console.error('Error adding tag filter to graph:', error);
         }
@@ -402,11 +333,8 @@ export default class GraphFilterPlugin extends Plugin {
     }
 
     onunload() {
-        // Destroy all panels
-        this.tagFilterPanels.forEach((panel) => {
-            panel.destroy();
-        });
-        this.tagFilterPanels.clear();
+        this.tagFilterCollapsibles.forEach((panel) => { panel.destroy(); });
+        this.tagFilterCollapsibles.clear();
     }
 
     async loadSettings() {
@@ -421,7 +349,7 @@ export default class GraphFilterPlugin extends Plugin {
 class GraphFilterSettingTab extends PluginSettingTab {
     plugin: GraphFilterPlugin;
     private excludedTagsContainer: HTMLElement;
-    private tagDropdown: any; // Using any for DropdownComponent
+    private tagDropdown: any;
     private availableTags: string[] = [];
 
     constructor(app: App, plugin: GraphFilterPlugin) {
@@ -459,7 +387,7 @@ class GraphFilterSettingTab extends PluginSettingTab {
         tagSelectionContainer.style.gridTemplateRows = '100%';
         tagSelectionContainer.style.columnGap = '4px';
 
-        // Create dropdown component
+
         const dropdownEl = tagSelectionContainer.createEl('select');
         this.tagDropdown = {
             selectEl: dropdownEl,
@@ -472,8 +400,6 @@ class GraphFilterSettingTab extends PluginSettingTab {
             getValue: () => dropdownEl.value,
             setValue: (value: string) => { dropdownEl.value = value; }
         };
-
-        this.tagDropdown.addOption('', 'Select a tag...');
 
         const addButton = new ButtonComponent(tagSelectionContainer);
         addButton.setButtonText('Add');
@@ -497,21 +423,15 @@ class GraphFilterSettingTab extends PluginSettingTab {
     }
 
     private async updateTagsDropdown() {
-        this.availableTags = await this.plugin.getAllTags();
+        this.availableTags = (await this.plugin.getAllTags()).filter(tag => !this.plugin.settings.excludedTags.includes(tag));
         this.tagDropdown.selectEl.innerHTML = '';
-        this.tagDropdown.addOption('', 'Select a tag...');
-
-        this.availableTags.forEach(tag => {
-            if (!this.plugin.settings.excludedTags.includes(tag))
-                this.tagDropdown.addOption(tag, tag);
-        });
+        this.availableTags.forEach(tag => { this.tagDropdown.addOption(tag, tag); });
+        this.tagDropdown.setValue(this.availableTags[0]);
     }
 
     private updateExcludedTagsList() {
-        // Clear the container
         this.excludedTagsContainer.empty();
 
-        // If no excluded tags, show a message
         if (this.plugin.settings.excludedTags.length === 0) {
             const emptyMessage = this.excludedTagsContainer.createDiv('no-tags-message');
             emptyMessage.setText('No excluded tags');
@@ -520,7 +440,6 @@ class GraphFilterSettingTab extends PluginSettingTab {
             return;
         }
 
-        // Create a list of excluded tags with delete buttons
         this.plugin.settings.excludedTags.forEach(tag => {
             const tagItem = this.excludedTagsContainer.createDiv('excluded-tag-item');
             tagItem.style.display = 'grid';
@@ -528,7 +447,7 @@ class GraphFilterSettingTab extends PluginSettingTab {
             tagItem.style.columnGap = '2px';
             tagItem.style.borderLeft = "1px solid var(--color-base-35)";
 
-            // Tag name
+            //Tag name
             const tagName = tagItem.createDiv('tag-name');
             tagName.style.display = "flex";
             tagName.style.textAlign = "center";
@@ -536,14 +455,14 @@ class GraphFilterSettingTab extends PluginSettingTab {
             tagName.style.justifyContent = "center";
             tagName.setText(tag);
 
-            // Delete button
+            //Delete button
             const deleteButton = tagItem.createEl('button', { cls: 'delete-tag-button' });
             deleteButton.style.boxShadow = "none";
             deleteButton.style.background = "none";
             deleteButton.setText('✕');
 
             deleteButton.addEventListener('click', async () => {
-                // Remove the tag from the settings
+                //Remove the tag from the settings
                 this.plugin.settings.excludedTags = this.plugin.settings.excludedTags.filter(t => t !== tag);
                 await this.plugin.saveSettings();
 
@@ -551,7 +470,6 @@ class GraphFilterSettingTab extends PluginSettingTab {
                 this.updateExcludedTagsList();
             });
 
-            // Hover state for delete button
             deleteButton.addEventListener('mouseenter', () => {
                 deleteButton.style.color = 'var(--text-error)';
             });

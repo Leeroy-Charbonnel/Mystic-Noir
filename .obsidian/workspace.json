@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "0b859e4d7343d882",
+        "id": "80b439ec64aa827b",
         "type": "tabs",
         "children": [
           {
-            "id": "a36fed0e747f966e",
+            "id": "fc0639ef4065faef",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "4. Stories/New (Stories)2.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "New (Stories)2"
             }
           }
         ]
@@ -81,26 +85,15 @@
     "type": "split",
     "children": [
       {
-        "id": "a0e8bafe24b1b4f5",
+        "id": "5a5b9d8dd99a9f7b",
         "type": "tabs",
         "children": [
           {
-            "id": "861ef1750cebe732",
-            "type": "leaf",
-            "state": {
-              "type": "git-view",
-              "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
-            }
-          },
-          {
-            "id": "506cd1b572e7f3de",
+            "id": "6e6290476223a30f",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "1. Characters/Evelyn 1.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -110,25 +103,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Evelyn 1"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "3b601744f2df145c",
+            "id": "3d62a4febb9f79c2",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "1. Characters/Evelyn 1.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Evelyn 1"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "d010c046163e001d",
+            "id": "520f3900feae007d",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -143,21 +135,31 @@
             }
           },
           {
-            "id": "9b52943ab8723785",
+            "id": "6942540f39a31cd0",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "4. Stories/Shadows of the Crescent City.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Shadows of the Crescent City"
+              "title": "Outline"
+            }
+          },
+          {
+            "id": "ce1c8f2743b9ceb4",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -175,20 +177,21 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "a36fed0e747f966e",
+  "active": "ce1c8f2743b9ceb4",
   "lastOpenFiles": [
+    "1. Characters/Samuel Blackwood.md",
+    "4. Stories/New (Stories)2.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "1. Characters/Evelyn Dupont.md",
     "Home.md",
     "99. Notes/Future.md",
     "Untitled.canvas",
     "5. Events/Mr Dupont's death.md",
     "4. Stories/New (Stories).md",
-    "4. Stories/Shadows of the Crescent City.md",
     "4. Stories/Silenced Testimony.md",
     "4. Stories/The Last Gamble.md",
     "4. Stories/The Missing Melody.md",
     "2. Items/Dupont's Heirloom.md",
-    "1. Characters/Evelyn Dupont.md",
-    "1. Characters/Samuel Blackwood.md",
     "3. Locations/Stardust Lounge.md",
     "3. Locations/Samuel's Office.md",
     "3. Locations/Dupont's Mansion.md",

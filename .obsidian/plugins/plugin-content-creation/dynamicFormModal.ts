@@ -170,7 +170,7 @@ export class DynamicFormModal extends Modal {
         const scrollContainer = node('div', { class: 'form-scroll-container' });
 
         this.modalEl.style.width = "50%";
-         this.modalEl.style.resize = "horizontal";
+        this.modalEl.style.resize = "horizontal";
         this.modalEl.style.minWidth = "30%";
         this.modalEl.style.maxWidth = "95%";
 
@@ -233,6 +233,7 @@ export class DynamicFormModal extends Modal {
                             .setValue(field.value as boolean));
                 } else {
                     if (field.type === 'textarea') {
+                        const scrollContainer = this.modalEl.querySelector('.form-scroll-container') as HTMLElement;
                         const fieldInput = new Setting(container)
                             .setName(formatDisplayName(key))
                             .addTextArea(textarea => {
@@ -240,10 +241,10 @@ export class DynamicFormModal extends Modal {
                                     .setPlaceholder(`Enter ${formatDisplayName(key).toLowerCase()}`)
                                     .onChange(newValue => {
                                         this.updateData(currentPath, newValue);
-                                        this.adjustTextAreaSize(textarea.inputEl)
+                                        adjustTextAreaSize(scrollContainer, textarea.inputEl)
                                     })
                                     .setValue(field.value as string);
-                                this.adjustTextAreaSize(textarea.inputEl)
+                                adjustTextAreaSize(scrollContainer, textarea.inputEl)
                                 return textarea;
                             });
                         new SuggestComponent(this.app, fieldInput.controlEl.children[0]).setSuggestList(this.pages)
@@ -265,17 +266,6 @@ export class DynamicFormModal extends Modal {
             }
         });
     }
-
-
-    adjustTextAreaSize(textarea: HTMLTextAreaElement) {
-        const scrollContainer = this.modalEl.querySelector('.form-scroll-container');
-        if (scrollContainer == null) return
-        const scrollTop = scrollContainer.scrollTop;
-        textarea.style.height = "auto";
-        textarea.style.height = (textarea.scrollHeight + 2) + 'px';
-        scrollContainer.scrollTop = scrollTop;
-    }
-
 
     updateContentName(value: any) {
         this.data.name = value
@@ -299,6 +289,15 @@ export class DynamicFormModal extends Modal {
         if (file)
             this.close();
     }
+}
+
+
+function adjustTextAreaSize(scrollContainer: HTMLElement, textarea: HTMLTextAreaElement) {
+    if (scrollContainer == null) return
+    const scrollTop = scrollContainer.scrollTop;
+    textarea.style.height = "auto";
+    textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+    scrollContainer.scrollTop = scrollTop;
 }
 
 
@@ -366,9 +365,13 @@ class MultiValueField {
             input.value = value;
             inputRow.appendChild(input);
 
+
             input.addEventListener('input', (e) => {
                 this.values[index] = (e.target as HTMLInputElement).value;
                 this.onValuesChanged(this.values);
+                if (this.inputType == "textarea") {
+                    // adjustTextAreaSize(input)
+                }
             });
 
 
