@@ -1,15 +1,11 @@
-import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, Notice, ItemView, TextAreaComponent, DropdownComponent, ButtonComponent, ColorComponent } from 'obsidian';
-
-const VIEW_TYPE_TAG_FILTER = 'graph-tags-view';
+import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, Notice, ButtonComponent, ColorComponent } from 'obsidian';
 
 interface GraphFilterPluginSettings {
-    defaultCharactersFolder: string;
     excludedTags: string[];
     tagColors: Record<string, string>; // Store color for each tag
 }
 
 const DEFAULT_SETTINGS: GraphFilterPluginSettings = {
-    defaultCharactersFolder: '',
     excludedTags: [],
     tagColors: {}
 }
@@ -43,75 +39,94 @@ export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?:
     return element;
 }
 
-
-class TagFilterView extends ItemView {
+class TagFilterPanel {
+    private containerEl: HTMLElement;
     private tagsContainer: HTMLElement;
-    private refreshButton: HTMLElement;
-    private openGraphButton: HTMLElement;
     private plugin: GraphFilterPlugin;
     private currentQuery: string = '';
-    private graphLeaf: WorkspaceLeaf | null = null;
+    private graphLeaf: WorkspaceLeaf;
     private isApplyingFilter: boolean = false;
+    private isVisible: boolean = false;
 
-    constructor(leaf: WorkspaceLeaf, plugin: GraphFilterPlugin) {
-        super(leaf);
+    constructor(app: App, plugin: GraphFilterPlugin, graphLeaf: any) {
         this.plugin = plugin;
+        this.graphLeaf = graphLeaf;
+
+        // Create the container element
+        this.containerEl = node("div", {
+            class: "graph-controls tag-filter-panel",
+        });
+        // Add the container to the document body
+        this.graphLeaf.view.dataEngine.controlsEl.parentElement.appendChild(this.containerEl);
+        // Build the UI
+        this.buildUI();
+        this.hide();
     }
 
-    getViewType(): string { return VIEW_TYPE_TAG_FILTER; }
-    getDisplayText(): string { return "Graph Tag Filter"; }
-    getIcon(): string { return "tag"; }
+    private buildUI(): void {
+        this.containerEl.empty();
 
-    async onOpen(): Promise<void> {
-        const container = this.containerEl.children[1];
-        container.empty();
+        // Header with close button
+        const header = this.containerEl.createDiv('tag-filter-header');
 
-        //Header
-        const mainContainer = container.createDiv('tag-filter-main-container');
-        mainContainer.addClass('center');
-        const header = mainContainer.createEl('div', { cls: 'tag-filter-header' });
-        header.createEl('h3', { text: 'Filter Graph by Tags' });
-        header.addClass('center');
+        const titleContainer = header.createDiv('tag-filter-title-container');
+        titleContainer.createEl('h3', { text: 'Filter Graph by Tags' });
 
-        const buttonsSection = mainContainer.createDiv('buttons-section');
+        const closeButton = header.createDiv('tag-filter-close');
+        closeButton.innerHTML = '×';
+        closeButton.addEventListener('click', () => { this.hide(); });
 
-        // Open graph button
-        this.openGraphButton = buttonsSection.createEl('button', { cls: 'mod-cta' });
-        this.openGraphButton.setText('Open Graph View');
-        this.openGraphButton.addClass('center');
-        this.openGraphButton.addEventListener('click', () => { this.getGraphView(); });
-
-        const tagsSection = mainContainer.createDiv('tags-section');
+        // Tags section
+        const tagsSection = this.containerEl.createDiv('tags-section');
         const selectButtons = tagsSection.createDiv('select-buttons');
-        selectButtons.addClass('center');
 
-        //Select All
+        // Select All button
         const selectAllBtn = selectButtons.createEl('button', { cls: 'tag-button' });
         selectAllBtn.setText('Select All');
         selectAllBtn.addEventListener('click', () => { this.setAllTagsSelection(true); });
 
-        //Select None
+        // Select None button
         const selectNoneBtn = selectButtons.createEl('button', { cls: 'tag-button' });
         selectNoneBtn.setText('Select None');
         selectNoneBtn.addEventListener('click', () => { this.setAllTagsSelection(false); });
 
+        // Tags container
         this.tagsContainer = tagsSection.createDiv('tags-container');
         this.tagsContainer.setText('Loading tags...');
-        this.tagsContainer.addClass('center');
+
+        // Action buttons
+        const actionsContainer = this.containerEl.createDiv('tag-filter-actions');
 
         // Refresh button
-        this.refreshButton = mainContainer.createEl('button', { cls: 'refresh-button' });
-        this.refreshButton.setText('Refresh Tags');
-        this.refreshButton.addEventListener('click', () => { this.loadTags(); });
-
-        await this.loadTags();
-        // this.getGraphView()
-        // this.applyFilterToGraph();
-        // this.applyColorsToGraph();
+        const refreshButton = actionsContainer.createEl('button', { cls: 'refresh-button' });
+        refreshButton.setText('Refresh Tags');
+        refreshButton.addEventListener('click', () => { this.loadTags(); });
     }
 
+    public toggle(): void {
+        this.isVisible = !this.isVisible;
+        if (this.isVisible) {
+            this.hide();
+        } else {
+            this.show();
+        }
+    }
+
+    public show(): void {
+        console.log("show")
+        this.loadTags();
+        this.isVisible = true;
+        this.containerEl.removeClass("is-close");
+    }
+
+    public hide(): void {
+        console.log("hide")
+        this.isVisible = false
+        this.containerEl.addClass("is-close");
+    }
+
+
     private async applyColorsToGraph() {
-        await this.getGraphView();
         const colorGroups: { query: string, color: { a: number, rgb: number } }[] = [];
         Object.entries(this.plugin.settings.tagColors).forEach(([tag, colorHex]) => {
             if (colorHex) {
@@ -123,28 +138,9 @@ class TagFilterView extends ItemView {
             }
         });
 
-        //For main graph
+        // For main graph
         (this.graphLeaf as any).view.dataEngine.colorGroupOptions.setColorQueries(colorGroups);
         (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
-
-        //for local graph
-        // (this.graphLeaf as any).view.engine.colorGroupOptions.setColorQueries(colorGroups);
-        // (this.graphLeaf as any).view.engine.requestUpdateSearch();
-    }
-
-    private async getGraphView() {
-        //For local graph
-        // this.graphLeaf = this.app.workspace.getLeavesOfType('localgraph')[0]
-        // return
-
-        if (this.graphLeaf && (this.graphLeaf as any).view._loaded && this.graphLeaf.getViewState().type == "graph") return
-        try {
-            this.graphLeaf = this.app.workspace.getLeaf('tab');
-            await this.graphLeaf.setViewState({ type: 'graph', state: {} });
-            this.app.workspace.revealLeaf(this.graphLeaf);
-        } catch (error) {
-            console.error('Error opening graph view in new tab:', error);
-        }
     }
 
     private async applyFilterToGraph() {
@@ -152,15 +148,9 @@ class TagFilterView extends ItemView {
         this.isApplyingFilter = true;
 
         try {
-            await this.getGraphView();
-            //For main graph
+            // For main graph
             (this.graphLeaf as any).view.dataEngine.filterOptions.search.inputEl.value = this.currentQuery;
-            (this.graphLeaf as any).view.dataEngine.requestUpdateSearch()
-
-            //for local graph
-            // (this.graphLeaf as any).view.engine.filterOptions.search.inputEl.value = this.currentQuery;
-            // (this.graphLeaf as any).view.engine.requestUpdateSearch()
-
+            (this.graphLeaf as any).view.dataEngine.requestUpdateSearch();
         } catch (error) {
             console.error('Error applying filter to graph:', error);
         } finally {
@@ -188,7 +178,7 @@ class TagFilterView extends ItemView {
             filteredTags.forEach(tag => {
                 const tagContainer = this.tagsContainer.createDiv('tag-checkbox-container');
 
-                //Checboxes
+                // Checkboxes
                 const checkbox = tagContainer.createEl('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = `tag-checkbox-${tag}`;
@@ -201,7 +191,7 @@ class TagFilterView extends ItemView {
                 label.htmlFor = checkbox.id;
                 label.setText(tag);
 
-                //Color picker
+                // Color picker
                 const colorPickerContainer = tagContainer.createDiv('tag-color-picker-container');
                 const storedColor = this.plugin.settings.tagColors[tag] || '#ffffff';
 
@@ -215,7 +205,6 @@ class TagFilterView extends ItemView {
                     const colorValue = (e.target as HTMLInputElement).value;
                     this.plugin.settings.tagColors[tag] = colorValue;
                     await this.plugin.saveSettings();
-                    this.applyColorsToGraph();
                 });
             });
             this.updateQueryFromTags();
@@ -238,11 +227,11 @@ class TagFilterView extends ItemView {
             const exclusions = `(${this.plugin.settings.excludedTags.map(tag => ` -#${tag}`).join('')} )`;
             let query = '';
 
-            //If nothing checked => filter out exluded
+            // If nothing checked => filter out excluded
             if (checkedTags.length === 0) {
                 if (this.plugin.settings.excludedTags.length > 0)
                     query = exclusions;
-                //If something checked => filter wanted tags + filter out exluded
+                // If something checked => filter wanted tags + filter out excluded
             } else {
                 query = `( ${checkedTags.map(tag => `#${tag}`).join(' OR ')} )`;
                 if (this.plugin.settings.excludedTags.length > 0)
@@ -251,109 +240,85 @@ class TagFilterView extends ItemView {
 
             this.currentQuery = query;
             this.applyFilterToGraph();
-
         } catch (error) {
             console.error('Error updating query from tags:', error);
         }
     }
 
-    async onClose() {
-        if (this.refreshButton) {
-            this.refreshButton.removeEventListener('click', this.loadTags.bind(this));
-        }
-        if (this.openGraphButton) {
-            this.openGraphButton.removeEventListener('click', this.getGraphView.bind(this));
-        }
+    public destroy() {
+        // Clean up event listeners
+        window.removeEventListener('resize', this.handleResize);
+
+        // Remove the element from DOM
+        this.containerEl.remove();
     }
 }
 
 export default class GraphFilterPlugin extends Plugin {
     settings: GraphFilterPluginSettings;
+    private graphButtons: Map<string, HTMLElement> = new Map();
+    private tagFilterPanels: Map<string, TagFilterPanel> = new Map();
 
     async onload() {
         await this.loadSettings();
 
-        console.log("loading " + this.manifest.name + " plugin: v" + this.manifest.version)
-
-        this.registerView(
-            VIEW_TYPE_TAG_FILTER,
-            (leaf) => new TagFilterView(leaf, this)
-        );
-
-        const ribbonIconEl = this.addRibbonIcon('tag', 'Graph Tag Filter', (evt: MouseEvent) => {
-            this.activateView();
-        });
-        ribbonIconEl.addClass('creator-plugin-ribbon-class');
-
-        this.addCommand({
-            id: 'open-graph-tag-filter',
-            name: 'Open Graph Tag Filter',
-            callback: () => {
-                this.activateView();
-            }
-        });
+        console.log("loading " + this.manifest.name + " plugin: v" + this.manifest.version);
 
         this.addSettingTab(new GraphFilterSettingTab(this.app, this));
 
-
         this.registerEvent(
             this.app.workspace.on('layout-change', () => {
-                const graphLeaves = this.app.workspace.getLeavesOfType('graph');
-                if (graphLeaves.length > 0) {
-                    this.addButtonToGraphControls();
-                }
+                this.app.workspace.getLeavesOfType('graph').forEach(leaf => {
+                    this.addButtonToGraphControls(leaf);
+                });
+                this.app.workspace.getLeavesOfType('localgraph').forEach(leaf => {
+                    this.addButtonToLocalGraphControls(leaf);
+                });
             })
         );
 
+
     }
 
-    // In your GraphFilterPlugin class or TagFilterView class:
 
-    private addButtonToGraphControls() {
-        // Wait a moment for the graph view to be fully loaded
-        setTimeout(() => {
-            // Find the graph controls container
-            const graphView = this.app.workspace.getLeavesOfType('graph')[0]?.view;
-            if (!graphView) return;
-            
-            const controlsContainer = graphView.containerEl.querySelector('.graph-controls');
-            if (!controlsContainer) return;
-            
-            // Create your custom button
-            const customButton = document.createElement('button');
-            customButton.className = 'clickable-icon graph-control-button';
-            customButton.setAttribute('aria-label', 'Filter by Tags');
-            
-            // Add a tag icon (using Lucide icon style that Obsidian uses)
-            const iconSpan = document.createElement('span');
-            iconSpan.className = 'svg-icon';
-            iconSpan.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>`;
-            customButton.appendChild(iconSpan);
-            
-            // Add click listener
-            customButton.addEventListener('click', () => {
-                // Your button action here, e.g., opening your filter modal
-                this.activateView();
-            });
-            
-            // Add the button to the controls
-            controlsContainer.appendChild(customButton);
-        }, 1000); // Delay to ensure graph is loaded
+    private addButtonToLocalGraphControls(leaf: any) {
+
+
     }
 
-    
-    async activateView() {
-        const { workspace } = this.app;
-        let leaf = workspace.getLeavesOfType(VIEW_TYPE_TAG_FILTER)[0];
+    private addButtonToGraphControls(leaf: any) {
+        if (this.graphButtons.has(leaf.id)) return;
+        console.log(leaf)
+        const controlsContainer = leaf.view.dataEngine.controlsEl.parentElement
 
-        if (!leaf) {
-            leaf = workspace.getRightLeaf(false) as WorkspaceLeaf;
-            await leaf.setViewState({
-                type: VIEW_TYPE_TAG_FILTER,
-                active: true,
-            });
+        // Create your custom button
+        const customButton = document.createElement('button');
+        customButton.className = 'clickable-icon graph-control-button';
+        customButton.setAttribute('aria-label', 'Filter by Tags');
+
+        // Add a tag icon (using Lucide icon style that Obsidian uses)
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'svg-icon';
+        iconSpan.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>`;
+        customButton.appendChild(iconSpan);
+
+        // Store reference to the button
+        this.graphButtons.set(leaf.id, customButton);
+
+        // Create panel if it doesn't exist
+        if (!this.tagFilterPanels.has(leaf.id)) {
+            const panel = new TagFilterPanel(this.app, this, leaf);
+            this.tagFilterPanels.set(leaf.id, panel);
         }
-        workspace.revealLeaf(leaf);
+
+        // Add click listener to toggle panel
+        customButton.addEventListener('click', () => {
+            const panel = this.tagFilterPanels.get(leaf.id);
+            panel?.show();
+        });
+
+        // Add the button to the controls
+        controlsContainer.appendChild(customButton);
     }
 
     async getAllTags() {
@@ -361,7 +326,17 @@ export default class GraphFilterPlugin extends Plugin {
     }
 
     onunload() {
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_TAG_FILTER);
+        // Remove all graph buttons we've added
+        this.graphButtons.forEach((button) => {
+            button.remove();
+        });
+        this.graphButtons.clear();
+
+        // Destroy all panels
+        this.tagFilterPanels.forEach((panel) => {
+            panel.destroy();
+        });
+        this.tagFilterPanels.clear();
     }
 
     async loadSettings() {
@@ -376,7 +351,7 @@ export default class GraphFilterPlugin extends Plugin {
 class GraphFilterSettingTab extends PluginSettingTab {
     plugin: GraphFilterPlugin;
     private excludedTagsContainer: HTMLElement;
-    private tagDropdown: DropdownComponent;
+    private tagDropdown: any; // Using any for DropdownComponent
     private availableTags: string[] = [];
 
     constructor(app: App, plugin: GraphFilterPlugin) {
@@ -414,7 +389,20 @@ class GraphFilterSettingTab extends PluginSettingTab {
         tagSelectionContainer.style.gridTemplateRows = '100%';
         tagSelectionContainer.style.columnGap = '4px';
 
-        this.tagDropdown = new DropdownComponent(tagSelectionContainer);
+        // Create dropdown component
+        const dropdownEl = tagSelectionContainer.createEl('select');
+        this.tagDropdown = {
+            selectEl: dropdownEl,
+            addOption: (value: string, text: string) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.text = text;
+                dropdownEl.appendChild(option);
+            },
+            getValue: () => dropdownEl.value,
+            setValue: (value: string) => { dropdownEl.value = value; }
+        };
+
         this.tagDropdown.addOption('', 'Select a tag...');
 
         const addButton = new ButtonComponent(tagSelectionContainer);
@@ -434,19 +422,19 @@ class GraphFilterSettingTab extends PluginSettingTab {
         this.excludedTagsContainer.style.maxHeight = '100%';
         this.excludedTagsContainer.style.overflowY = 'auto';
 
-        this.updateTagsDropdown();
+        await this.updateTagsDropdown();
         this.updateExcludedTagsList();
     }
 
     private async updateTagsDropdown() {
         this.availableTags = await this.plugin.getAllTags();
         this.tagDropdown.selectEl.innerHTML = '';
+        this.tagDropdown.addOption('', 'Select a tag...');
 
         this.availableTags.forEach(tag => {
             if (!this.plugin.settings.excludedTags.includes(tag))
                 this.tagDropdown.addOption(tag, tag);
         });
-        console.log("update dropdown");
     }
 
     private updateExcludedTagsList() {
@@ -473,15 +461,15 @@ class GraphFilterSettingTab extends PluginSettingTab {
             // Tag name
             const tagName = tagItem.createDiv('tag-name');
             tagName.style.display = "flex";
-            tagName.style.textAlign = "center"
+            tagName.style.textAlign = "center";
             tagItem.style.alignItems = "center";
             tagName.style.justifyContent = "center";
             tagName.setText(tag);
 
             // Delete button
             const deleteButton = tagItem.createEl('button', { cls: 'delete-tag-button' });
-            deleteButton.style.boxShadow = "none"
-            deleteButton.style.background = "none"
+            deleteButton.style.boxShadow = "none";
+            deleteButton.style.background = "none";
             deleteButton.setText('✕');
 
             deleteButton.addEventListener('click', async () => {
@@ -504,3 +492,69 @@ class GraphFilterSettingTab extends PluginSettingTab {
         });
     }
 }
+
+
+//Collapsed
+/*
+<div class="tree-item graph-control-section mod-forces is-collapsed">
+    <div class="tree-item-self mod-collapsible">
+        <div class="tree-item-icon collapse-icon is-collapsed"> <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke - width="2" stroke -
+                linecap="round" stroke - linejoin="round" class="svg-icon right-triangle">
+                <path d="M3 8L12 17L21 8"> </path>
+            </svg> </div>
+        <div class="tree-item-inner">
+            <header class="graph-control-section-header">Forces</header>
+        </div>
+    </div>
+</div>
+*/
+
+/*
+
+<div class="tree-item graph-control-section mod-forces">
+    <div class="tree-item-self mod-collapsible">
+        <div class="tree-item-icon collapse-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" class="svg-icon right-triangle">
+                <path d="M3 8L12 17L21 8"></path>
+            </svg></div>
+        <div class="tree-item-inner">
+            <header class="graph-control-section-header">Forces</header>
+        </div>
+    </div>
+
+
+    <div class="tree-item-children" style="">
+        <div class="setting-item mod-slider">
+            <div class="setting-item-info">
+                <div class="setting-item-name">Center force</div>
+                <div class="setting-item-description"></div>
+            </div>
+            <div class="setting-item-control"><input class="slider" type="range" min="0" max="1" step="any"></div>
+        </div>
+        <div class="setting-item mod-slider">
+            <div class="setting-item-info">
+                <div class="setting-item-name">Repel force</div>
+                <div class="setting-item-description"></div>
+            </div>
+            <div class="setting-item-control"><input class="slider" type="range" min="0" max="20" step="any"></div>
+        </div>
+        <div class="setting-item mod-slider">
+            <div class="setting-item-info">
+                <div class="setting-item-name">Link force</div>
+                <div class="setting-item-description"></div>
+            </div>
+            <div class="setting-item-control"><input class="slider" type="range" min="0" max="1" step="any"></div>
+        </div>
+        <div class="setting-item mod-slider">
+            <div class="setting-item-info">
+                <div class="setting-item-name">Link distance</div>
+                <div class="setting-item-description"></div>
+            </div>
+            <div class="setting-item-control"><input class="slider" type="range" min="30" max="500" step="1"></div>
+        </div>
+    </div>
+</div>
+
+*/

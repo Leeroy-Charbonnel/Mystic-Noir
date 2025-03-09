@@ -4,41 +4,20 @@
     "type": "split",
     "children": [
       {
-        "id": "06eba310ca498657",
+        "id": "20b51538523bf47f",
         "type": "tabs",
         "children": [
           {
-            "id": "10925b55c1488eb4",
+            "id": "2eba20ea31dae67b",
             "type": "leaf",
             "state": {
               "type": "graph",
               "state": {},
               "icon": "lucide-git-fork",
               "title": "Graph view"
-            }
-          },
-          {
-            "id": "17792a3d12f9bb39",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
-            }
-          },
-          {
-            "id": "3e8b9815be74d5c5",
-            "type": "leaf",
-            "state": {
-              "type": "empty",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "New tab"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -177,22 +156,12 @@
               "icon": "lucide-list",
               "title": "Outline of Shadows of the Crescent City"
             }
-          },
-          {
-            "id": "5217b030b56fdc2b",
-            "type": "leaf",
-            "state": {
-              "type": "graph-tags-view",
-              "state": {},
-              "icon": "tag",
-              "title": "Graph Tag Filter"
-            }
           }
         ]
       }
     ],
     "direction": "horizontal",
-    "width": 396.5
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -203,16 +172,16 @@
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
       "obsidian-git:Open Git source control": false,
-      "graph-tags-filter:Graph Tag Filter": false,
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "861ef1750cebe732",
+  "active": "2eba20ea31dae67b",
   "lastOpenFiles": [
+    "2. Items/Dupont's Heirloom.md",
+    "4. Stories/Shadows of the Crescent City.md",
     "1. Characters/Evelyn Dupont.md",
     "Untitled.canvas",
     "1. Characters/Samuel Blackwood.md",
-    "4. Stories/Shadows of the Crescent City.md",
     "4. Stories/The Missing Melody.md",
     "Home.md",
     "4. Stories/The Last Gamble.md",
@@ -221,7 +190,6 @@
     "3. Locations/Stardust Lounge.md",
     "3. Locations/Samuel's Office.md",
     "3. Locations/Dupont's Mansion.md",
-    "2. Items/Dupont's Heirloom.md",
     "1. Characters/The Shadow.md",
     "1. Characters/Mr Dupont.md",
     "1. Characters/New (Characters).md",

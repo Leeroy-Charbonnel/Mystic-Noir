@@ -1,54 +1,59 @@
+/* Panel styles */
+.tag-filter-panel {
+  padding: 12px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.tag-filter-panel.is-close {
+  display: none;
+}
+
 .tag-filter-header {
   width: 100%;
-  text-align: center;
-}
-
-.graph-tags-main-container {
   display: flex;
-  flex-direction: row;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* Graph container (left side) */
-.graph-container {
-  flex: 1;
-  min-width: 70%;
-  height: 100%;
-  border-right: 1px solid var(--background-modifier-border);
-  overflow: hidden;
-}
-
-/* Graph container should display the graph content properly */
-.graph-container .graph-view-container {
-  height: 100%;
-  width: 100%;
-}
-
-/* Tags panel (right side) */
-.tags-panel {
-  width: 30%;
-  min-width: 200px;
-  padding: 10px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background-primary);
-}
-
-/* Title for the tags panel */
-.tags-panel h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
   border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 8px;
+}
+
+.tag-filter-title-container {
+  flex: 1;
+}
+
+.tag-filter-header h3 {
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
 }
 
-/* Header row with select all/none buttons */
-.tag-header-row {
+.tag-filter-close {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.tag-filter-close:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* Tags section */
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+/* Select buttons row */
+.select-buttons {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
@@ -63,6 +68,16 @@
   font-size: 12px;
   cursor: pointer;
   color: var(--text-normal);
+  flex: 1;
+  margin: 0 5px;
+}
+
+.tag-button:first-child {
+  margin-left: 0;
+}
+
+.tag-button:last-child {
+  margin-right: 0;
 }
 
 .tag-button:hover {
@@ -71,11 +86,13 @@
 
 /* Tags container */
 .tags-container {
-  display: flex;
-  flex-direction: column;
   flex-grow: 1;
   overflow-y: auto;
-  width: 100%;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+  max-height: 300px;
 }
 
 /* Individual tag checkbox container */
@@ -118,61 +135,71 @@
   cursor: pointer;
 }
 
-/* Style for the refresh button */
-.tags-panel button {
-  margin-top: 10px;
-  padding: 6px 12px;
+/* Button section */
+.tag-filter-actions {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+/* Button styles */
+.refresh-button,
+.apply-colors-button {
+  width: 100%;
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
   border: none;
   border-radius: 4px;
+  padding: 8px;
+  margin-top: 10px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
 }
 
-.tags-panel button:hover {
+.refresh-button:hover,
+.apply-colors-button:hover {
   background-color: var(--interactive-accent-hover);
 }
 
-/* Fix for any potential issues with the graph view controls */
-.graph-controls {
-  z-index: 1;
+/* Button in graph controls */
+.graph-control-button.is-active {
+  color: var(--interactive-accent);
+  background-color: var(--background-modifier-hover);
 }
 
-.center {
-  margin-left: 50%;
-  transform: translateX(-50%);
-}
-
-.buttons-section button {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.select-buttons {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 10px;
-  padding: 10px 0px;
-}
-
-.tag-filter-main-container {
-  --width: 70%;
-  width: var(--width);
-}
-
-button.refresh-button {
-  width: 50%;
-  margin-bottom: 10px;
-}
-
-button.apply-colors-button {
-  width: 50%;
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border: none;
+/* Settings tab styles */
+.excluded-tag-item {
+  padding: 6px;
+  margin-bottom: 4px;
   border-radius: 4px;
-  padding: 6px 12px;
+}
+
+.excluded-tag-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.tag-name {
+  font-size: 14px;
+}
+
+.delete-tag-button {
+  color: var(--text-muted);
   cursor: pointer;
-  margin-bottom: 20px;
+  transition: color 0.2s ease;
+}
+
+.delete-tag-button:hover {
+  color: var(--text-error);
+}
+
+/* Dropdown style */
+.tag-selection-container select {
+  width: 100%;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 14px;
 }
