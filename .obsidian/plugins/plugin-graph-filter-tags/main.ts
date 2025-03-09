@@ -48,39 +48,26 @@ class TagFilterPanel {
     private currentQuery: string = '';
     private graphLeaf: WorkspaceLeaf;
     private isApplyingFilter: boolean = false;
-    private isVisible: boolean = false;
     private isCollapsed: boolean = false;
 
-    constructor(app: App, plugin: GraphFilterPlugin, graphLeaf: any) {
+    constructor(app: App, plugin: GraphFilterPlugin, graphLeaf: WorkspaceLeaf) {
         this.plugin = plugin;
         this.graphLeaf = graphLeaf;
 
-        // Create the container element following Obsidian's structure
-        this.containerEl = node("div", {
-            class: "tree-item graph-control-section mod-tag-filter",
-        });
-        
-        // Add the container to the controls
-        this.graphLeaf.view.dataEngine.controlsEl.appendChild(this.containerEl);
-        
-        // Build the UI with collapsible structure
+        this.containerEl = node("div", { class: "tree-item graph-control-section mod-tag-filter", });
+        (this.graphLeaf.view as any).dataEngine.controlsEl.appendChild(this.containerEl);
         this.buildUI();
     }
 
     private buildUI(): void {
         this.containerEl.empty();
 
-        // Create the collapsible header part
-        const headerEl = node("div", {
-            class: "tree-item-self mod-collapsible"
-        });
+        const headerEl = node("div", { class: "tree-item-self mod-collapsible" });
         this.containerEl.appendChild(headerEl);
 
         // Add the collapse icon
-        this.collapseEl = node("div", {
-            class: "tree-item-icon collapse-icon"
-        });
-        
+        this.collapseEl = node("div", { class: "tree-item-icon collapse-icon" });
+
         // Add the triangle SVG
         const triangleSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         triangleSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -93,10 +80,10 @@ class TagFilterPanel {
         triangleSvg.setAttribute("stroke-linecap", "round");
         triangleSvg.setAttribute("stroke-linejoin", "round");
         triangleSvg.setAttribute("class", "svg-icon right-triangle");
-        
+
         const trianglePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         trianglePath.setAttribute("d", "M3 8L12 17L21 8");
-        
+
         triangleSvg.appendChild(trianglePath);
         this.collapseEl.appendChild(triangleSvg);
         headerEl.appendChild(this.collapseEl);
@@ -150,16 +137,16 @@ class TagFilterPanel {
             class: "setting-item-control"
         });
         buttonsSetting.appendChild(buttonsControl);
-        
+
         // Select All button
         const selectAllBtn = node("button", {
             class: 'tag-button',
             text: 'Select All'
         });
         buttonsControl.appendChild(selectAllBtn);
-        selectAllBtn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            this.setAllTagsSelection(true); 
+        selectAllBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.setAllTagsSelection(true);
         });
 
         // Select None button
@@ -168,9 +155,9 @@ class TagFilterPanel {
             text: 'Select None'
         });
         buttonsControl.appendChild(selectNoneBtn);
-        selectNoneBtn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            this.setAllTagsSelection(false); 
+        selectNoneBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.setAllTagsSelection(false);
         });
 
         // Tags container
@@ -217,14 +204,25 @@ class TagFilterPanel {
         this.isCollapsed = true;
         this.containerEl.addClass("is-collapsed");
         this.collapseEl.addClass("is-collapsed");
-        this.childrenEl.style.display = "none";
+
+        // The display:none will be applied after the transition completes
+        setTimeout(() => {
+            if (this.isCollapsed) {
+                this.childrenEl.style.display = "none";
+            }
+        }, 200); // Match this with the CSS transition duration
     }
 
     public expandPanel(): void {
         this.isCollapsed = false;
-        this.containerEl.removeClass("is-collapsed");
-        this.collapseEl.removeClass("is-collapsed");
+        // Set display before the transition starts
         this.childrenEl.style.display = "";
+
+        // Use setTimeout with 0ms to ensure the display change takes effect first
+        setTimeout(() => {
+            this.containerEl.removeClass("is-collapsed");
+            this.collapseEl.removeClass("is-collapsed");
+        }, 0);
     }
 
     private async applyColorsToGraph() {
@@ -285,9 +283,9 @@ class TagFilterPanel {
                 checkbox.id = `tag-checkbox-${tag}`;
                 checkbox.dataset.tag = tag;
                 checkbox.checked = true;
-                checkbox.addEventListener('change', (e) => { 
+                checkbox.addEventListener('change', (e) => {
                     e.stopPropagation();
-                    this.updateQueryFromTags(); 
+                    this.updateQueryFromTags();
                 });
 
                 // Labels
@@ -387,9 +385,9 @@ export default class GraphFilterPlugin extends Plugin {
         // Implement if needed for local graphs
     }
 
-    private addFilterToGraph(leaf: WorkspaceLeaf) {
+    private addFilterToGraph(leaf: any) {
         if (this.tagFilterPanels.has(leaf.id)) return;
-        
+
         try {
             // Create panel if it doesn't exist
             const panel = new TagFilterPanel(this.app, this, leaf);

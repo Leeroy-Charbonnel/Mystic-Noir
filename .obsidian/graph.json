@@ -1,6 +1,6 @@
 {
   "collapse-filter": true,
-  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories OR #test OR #test10 OR #test11 OR #test12 OR #test13 OR #test14 OR #test15 OR #test16 OR #test17 OR #test2 OR #test3 OR #test4 OR #test5 OR #test6 OR #test7 OR #test8 OR #test9 ) ( -#Template )",
+  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -11,7 +11,7 @@
       "query": "tag:#Story",
       "color": {
         "a": 1,
-        "rgb": 12793655
+        "rgb": 16777215
       }
     },
     {
@@ -67,7 +67,7 @@
       "query": "tag:#Stories",
       "color": {
         "a": 1,
-        "rgb": 12793655
+        "rgb": 16777215
       }
     }
   ],
@@ -81,6 +81,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 1.0000000000000584,
-  "close": true
+  "scale": 0.7132754626224841,
+  "close": false
 }

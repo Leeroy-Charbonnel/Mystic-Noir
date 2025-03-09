@@ -1,16 +1,21 @@
-/* Panel styles */
 .tag-filter-panel {
   padding: 12px;
   overflow-y: auto;
   z-index: 1000;
 }
 
-.graph-control-section-header {
-  font-weight: 600;
-  font-size: 14px;
+
+.tree-item-children {
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 300ms ease-in-out;
 }
 
-/* Tags section */
+.tree-item.is-collapsed .tree-item-children {
+  max-height: 0;
+  transition: max-height 200ms ease-in-out;
+}
+
 .tags-section {
   display: flex;
   flex-direction: column;
@@ -19,12 +24,10 @@
   overflow-y: auto;
 }
 
-/* Select buttons row */
 .tag-filter-buttons {
   margin-bottom: 10px;
 }
 
-/* Buttons for select all/none */
 .tag-button {
   background-color: var(--interactive-normal);
   border: 1px solid var(--background-modifier-border);
@@ -48,14 +51,12 @@
   background-color: var(--interactive-hover);
 }
 
-/* Control with multiple buttons */
 .setting-item-control {
   display: flex;
   justify-content: space-between;
   gap: 8px;
 }
 
-/* Tags container */
 .tags-container {
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
@@ -66,7 +67,6 @@
   background-color: var(--background-primary);
 }
 
-/* Individual tag checkbox container */
 .tag-checkbox-container {
   display: flex;
   align-items: center;
@@ -91,18 +91,20 @@
   margin-right: 8px;
 }
 
-/* Style for the color picker */
 .tag-color-picker-container {
   display: flex;
   align-items: center;
 }
 
 .tag-color-picker {
+  width: 24px;
   height: 24px;
-  transform: scale(0.75);
+  padding: 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 3px;
+  cursor: pointer;
 }
 
-/* Button styles */
 .refresh-button {
   width: 100%;
   background-color: var(--interactive-accent);
@@ -114,13 +116,13 @@
   font-size: 14px;
   font-weight: 500;
   text-align: center;
+  width: 100%;
 }
 
 .refresh-button:hover {
   background-color: var(--interactive-accent-hover);
 }
 
-/* Settings tab styles */
 .excluded-tag-item {
   padding: 6px;
   margin-bottom: 4px;
@@ -145,7 +147,6 @@
   color: var(--text-error);
 }
 
-/* Dropdown style */
 .tag-selection-container select {
   width: 100%;
   background-color: var(--background-primary);
