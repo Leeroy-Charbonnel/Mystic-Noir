@@ -42,89 +42,190 @@ export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?:
 class TagFilterPanel {
     private containerEl: HTMLElement;
     private tagsContainer: HTMLElement;
+    private collapseEl: HTMLElement;
+    private childrenEl: HTMLElement;
     private plugin: GraphFilterPlugin;
     private currentQuery: string = '';
     private graphLeaf: WorkspaceLeaf;
     private isApplyingFilter: boolean = false;
     private isVisible: boolean = false;
+    private isCollapsed: boolean = false;
 
     constructor(app: App, plugin: GraphFilterPlugin, graphLeaf: any) {
         this.plugin = plugin;
         this.graphLeaf = graphLeaf;
 
-        // Create the container element
+        // Create the container element following Obsidian's structure
         this.containerEl = node("div", {
-            class: "graph-controls tag-filter-panel",
+            class: "tree-item graph-control-section mod-tag-filter",
         });
-        // Add the container to the document body
-        this.graphLeaf.view.dataEngine.controlsEl.parentElement.appendChild(this.containerEl);
-        // Build the UI
+        
+        // Add the container to the controls
+        this.graphLeaf.view.dataEngine.controlsEl.appendChild(this.containerEl);
+        
+        // Build the UI with collapsible structure
         this.buildUI();
-        this.hide();
     }
 
     private buildUI(): void {
         this.containerEl.empty();
 
-        // Header with close button
-        const header = this.containerEl.createDiv('tag-filter-header');
+        // Create the collapsible header part
+        const headerEl = node("div", {
+            class: "tree-item-self mod-collapsible"
+        });
+        this.containerEl.appendChild(headerEl);
 
-        const titleContainer = header.createDiv('tag-filter-title-container');
-        titleContainer.createEl('h3', { text: 'Filter Graph by Tags' });
+        // Add the collapse icon
+        this.collapseEl = node("div", {
+            class: "tree-item-icon collapse-icon"
+        });
+        
+        // Add the triangle SVG
+        const triangleSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        triangleSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        triangleSvg.setAttribute("width", "24");
+        triangleSvg.setAttribute("height", "24");
+        triangleSvg.setAttribute("viewBox", "0 0 24 24");
+        triangleSvg.setAttribute("fill", "none");
+        triangleSvg.setAttribute("stroke", "currentColor");
+        triangleSvg.setAttribute("stroke-width", "2");
+        triangleSvg.setAttribute("stroke-linecap", "round");
+        triangleSvg.setAttribute("stroke-linejoin", "round");
+        triangleSvg.setAttribute("class", "svg-icon right-triangle");
+        
+        const trianglePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        trianglePath.setAttribute("d", "M3 8L12 17L21 8");
+        
+        triangleSvg.appendChild(trianglePath);
+        this.collapseEl.appendChild(triangleSvg);
+        headerEl.appendChild(this.collapseEl);
 
-        const closeButton = header.createDiv('tag-filter-close');
-        closeButton.innerHTML = '×';
-        closeButton.addEventListener('click', () => { this.hide(); });
+        // Add the title in header
+        const titleContainerEl = node("div", {
+            class: "tree-item-inner"
+        });
+        headerEl.appendChild(titleContainerEl);
 
-        // Tags section
-        const tagsSection = this.containerEl.createDiv('tags-section');
-        const selectButtons = tagsSection.createDiv('select-buttons');
+        const headerTitle = node("header", {
+            class: "graph-control-section-header",
+            text: "Filter by Tags"
+        });
+        titleContainerEl.appendChild(headerTitle);
 
-        // Select All button
-        const selectAllBtn = selectButtons.createEl('button', { cls: 'tag-button' });
-        selectAllBtn.setText('Select All');
-        selectAllBtn.addEventListener('click', () => { this.setAllTagsSelection(true); });
+        // Add click listener to toggle collapse
+        headerEl.addEventListener('click', () => {
+            this.toggleCollapse();
+        });
 
-        // Select None button
-        const selectNoneBtn = selectButtons.createEl('button', { cls: 'tag-button' });
-        selectNoneBtn.setText('Select None');
-        selectNoneBtn.addEventListener('click', () => { this.setAllTagsSelection(false); });
+        // Create the children container
+        this.childrenEl = node("div", {
+            class: "tree-item-children"
+        });
+        this.containerEl.appendChild(this.childrenEl);
 
-        // Tags container
-        this.tagsContainer = tagsSection.createDiv('tags-container');
-        this.tagsContainer.setText('Loading tags...');
+        // Build the content inside the children container
+        this.buildPanelContent();
 
-        // Action buttons
-        const actionsContainer = this.containerEl.createDiv('tag-filter-actions');
-
-        // Refresh button
-        const refreshButton = actionsContainer.createEl('button', { cls: 'refresh-button' });
-        refreshButton.setText('Refresh Tags');
-        refreshButton.addEventListener('click', () => { this.loadTags(); });
+        // Initialize as expanded
+        this.expandPanel();
     }
 
-    public toggle(): void {
-        this.isVisible = !this.isVisible;
-        if (this.isVisible) {
-            this.hide();
+    private buildPanelContent(): void {
+        this.childrenEl.empty();
+
+        // Select All/None buttons in a container
+        const buttonContainer = node("div", {
+            class: "tag-filter-buttons"
+        });
+        this.childrenEl.appendChild(buttonContainer);
+
+        // Use setting-item style for consistency
+        const buttonsSetting = node("div", {
+            class: "setting-item"
+        });
+        buttonContainer.appendChild(buttonsSetting);
+
+        const buttonsControl = node("div", {
+            class: "setting-item-control"
+        });
+        buttonsSetting.appendChild(buttonsControl);
+        
+        // Select All button
+        const selectAllBtn = node("button", {
+            class: 'tag-button',
+            text: 'Select All'
+        });
+        buttonsControl.appendChild(selectAllBtn);
+        selectAllBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            this.setAllTagsSelection(true); 
+        });
+
+        // Select None button
+        const selectNoneBtn = node("button", {
+            class: 'tag-button',
+            text: 'Select None'
+        });
+        buttonsControl.appendChild(selectNoneBtn);
+        selectNoneBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            this.setAllTagsSelection(false); 
+        });
+
+        // Tags container
+        this.tagsContainer = node("div", {
+            class: 'tags-container'
+        });
+        this.childrenEl.appendChild(this.tagsContainer);
+        this.tagsContainer.setText('Loading tags...');
+
+        // Add Refresh button at the bottom
+        const refreshContainer = node("div", {
+            class: "setting-item"
+        });
+        this.childrenEl.appendChild(refreshContainer);
+
+        const refreshControl = node("div", {
+            class: "setting-item-control"
+        });
+        refreshContainer.appendChild(refreshControl);
+
+        const refreshButton = node("button", {
+            class: 'refresh-button',
+            text: 'Refresh Tags'
+        });
+        refreshControl.appendChild(refreshButton);
+        refreshButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.loadTags();
+        });
+
+        // Initial load of tags
+        this.loadTags();
+    }
+
+    public toggleCollapse(): void {
+        if (this.isCollapsed) {
+            this.expandPanel();
         } else {
-            this.show();
+            this.collapsePanel();
         }
     }
 
-    public show(): void {
-        console.log("show")
-        this.loadTags();
-        this.isVisible = true;
-        this.containerEl.removeClass("is-close");
+    public collapsePanel(): void {
+        this.isCollapsed = true;
+        this.containerEl.addClass("is-collapsed");
+        this.collapseEl.addClass("is-collapsed");
+        this.childrenEl.style.display = "none";
     }
 
-    public hide(): void {
-        console.log("hide")
-        this.isVisible = false
-        this.containerEl.addClass("is-close");
+    public expandPanel(): void {
+        this.isCollapsed = false;
+        this.containerEl.removeClass("is-collapsed");
+        this.collapseEl.removeClass("is-collapsed");
+        this.childrenEl.style.display = "";
     }
-
 
     private async applyColorsToGraph() {
         const colorGroups: { query: string, color: { a: number, rgb: number } }[] = [];
@@ -184,7 +285,10 @@ class TagFilterPanel {
                 checkbox.id = `tag-checkbox-${tag}`;
                 checkbox.dataset.tag = tag;
                 checkbox.checked = true;
-                checkbox.addEventListener('change', () => { this.updateQueryFromTags(); });
+                checkbox.addEventListener('change', (e) => { 
+                    e.stopPropagation();
+                    this.updateQueryFromTags(); 
+                });
 
                 // Labels
                 const label = tagContainer.createEl('label');
@@ -202,6 +306,7 @@ class TagFilterPanel {
                 colorPicker.dataset.tag = tag;
 
                 colorPicker.addEventListener('input', async (e) => {
+                    e.stopPropagation();
                     const colorValue = (e.target as HTMLInputElement).value;
                     this.plugin.settings.tagColors[tag] = colorValue;
                     await this.plugin.saveSettings();
@@ -246,11 +351,10 @@ class TagFilterPanel {
     }
 
     public destroy() {
-        // Clean up event listeners
-        window.removeEventListener('resize', this.handleResize);
-
         // Remove the element from DOM
-        this.containerEl.remove();
+        if (this.containerEl && this.containerEl.parentNode) {
+            this.containerEl.remove();
+        }
     }
 }
 
@@ -269,56 +373,30 @@ export default class GraphFilterPlugin extends Plugin {
         this.registerEvent(
             this.app.workspace.on('layout-change', () => {
                 this.app.workspace.getLeavesOfType('graph').forEach(leaf => {
-                    this.addButtonToGraphControls(leaf);
+                    this.addFilterToGraph(leaf);
                 });
+                // You can add support for local graphs too
                 this.app.workspace.getLeavesOfType('localgraph').forEach(leaf => {
-                    this.addButtonToLocalGraphControls(leaf);
+                    this.addFilterToLocalGraph(leaf);
                 });
             })
         );
-
-
     }
 
-
-    private addButtonToLocalGraphControls(leaf: any) {
-
-
+    private addFilterToLocalGraph(leaf: any) {
+        // Implement if needed for local graphs
     }
 
-    private addButtonToGraphControls(leaf: any) {
-        if (this.graphButtons.has(leaf.id)) return;
-        console.log(leaf)
-        const controlsContainer = leaf.view.dataEngine.controlsEl.parentElement
-
-        // Create your custom button
-        const customButton = document.createElement('button');
-        customButton.className = 'clickable-icon graph-control-button';
-        customButton.setAttribute('aria-label', 'Filter by Tags');
-
-        // Add a tag icon (using Lucide icon style that Obsidian uses)
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'svg-icon';
-        iconSpan.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>`;
-        customButton.appendChild(iconSpan);
-
-        // Store reference to the button
-        this.graphButtons.set(leaf.id, customButton);
-
-        // Create panel if it doesn't exist
-        if (!this.tagFilterPanels.has(leaf.id)) {
+    private addFilterToGraph(leaf: WorkspaceLeaf) {
+        if (this.tagFilterPanels.has(leaf.id)) return;
+        
+        try {
+            // Create panel if it doesn't exist
             const panel = new TagFilterPanel(this.app, this, leaf);
             this.tagFilterPanels.set(leaf.id, panel);
+        } catch (error) {
+            console.error('Error adding tag filter to graph:', error);
         }
-
-        // Add click listener to toggle panel
-        customButton.addEventListener('click', () => {
-            const panel = this.tagFilterPanels.get(leaf.id);
-            panel?.show();
-        });
-
-        // Add the button to the controls
-        controlsContainer.appendChild(customButton);
     }
 
     async getAllTags() {
@@ -326,12 +404,6 @@ export default class GraphFilterPlugin extends Plugin {
     }
 
     onunload() {
-        // Remove all graph buttons we've added
-        this.graphButtons.forEach((button) => {
-            button.remove();
-        });
-        this.graphButtons.clear();
-
         // Destroy all panels
         this.tagFilterPanels.forEach((panel) => {
             panel.destroy();
@@ -492,69 +564,3 @@ class GraphFilterSettingTab extends PluginSettingTab {
         });
     }
 }
-
-
-//Collapsed
-/*
-<div class="tree-item graph-control-section mod-forces is-collapsed">
-    <div class="tree-item-self mod-collapsible">
-        <div class="tree-item-icon collapse-icon is-collapsed"> <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke - width="2" stroke -
-                linecap="round" stroke - linejoin="round" class="svg-icon right-triangle">
-                <path d="M3 8L12 17L21 8"> </path>
-            </svg> </div>
-        <div class="tree-item-inner">
-            <header class="graph-control-section-header">Forces</header>
-        </div>
-    </div>
-</div>
-*/
-
-/*
-
-<div class="tree-item graph-control-section mod-forces">
-    <div class="tree-item-self mod-collapsible">
-        <div class="tree-item-icon collapse-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" class="svg-icon right-triangle">
-                <path d="M3 8L12 17L21 8"></path>
-            </svg></div>
-        <div class="tree-item-inner">
-            <header class="graph-control-section-header">Forces</header>
-        </div>
-    </div>
-
-
-    <div class="tree-item-children" style="">
-        <div class="setting-item mod-slider">
-            <div class="setting-item-info">
-                <div class="setting-item-name">Center force</div>
-                <div class="setting-item-description"></div>
-            </div>
-            <div class="setting-item-control"><input class="slider" type="range" min="0" max="1" step="any"></div>
-        </div>
-        <div class="setting-item mod-slider">
-            <div class="setting-item-info">
-                <div class="setting-item-name">Repel force</div>
-                <div class="setting-item-description"></div>
-            </div>
-            <div class="setting-item-control"><input class="slider" type="range" min="0" max="20" step="any"></div>
-        </div>
-        <div class="setting-item mod-slider">
-            <div class="setting-item-info">
-                <div class="setting-item-name">Link force</div>
-                <div class="setting-item-description"></div>
-            </div>
-            <div class="setting-item-control"><input class="slider" type="range" min="0" max="1" step="any"></div>
-        </div>
-        <div class="setting-item mod-slider">
-            <div class="setting-item-info">
-                <div class="setting-item-name">Link distance</div>
-                <div class="setting-item-description"></div>
-            </div>
-            <div class="setting-item-control"><input class="slider" type="range" min="30" max="500" step="1"></div>
-        </div>
-    </div>
-</div>
-
-*/

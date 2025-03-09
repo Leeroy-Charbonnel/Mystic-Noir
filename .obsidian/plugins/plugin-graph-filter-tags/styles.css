@@ -5,42 +5,9 @@
   z-index: 1000;
 }
 
-.tag-filter-panel.is-close {
-  display: none;
-}
-
-.tag-filter-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  padding-bottom: 8px;
-}
-
-.tag-filter-title-container {
-  flex: 1;
-}
-
-.tag-filter-header h3 {
-  margin: 0;
-  font-size: 16px;
+.graph-control-section-header {
   font-weight: 600;
-}
-
-.tag-filter-close {
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--text-muted);
-  line-height: 1;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.tag-filter-close:hover {
-  background-color: var(--background-modifier-hover);
-  color: var(--text-normal);
+  font-size: 14px;
 }
 
 /* Tags section */
@@ -53,9 +20,7 @@
 }
 
 /* Select buttons row */
-.select-buttons {
-  display: flex;
-  justify-content: space-between;
+.tag-filter-buttons {
   margin-bottom: 10px;
 }
 
@@ -68,7 +33,6 @@
   font-size: 12px;
   cursor: pointer;
   color: var(--text-normal);
-  flex: 1;
   margin: 0 5px;
 }
 
@@ -84,15 +48,22 @@
   background-color: var(--interactive-hover);
 }
 
+/* Control with multiple buttons */
+.setting-item-control {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 /* Tags container */
 .tags-container {
-  flex-grow: 1;
-  overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
   padding: 10px;
   margin-bottom: 15px;
-  max-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  background-color: var(--background-primary);
 }
 
 /* Individual tag checkbox container */
@@ -127,45 +98,26 @@
 }
 
 .tag-color-picker {
-  width: 24px;
   height: 24px;
-  padding: 0;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-/* Button section */
-.tag-filter-actions {
-  margin-top: auto;
-  padding-top: 10px;
+  transform: scale(0.75);
 }
 
 /* Button styles */
-.refresh-button,
-.apply-colors-button {
+.refresh-button {
   width: 100%;
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
   border: none;
   border-radius: 4px;
   padding: 8px;
-  margin-top: 10px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   text-align: center;
 }
 
-.refresh-button:hover,
-.apply-colors-button:hover {
+.refresh-button:hover {
   background-color: var(--interactive-accent-hover);
-}
-
-/* Button in graph controls */
-.graph-control-button.is-active {
-  color: var(--interactive-accent);
-  background-color: var(--background-modifier-hover);
 }
 
 /* Settings tab styles */

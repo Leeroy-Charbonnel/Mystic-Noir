@@ -1,4 +1,4 @@
-#Story
+#Stories
 
 # The Last Gamble
 

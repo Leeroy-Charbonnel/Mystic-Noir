@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "20b51538523bf47f",
+        "id": "0b859e4d7343d882",
         "type": "tabs",
         "children": [
           {
-            "id": "2eba20ea31dae67b",
+            "id": "a36fed0e747f966e",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -70,7 +70,8 @@
               "title": "Bookmarks"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -175,26 +176,26 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "2eba20ea31dae67b",
+  "active": "a36fed0e747f966e",
   "lastOpenFiles": [
-    "2. Items/Dupont's Heirloom.md",
-    "4. Stories/Shadows of the Crescent City.md",
-    "1. Characters/Evelyn Dupont.md",
-    "Untitled.canvas",
-    "1. Characters/Samuel Blackwood.md",
-    "4. Stories/The Missing Melody.md",
     "Home.md",
-    "4. Stories/The Last Gamble.md",
-    "4. Stories/Silenced Testimony.md",
+    "Untitled.canvas",
+    "99. Notes/Future.md",
+    "5. Events/Mr Dupont's death.md",
     "4. Stories/New (Stories).md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "4. Stories/Silenced Testimony.md",
+    "4. Stories/The Last Gamble.md",
+    "4. Stories/The Missing Melody.md",
+    "2. Items/Dupont's Heirloom.md",
+    "1. Characters/Evelyn Dupont.md",
+    "1. Characters/Samuel Blackwood.md",
     "3. Locations/Stardust Lounge.md",
     "3. Locations/Samuel's Office.md",
     "3. Locations/Dupont's Mansion.md",
     "1. Characters/The Shadow.md",
     "1. Characters/Mr Dupont.md",
     "1. Characters/New (Characters).md",
-    "5. Events/Mr Dupont's death.md",
-    "99. Notes/Future.md",
     "5. Events/New (Events).md",
     "3. Locations/New (Locations).md",
     "2. Items/New (Items)r.md",

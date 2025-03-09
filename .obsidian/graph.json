@@ -1,6 +1,6 @@
 {
   "collapse-filter": true,
-  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories OR #Story ) ( -#Template )",
+  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories OR #test OR #test10 OR #test11 OR #test12 OR #test13 OR #test14 OR #test15 OR #test16 OR #test17 OR #test2 OR #test3 OR #test4 OR #test5 OR #test6 OR #test7 OR #test8 OR #test9 ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -76,11 +76,11 @@
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1.19739583333333,
   "lineSizeMultiplier": 1,
-  "collapse-forces": false,
+  "collapse-forces": true,
   "centerStrength": 0.518713248970312,
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
   "scale": 1.0000000000000584,
-  "close": false
+  "close": true
 }
