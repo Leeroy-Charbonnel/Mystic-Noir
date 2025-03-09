@@ -162,7 +162,7 @@ export class DynamicFormModal extends Modal {
         super(app);
         this.plugin = plugin;
         this.data = data;
-        this.pages = getAllPages(app);
+        this.pages = getAllPages(this.app);
     }
 
     onOpen() {
@@ -218,13 +218,15 @@ export class DynamicFormModal extends Modal {
                 this.generateForm(sectionContainer, field, currentPath);
             } else {
                 if (field.type.startsWith("array")) {
-                    const fieldContainer = node('div', { class: `field-${key}` });
-                    const inputType = field.type.split(':')[1]
-                    container.appendChild(fieldContainer);
-                    const multiField = new MultiValueField(this.app, fieldContainer, formatDisplayName(key), inputType, field.value as string[],
-                        (newValues) => { this.updateData(currentPath, newValues); }
-                    );
+                    const multiField = new MultiValueField(this.app, container)
+                        .setName(formatDisplayName(key))
+                        .setType(field.type.split(':')[1])
+                        .setValues(field.value as string[])
+                        .setScrollContainer(this.modalEl.querySelector('.form-scroll-container'))
+                        .onChange((newValues) => { this.updateData(currentPath, newValues); })
+                        .render();
                     this.multiValueFieldsMap.set(currentPath, multiField);
+
                 } else if (field.type === "boolean") {
                     new Setting(container)
                         .setName(formatDisplayName(key))
@@ -302,119 +304,97 @@ function adjustTextAreaSize(scrollContainer: HTMLElement, textarea: HTMLTextArea
 
 
 class MultiValueField {
-    private container: HTMLElement;
+    private app: App;
+    private name: string;
+    private pages: string[];
     private inputType: string;
+    private container: HTMLElement;
+    private scrollContainer: HTMLElement;
+    private labelContainer: HTMLElement;
     private values: string[];
     private inputsContainer: HTMLElement;
     private onValuesChanged: (values: string[]) => void;
-    private pages: string[];
-    private app: App;
 
-    constructor(
-        app: App,
-        containerEl: HTMLElement,
-        labelText: string,
-        inputType: string,
-        values: string[],
-        onChange: (values: string[]) => void
-    ) {
+
+    constructor(app: App, containerEl: HTMLElement) {
         this.app = app;
         this.container = containerEl;
-        this.values = values || [];
+        this.name = "";
+        this.values = [];
         this.pages = getAllPages(this.app);
-        this.inputType = inputType;
-        this.onValuesChanged = onChange;
-        const labelContainer = node('div', { class: 'multi-value-label' });
-        this.container.appendChild(labelContainer);
-        labelContainer.appendChild(node('span', { text: labelText }));
 
-        const addButton = node('button', {
-            class: 'multi-value-add-button',
-            children: [node("span", {
-                text: '+',
-            })]
-        });
-        labelContainer.appendChild(addButton);
-
-        addButton.addEventListener('click', () => this.addValue());
-
+        this.labelContainer = node('div', { class: 'multi-value-label' });
+        const addButton = node('button', { class: 'multi-value-add-button', children: [node("span", { text: '+', })] });
         this.inputsContainer = node('div', { class: 'multi-value-inputs' });
+
+        this.container.appendChild(this.labelContainer);
+        this.labelContainer.appendChild(node('span', { text: this.name }));
+        this.labelContainer.appendChild(addButton);
         this.container.appendChild(this.inputsContainer);
 
-        if (this.values.length === 0) {
-            this.values.push('');
-        }
-
-        this.renderInputs();
+        addButton.addEventListener('click', () => this.addValue());
     }
-
-    private renderInputs() {
+    setName(value: string) {
+        this.name = value;
+        this.labelContainer.querySelector("span").text = this.name;
+        return this
+    }
+    setType(value: string) {
+        this.inputType = value;
+        return this
+    }
+    setScrollContainer(scrollContainer: HTMLElement) {
+        this.scrollContainer = scrollContainer;
+        return this
+    }
+    setValues(values: string[]) {
+        this.values = values || [''];
+        return this
+    }
+    onChange(cb: (value: string[]) => void) {
+        this.onValuesChanged = cb;
+        return this;
+    }
+    render() {
         this.inputsContainer.empty();
 
         this.values.forEach((value, index) => {
             const inputRow = node('div', { class: 'multi-value-input-row' });
-            this.inputsContainer.appendChild(inputRow);
-
-            const input = node(this.inputType == 'text' ? 'input' : 'textarea', {
-                class: 'input',
-                attributes: {
-                    'type': 'text',
-                    'placeholder': 'Enter value...'
-                }
-            });
+            const input = node(this.inputType == 'text' ? 'input' : 'textarea', { class: 'input', attributes: { 'type': 'text', 'placeholder': 'Enter value...' } });
             input.value = value;
-            inputRow.appendChild(input);
 
+
+            this.inputsContainer.appendChild(inputRow);
+            inputRow.appendChild(input);
+            if (this.inputType == "textarea") {
+                adjustTextAreaSize(this.scrollContainer, input as HTMLTextAreaElement)
+            }
 
             input.addEventListener('input', (e) => {
                 this.values[index] = (e.target as HTMLInputElement).value;
                 this.onValuesChanged(this.values);
                 if (this.inputType == "textarea") {
-                    // adjustTextAreaSize(input)
+                    adjustTextAreaSize(this.scrollContainer, input as HTMLTextAreaElement)
                 }
             });
 
-
             new SuggestComponent(this.app, input).setSuggestList(this.pages);
-
             if (this.values.length > 1) {
-                const removeButton = node('button', {
-                    class: 'multi-value-remove-button',
-                    children: [node("span", {
-                        text: 'x',
-                    })]
-                });
-
-
+                const removeButton = node('button', { class: 'multi-value-remove-button', children: [node("span", { text: 'x', })] });
                 inputRow.appendChild(removeButton);
-
                 removeButton.addEventListener('click', () => {
                     this.values.splice(index, 1);
                     this.onValuesChanged(this.values);
-                    this.renderInputs();
+                    this.render();
                 });
             }
         });
+        return this
     }
 
     private addValue() {
         this.values.push('');
         this.onValuesChanged(this.values);
-        this.renderInputs();
-
-        const inputs = this.inputsContainer.querySelectorAll('input');
-        if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-        }
-    }
-
-    getValues(): string[] {
-        return [...this.values];
-    }
-
-    setValues(newValues: string[]) {
-        this.values = [...newValues];
-        this.onValuesChanged(this.values);
-        this.renderInputs();
+        this.render();
     }
 }
