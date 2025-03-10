@@ -1,7 +1,4 @@
 export const templates={
-    tests: {
-        FullName: "text",
-    },
     characters: {
         BasicInformation: {
             FullName: "text",
@@ -72,6 +69,7 @@ export const templates={
     stories: {
         BasicInformation: {
             Name: "text",
+            Date: "text",
             Synopsis: "textarea"
         },
         Characters: {
@@ -79,6 +77,9 @@ export const templates={
         },
         Locations: {
             Locations: "array:text",
+        },
+        Events: {
+            Event: "array:text",
         },
         Items: {
             Items: "array:text",

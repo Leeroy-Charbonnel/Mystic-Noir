@@ -13,6 +13,6 @@ ul, ol, p, blockquote{
 }
 .content-creation-textarea *{
     color: var(--code-normal);
-    font-family: var(--font-monospace);
+    /*font-family: var(--font-monospace);*/
     font-size: 0.95em;
 }
