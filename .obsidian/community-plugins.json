@@ -1,6 +1,6 @@
 [
-  "obsidian-git",
   "content-creator-plugin",
   "graph-tags-filter",
-  "content-creation-plugin"
+  "content-creation-plugin",
+  "obsidian-git"
 ]

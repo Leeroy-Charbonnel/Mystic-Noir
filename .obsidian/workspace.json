@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "3a5555f0aa5a197c",
+        "id": "80b439ec64aa827b",
         "type": "tabs",
         "children": [
           {
-            "id": "eede6b96570fb521",
+            "id": "fc0639ef4065faef",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "4. Stories/Silenced Testimony.md",
+                "file": "1. Characters/TEST CHARACTER.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Silenced Testimony"
+              "title": "TEST CHARACTER"
             }
           }
         ]
@@ -53,7 +53,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#Evenement",
+                "query": "",
                 "matchingCase": true,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -85,16 +85,15 @@
     "type": "split",
     "children": [
       {
-        "id": "a0e8bafe24b1b4f5",
+        "id": "5a5b9d8dd99a9f7b",
         "type": "tabs",
         "children": [
           {
-            "id": "0875fe7ce113db38",
+            "id": "6e6290476223a30f",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "3. Locations/Stardust Lounge.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,50 +103,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Stardust Lounge"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "9675525a82a8c00b",
+            "id": "3d62a4febb9f79c2",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Welcome.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Welcome"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "5337d6e074d3d623",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "3. Locations/Dupont's Mansion.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "Outline of Dupont's Mansion"
-            }
-          },
-          {
-            "id": "861ef1750cebe732",
-            "type": "leaf",
-            "state": {
-              "type": "git-view",
-              "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
-            }
-          },
-          {
-            "id": "22a60148fccdba0f",
+            "id": "520f3900feae007d",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -160,9 +133,34 @@
               "icon": "lucide-tags",
               "title": "Tags"
             }
+          },
+          {
+            "id": "6942540f39a31cd0",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "1. Characters/TEST CHARACTER.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of TEST CHARACTER"
+            }
+          },
+          {
+            "id": "1cb9e6a6e3fd9652",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -176,38 +174,40 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "obsidian-git:Open Git source control": false,
-      "content-creation-plugin:Create Content": false
+      "content-creation-plugin:Create Content": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "eede6b96570fb521",
+  "active": "fc0639ef4065faef",
   "lastOpenFiles": [
-    "4. Stories/Silenced Testimony.md",
-    "4. Stories/Silenced Testimony.md",
-    "4. Stories/Shadows of the Crescent City.md",
-    "4. Stories/0. Chronology.canvas",
     "1. Characters/Samuel Blackwood.md",
-    "99. Notes/Future.md",
-    "Home.md",
-    "5. Events/Mr Dupont's death.md",
-    "4. Stories/New (Stories)2.md",
+    "1. Characters/TEST CHARACTER.md",
+    "4. Stories/Shadows of the Crescent City.md",
     "1. Characters/The Shadow.md",
-    "1. Characters/Mr Dupont.md",
-    "3. Locations/Stardust Lounge.md",
+    "4. Stories/0. Chronology.canvas",
+    "4. Stories/New (Stories)2.md",
     "1. Characters/Evelyn Dupont.md",
+    "Home.md",
+    "99. Notes/Future.md",
+    "Untitled.canvas",
+    "5. Events/Mr Dupont's death.md",
+    "4. Stories/New (Stories).md",
+    "4. Stories/Silenced Testimony.md",
     "4. Stories/The Last Gamble.md",
-    "Untitled.md",
-    "1. Characters/Samuel Blackwood3.md",
+    "4. Stories/The Missing Melody.md",
+    "2. Items/Dupont's Heirloom.md",
+    "3. Locations/Stardust Lounge.md",
     "3. Locations/Samuel's Office.md",
+    "3. Locations/Dupont's Mansion.md",
+    "1. Characters/Mr Dupont.md",
     "1. Characters/New (Characters).md",
-    "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
+    "5. Events/New (Events).md",
+    "3. Locations/New (Locations).md",
+    "2. Items/New (Items)r.md",
+    "1. Characters/Template.md",
+    "1. Characters/Evelyn 1.md",
+    "New (Characters).md",
     "1. Characters/New (Characters)3.md",
-    "1. Characters/New [Characters].md",
-    "1. Characters/New [Characters]2.md",
-    "1. Characters/New [Characters]v8.md",
-    "1. Characters/New [Characters]v5.md",
-    "1. Characters/New [Characters]v4.md",
-    "1. Characters/New [Characters]aaaaaaabb.md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",

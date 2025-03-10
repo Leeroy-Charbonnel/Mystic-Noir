@@ -89,7 +89,11 @@ data: {"defaultFolder":"4. Stories","name":"Shadows of the Crescent City","oldNa
 </span>
 
  
-> <span class='content-creation-textarea'><span>**Part 5: Confrontation and Choice**</span>
+<span class='content-creation-textarea'><span> 
+
+##Part 5:
+
+Confrontation and Choice</span>
 <span>**Setting:** An abandoned Dupont family property on the outskirts of the city</span> 
 </span>
 
