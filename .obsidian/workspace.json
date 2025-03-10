@@ -150,7 +150,7 @@
             }
           },
           {
-            "id": "1cb9e6a6e3fd9652",
+            "id": "321d3042ccdcdeab",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -178,12 +178,13 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "fc0639ef4065faef",
+  "active": "321d3042ccdcdeab",
   "lastOpenFiles": [
-    "1. Characters/Samuel Blackwood.md",
+    "Untitled.md",
     "1. Characters/TEST CHARACTER.md",
-    "4. Stories/Shadows of the Crescent City.md",
     "1. Characters/The Shadow.md",
+    "1. Characters/Samuel Blackwood.md",
+    "4. Stories/Shadows of the Crescent City.md",
     "4. Stories/0. Chronology.canvas",
     "4. Stories/New (Stories)2.md",
     "1. Characters/Evelyn Dupont.md",
@@ -207,7 +208,6 @@
     "1. Characters/Template.md",
     "1. Characters/Evelyn 1.md",
     "New (Characters).md",
-    "1. Characters/New (Characters)3.md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",

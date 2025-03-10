@@ -183,3 +183,121 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.content-name {
+  border: none !important;
+  background: none !important;
+  font-size: x-large !important;
+  font-weight: bold;
+  display: inline;
+  padding: 25px 0px !important;
+  margin: 0 !important;
+}
+
+.tiptap-editor-container {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  margin-bottom: 15px;
+  background-color: var(--background-primary);
+  position: relative;
+  margin-top: 40px;
+}
+
+.tiptap-toolbar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  transition: transform 0.2s ease, height 0.2s ease;
+  height: 42px;
+  position: absolute;
+  transform: translateY(-100%);
+  right: 0;
+}
+
+.tiptap-toolbar-hidden {
+   transform: translateY(0%); 
+}
+
+.tiptap-content {
+  position: relative;
+  min-height: 150px;
+  padding: 10px;
+  overflow-y: auto;
+  z-index: 0;
+  background: var(--background-primary);
+}
+
+.tiptap-content p {
+  margin: 0 0 0.5em 0;
+}
+
+.tiptap-button {
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tiptap-button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.tiptap-button.is-active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.tiptap-size-select {
+  padding: 4px;
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  margin-left: 4px;
+}
+
+.tiptap-label {
+  font-size: 14px;
+  margin-left: 8px;
+}

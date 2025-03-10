@@ -3,10 +3,15 @@ import ContentCreatorPlugin from './main';
 import { node, formatDisplayName, isObject, FormTemplate, hasValueAndType } from './utils';
 
 import { Editor } from '@tiptap/core';
-import { StarterKit } from '@tiptap/starter-kit';
 import { Bold } from '@tiptap/extension-bold';
 import { Italic } from '@tiptap/extension-italic';
 import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color'
+import Document from '@tiptap/extension-document'
+import Paragraph from '@tiptap/extension-paragraph'
+import Text from '@tiptap/extension-text'
+import FontFamily from '@tiptap/extension-font-family';
+
 
 function getAllPages(app: App): string[] {
     return app.vault.getMarkdownFiles().map(x => x.basename);
@@ -241,51 +246,156 @@ export class DynamicFormModal extends Modal {
                             .setValue(field.value as boolean));
                 } else {
                     if (field.type === 'textarea') {
+                        // Create editor container
+                        const editorContainer = node('div', { class: 'tiptap-editor-container' });
+                        container.appendChild(editorContainer);
 
+                        // Create toolbar (initially hidden)
+                        const toolbar = node('div', { class: 'tiptap-toolbar ' });
+                        editorContainer.appendChild(toolbar);
+                        // tiptap-toolbar-hidden
+
+                        // Create content area
+                        const contentArea = node('div', { class: 'tiptap-content' });
+                        editorContainer.appendChild(contentArea);
+
+                        // Initialize the editor
                         const editor = new Editor({
-                            element: container,
+                            element: contentArea,
                             extensions: [
-                                StarterKit,
-                                Bold,
+                                Document,
+                                Paragraph,
+                                Text,
+                                TextStyle.configure({}),
+                                Color,
                                 Italic,
-                                TextStyle,  // This extension allows styling such as font size
+                                Bold,
                             ],
-                            content: '<p>Hello World!</p>',
+                            content: field.value || '<p></p>',
+                            onUpdate: ({ editor }) => {
+                                const content = editor.getHTML();
+                                this.updateData(currentPath, content);
+                            },
+                        });
+
+                        // Bold button
+                        const boldButton = node('button', { class: 'tiptap-button', text: 'B', attributes: { 'title': 'Bold', 'type': 'button' } });
+                        boldButton.addEventListener('click', () => {
+                            editor.chain().focus().toggleBold().run();
+                            boldButton.classList.toggle('is-active', editor.isActive('bold'));
+                        });
+
+                        // Italic button
+                        const italicButton = node('button', { class: 'tiptap-button', text: 'I', attributes: { 'title': 'Italic', 'type': 'button' } });
+                        italicButton.style.fontStyle = 'italic';
+                        italicButton.addEventListener('click', () => {
+                            editor.chain().focus().toggleItalic().run();
+                            italicButton.classList.toggle('is-active', editor.isActive('italic'));
+                        });
+
+                        //Color button
+                        const colorInput = node('input', { class: 'tiptap-color-input', attributes: { type: 'color', title: 'Text Color', value: '#ff0000' } });
+                        colorInput.addEventListener('input', (event: any) => {
+                            const selectedColor = event!.target!.value;
+                            editor.chain().focus().setColor(selectedColor).run();
                         });
 
 
-                        // Function to toggle bold style
-                        function toggleBold() {
-                            editor.chain().focus().toggleBold().run();
-                        }
 
-                        // Function to toggle italic style
-                        function toggleItalic() {
-                            editor.chain().focus().toggleItalic().run();
-                        }
 
-                        // Function to change text size
-                        function changeTextSize(size) {
-                            editor.chain().focus().setTextStyle({ fontSize: size }).run();
-                        }
 
-                        // Create the buttons
-                        const boldButton = document.createElement('button');
-                        boldButton.textContent = 'Bold';
-                        boldButton.addEventListener('click', toggleBold);
+                        const fontSizeDropdown = document.createElement('select');
+                        fontSizeDropdown.className = 'tiptap-dropdown';
+                        fontSizeDropdown.title = 'Font Size';
 
-                        const italicButton = document.createElement('button');
-                        italicButton.textContent = 'Italic';
-                        italicButton.addEventListener('click', toggleItalic);
+                        // Font size options
+                        const fontSizes = ['16pt', '20pt', '24pt', '28pt', '32pt'];
+                        fontSizes.forEach(size => {
+                            const option = document.createElement('option');
+                            option.value = size;
+                            option.textContent = size;
+                            fontSizeDropdown.appendChild(option);
+                        });
 
-                        const textSizeButton = document.createElement('button');
-                        textSizeButton.textContent = 'Increase Text Size';
-                        textSizeButton.addEventListener('click', () => changeTextSize('24px'));
+                        // Default selected size
+                        fontSizeDropdown.value = '16px';
 
-                        // Append buttons to the document
-                        container.appendChild(boldButton);
-                        container.appendChild(italicButton);
-                        container.appendChild(textSizeButton);
+                        // Change text size when selecting from the dropdown
+                        fontSizeDropdown.addEventListener('change', () => {
+                            const selectedSize = fontSizeDropdown.value;
+                            editor.chain().focus().setMark('textStyle', { fontSize: selectedSize }).run();
+                        });
+
+                        // Append dropdown to toolbar
+                        toolbar.appendChild(fontSizeDropdown);
+                        toolbar.appendChild(colorInput);
+                        toolbar.appendChild(boldButton);
+                        toolbar.appendChild(italicButton);
+
+                        // Add event listener to update the editor as needed
+                        editor.on('transaction', () => {
+                            boldButton.classList.toggle('is-active', editor.isActive('bold'));
+                            italicButton.classList.toggle('is-active', editor.isActive('italic'));
+                        });
+
+                        // Show toolbar when editor is focused
+                        editor.on('focus', () => {
+                            toolbar.classList.remove('tiptap-toolbar-hidden');
+                        });
+
+                        // Hide toolbar when editor loses focus
+                        editor.on('blur', () => {
+                            // Small delay to allow for clicking on toolbar buttons
+                            setTimeout(() => {
+                                // Check if the active element is within the toolbar
+                                if (!toolbar.contains(document.activeElement)) {
+                                    toolbar.classList.add('tiptap-toolbar-hidden');
+                                }
+                            }, 100);
+                        });
+
+                        // Keep toolbar visible when interacting with it
+                        toolbar.addEventListener('mousedown', (e) => {
+                            // Prevent blur event on editor when clicking toolbar
+                            // e.preventDefault();
+                        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                         // const scrollContainer = this.modalEl.querySelector('.form-scroll-container') as HTMLElement;
                         // const fieldInput = new Setting(container)
