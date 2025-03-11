@@ -46,9 +46,9 @@
 
 /* Dynamic Form Modal */
 .dynamic-form-modal {
-    padding: 20px;
-    max-width: 600px;
-    max-height: 100%;
+  padding: 20px;
+  max-width: 600px;
+  max-height: 100%;
 }
 
 .form-scroll-container {
@@ -62,18 +62,6 @@
   background-color: var(--background-primary);
 }
 
-.form-scroll-container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: var(--text-normal);
-}
-
-.form-scroll-container h3 {
-  color: var(--text-accent);
-  border-bottom: 1px solid var(--background-modifier-border);
-  padding-bottom: 5px;
-  margin-top: 20px;
-}
 
 .multi-value-label {
   display: flex;
@@ -179,125 +167,104 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.content-name {
-  border: none !important;
-  background: none !important;
-  font-size: x-large !important;
-  font-weight: bold;
-  display: inline;
-  padding: 25px 0px !important;
-  margin: 0 !important;
+.dynamic-form-field-container.text .editor-label {
+  display: flex;
+  align-items: center;
 }
 
-.tiptap-editor-container {
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  margin-bottom: 15px;
+.dynamic-form-field-container {
+  display: grid;
+  grid-template-columns: 20% auto;
+  margin: 10px 0px;
+}
+
+.dynamic-form-field-container .editor-container {
+  width: -webkit-fill-available;
+}
+
+.dynamic-form-field-container .editor-label {
+  width: 100%;
+}
+
+.editor-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: bold;
+  position: relative;
+}
+
+.editor-container {
   background-color: var(--background-primary);
   position: relative;
-  margin-top: 40px;
 }
 
-.tiptap-toolbar {
+
+.editor-toolbar {
   display: flex;
   gap: 3px;
   align-items: center;
   transition: transform 0.2s ease, height 0.2s ease;
-  height: 42px;
   position: absolute;
   transform: translateY(-100%);
   right: 0;
+  height: 30px;
+  padding-bottom: 5px;
 }
 
-.tiptap-toolbar-hidden {
-   transform: translateY(0%); 
-}
-
-.tiptap-content {
+.editor-color-container {
   position: relative;
-  min-height: 150px;
+  height: 100%;
+  aspect-ratio: 1;
+}
+
+
+button:not(.clickable-icon) {
+  color: var(--text-color);
+  background-color: var(--interactive-normal);
+  box-shadow: var(--input-shadow);
+}
+
+.editor-button {
+  color: var(--text-normal);
+  border-radius: 4px;
+  padding: 8px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  height: 100%;
+  aspect-ratio: 1;
+}
+
+.editor-color-container input[type="color"] {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+}
+
+.editor-heading-select {
+  height: 100%;
+}
+
+.editor-content {
+  position: relative;
+  height: fit-content;
   padding: 10px;
   overflow-y: auto;
   z-index: 0;
   background: var(--background-primary);
-}
-
-.tiptap-content p {
-  margin: 0 0 0.5em 0;
-}
-
-.tiptap-button {
   border: 1px solid var(--background-modifier-border);
-  background-color: var(--background-secondary);
-  color: var(--text-normal);
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 14px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  word-break: break-word;
 }
 
-.tiptap-button:hover {
-  background-color: var(--background-modifier-hover);
+
+
+.editor-toolbar-hidden {
+  transform: translateY(0%);
 }
 
-.tiptap-button.is-active {
+
+
+.editor-button.is-active {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
-}
-
-.tiptap-size-select {
-  padding: 4px;
-  border-radius: 4px;
-  background-color: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  color: var(--text-normal);
-  margin-left: 4px;
-}
-
-.tiptap-label {
-  font-size: 14px;
-  margin-left: 8px;
 }

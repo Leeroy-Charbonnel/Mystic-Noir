@@ -127,23 +127,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "3. Locations/Dupont's Mansion.md",
+                "file": "1. Characters/TEST CHARACTER.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Dupont's Mansion"
-            }
-          },
-          {
-            "id": "861ef1750cebe732",
-            "type": "leaf",
-            "state": {
-              "type": "git-view",
-              "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
+              "title": "Outline of TEST CHARACTER"
             }
           },
           {
@@ -160,9 +150,19 @@
               "icon": "lucide-tags",
               "title": "Tags"
             }
+          },
+          {
+            "id": "7a64b98a1b40f871",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -170,27 +170,27 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "content-creation-plugin:Create Content": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "obsidian-git:Open Git source control": false,
-      "content-creation-plugin:Create Content": false
+      "obsidian-git:Open Git source control": false
     }
   },
   "active": "eede6b96570fb521",
   "lastOpenFiles": [
-    "4. Stories/Silenced Testimony.md",
     "Untitled.md",
-    "4. Stories/TEST STORY.md",
+    "Home.md",
     "1. Characters/TEST CHARACTER.md",
     "4. Stories/Shadows of the Crescent City.md",
+    "4. Stories/Silenced Testimony.md",
+    "4. Stories/TEST STORY.md",
     "4. Stories/0. Chronology.canvas",
     "1. Characters/Samuel Blackwood.md",
     "99. Notes/Future.md",
-    "Home.md",
     "5. Events/Mr Dupont's death.md",
     "4. Stories/New (Stories)2.md",
     "1. Characters/The Shadow.md",
