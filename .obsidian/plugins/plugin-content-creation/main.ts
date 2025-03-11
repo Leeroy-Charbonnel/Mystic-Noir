@@ -185,11 +185,12 @@ export default class ContentCreatorPlugin extends Plugin {
     }
 
     async editExistingContent(file: TFile) {
-        try {
+        //try {
             const properties=this.getFileProperties(this.app,file);
 
             if(properties==null) {
                 new Notice("Error editing content: Could not find properties");
+                console.error("Error editing content: Could not find properties");
                 return
             }
 
@@ -199,9 +200,11 @@ export default class ContentCreatorPlugin extends Plugin {
             const result=this.fillTemplateWithData(template,data);
 
             new DynamicFormModal(this.app,this,result).open();
-        } catch(error) {
-            new Notice(`Error editing content: ${error.message}`);
-        }
+        //} catch(error) {
+        //    new Notice(`Error editing content: ${error.message}`);
+        //    console.error(`Error editing content: ${error.message}`);
+            
+        //}
     }
 
     getFileProperties(app: App,file: TFile) {
