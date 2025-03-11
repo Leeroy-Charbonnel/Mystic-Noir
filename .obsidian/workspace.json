@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "1. Characters/TEST CHARACTER.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
@@ -150,7 +150,7 @@
             }
           },
           {
-            "id": "321d3042ccdcdeab",
+            "id": "1e6b518beb3279a7",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -178,13 +178,17 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "321d3042ccdcdeab",
+  "active": "1e6b518beb3279a7",
   "lastOpenFiles": [
-    "Untitled.md",
+    "4. Stories/TEST STORY.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "4. Stories/The Missing Melody.md",
+    "4. Stories/The Last Gamble.md",
+    "4. Stories/Silenced Testimony.md",
     "1. Characters/TEST CHARACTER.md",
+    "Untitled.md",
     "1. Characters/The Shadow.md",
     "1. Characters/Samuel Blackwood.md",
-    "4. Stories/Shadows of the Crescent City.md",
     "4. Stories/0. Chronology.canvas",
     "4. Stories/New (Stories)2.md",
     "1. Characters/Evelyn Dupont.md",
@@ -193,9 +197,6 @@
     "Untitled.canvas",
     "5. Events/Mr Dupont's death.md",
     "4. Stories/New (Stories).md",
-    "4. Stories/Silenced Testimony.md",
-    "4. Stories/The Last Gamble.md",
-    "4. Stories/The Missing Melody.md",
     "2. Items/Dupont's Heirloom.md",
     "3. Locations/Stardust Lounge.md",
     "3. Locations/Samuel's Office.md",
@@ -207,7 +208,6 @@
     "2. Items/New (Items)r.md",
     "1. Characters/Template.md",
     "1. Characters/Evelyn 1.md",
-    "New (Characters).md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",
