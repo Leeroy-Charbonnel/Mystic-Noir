@@ -261,21 +261,6 @@ export class DynamicFormModal extends Modal {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                         // Initialize the editor
                         const editor = new Editor({
                             element: contentArea,
@@ -283,9 +268,7 @@ export class DynamicFormModal extends Modal {
                                 Document,
                                 Paragraph,
                                 Text,
-                                TextStyle.configure({
-                                    types: ['textStyle'],
-                                }),
+                                TextStyle,
                                 Color,
                                 Italic,
                                 Bold,
@@ -318,62 +301,6 @@ export class DynamicFormModal extends Modal {
                             const selectedColor = event!.target!.value;
                             editor.chain().focus().setColor(selectedColor).run();
                         });
-
-
-
-                        const fontSizeDropdown = document.createElement('select');
-                        fontSizeDropdown.className = 'tiptap-size-select';
-                        fontSizeDropdown.title = 'Font Size';
-
-                        // Font size options
-                        const fontSizes = [
-                            { value: '8', label: '8px' },
-                            { value: '10', label: '10px' },
-                            { value: '12', label: '12px' },
-                            { value: '14', label: '14px' },
-                            { value: '16', label: '16px' },
-                            { value: '18', label: '18px' },
-                            { value: '20', label: '20px' },
-                            { value: '24', label: '24px' },
-                            { value: '28', label: '28px' },
-                            { value: '32', label: '32px' },
-                            { value: '36', label: '36px' },
-                            { value: '48', label: '48px' },
-                            { value: '72', label: '72px' }
-                        ];
-
-                        fontSizes.forEach(size => {
-                            const option = document.createElement('option');
-                            option.value = size.value;
-                            option.textContent = size.label;
-                            fontSizeDropdown.appendChild(option);
-                        });
-
-                        // Default selected size
-                        fontSizeDropdown.value = '16';
-
-                        fontSizeDropdown.addEventListener('change', () => {
-                            const selectedSize = fontSizeDropdown.value + 'px';
-                            
-                            // Directly manipulate the HTML content
-                            const selectedText = window.getSelection().toString();
-                            
-                            if (selectedText) {
-                                const styledText = `<span style="font-size: ${selectedSize}">${selectedText}</span>`;
-                                
-                                // Replace the selected text with styled version
-                                document.execCommand('insertHTML', false, styledText);
-                            }
-                            
-                            // Ensure editor remains focused
-                            editor.view.focus();
-                        });
-
-
-
-                        // Append dropdown to toolbar
-                        toolbar.appendChild(fontSizeDropdown);
-
 
 
                         // Append dropdown to toolbar
