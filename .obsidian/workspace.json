@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "1. Characters/TEST CHARACTER.md",
+                "file": "4. Stories/TEST STORY.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "TEST CHARACTER"
+              "title": "TEST STORY"
             }
           }
         ]
@@ -182,11 +182,11 @@
   },
   "active": "eede6b96570fb521",
   "lastOpenFiles": [
+    "4. Stories/Silenced Testimony.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "1. Characters/TEST CHARACTER.md",
     "Untitled.md",
     "Home.md",
-    "1. Characters/TEST CHARACTER.md",
-    "4. Stories/Shadows of the Crescent City.md",
-    "4. Stories/Silenced Testimony.md",
     "4. Stories/TEST STORY.md",
     "4. Stories/0. Chronology.canvas",
     "1. Characters/Samuel Blackwood.md",

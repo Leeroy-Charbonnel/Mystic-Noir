@@ -1,12 +1,11 @@
-import { App,Modal,Setting,TextAreaComponent,ButtonComponent,ToggleComponent,Notice,PopoverSuggest,TextComponent } from 'obsidian';
+import { App, Modal, Setting, TextAreaComponent, ButtonComponent, ToggleComponent, Notice, PopoverSuggest, TextComponent } from 'obsidian';
 import ContentCreatorPlugin from './main';
-import { node,formatDisplayName,isObject,FormTemplate,hasValueAndType } from './utils';
+import { node, formatDisplayName, isObject, FormTemplate, hasValueAndType } from './utils';
 
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color'
-
+import { Color } from '@tiptap/extension-color';
 
 function getAllPages(app: App): string[] {
     return app.vault.getMarkdownFiles().map(x => x.basename);
@@ -20,78 +19,79 @@ class SuggestComponent {
     searchCriteria: string;
     bracketsIndices: number[];
     focusNode: Node;
-    renderCb: (value: any,element: HTMLElement) => void;
-    selectCb: (value: any) => void;
 
-    constructor(app: App,parent: HTMLElement) {
-        this.parent=parent;
-        this.popover=new (PopoverSuggest as any)(app);
-        this.popover.selectSuggestion=this.selectSuggestion.bind(this);
-        this.popover.renderSuggestion=this.renderSuggestion.bind(this);
-        this.parent.addEventListener("input",(e: Event) => this.onInputChange(e));
-        this.parent.addEventListener("blur",() => this.popover.close());
-        this.popover.suggestEl.on("mousedown",".suggestion-item",(e: MouseEvent) => e.preventDefault());
+    constructor(app: App, parent: HTMLElement) {
+        this.parent = parent;
+        this.popover = new (PopoverSuggest as any)(app);
+        this.popover.selectSuggestion = this.selectSuggestion.bind(this);
+        this.popover.renderSuggestion = this.renderSuggestion.bind(this);
+        this.parent.addEventListener("input", (e: Event) => this.onInputChange(e));
+        this.parent.addEventListener("blur", () => this.popover.close());
+        this.popover.suggestEl.on("mousedown", ".suggestion-item", (e: MouseEvent) => e.preventDefault());
         this.addScrollListeners();
     }
 
     private addScrollListeners() {
-        let element=this.parent;
-        while(element) {
-            if(element.scrollHeight>element.clientHeight) {
-                element.addEventListener('scroll',() => {
-                    if(this.popover.isOpen) {
+        let element = this.parent;
+        while (element) {
+            if (element.scrollHeight > element.clientHeight) {
+                element.addEventListener('scroll', () => {
+                    if (this.popover.isOpen) {
                         this.updatePopoverPosition();
                     }
                 });
             }
-            (element as any)=element.parentElement;
+            (element as any) = element.parentElement;
         }
 
-        window.addEventListener('scroll',() => {
-            if(this.popover.isOpen) {
+        //Add global scroll listener to reposition popover
+        window.addEventListener('scroll', () => {
+            if (this.popover.isOpen) {
                 this.updatePopoverPosition();
             }
-        },true);
+        }, true);
     }
 
     private updatePopoverPosition() {
-        if(!this.focusNode) return;
-        const pos=this.getPos();
+        if (!this.focusNode) return;
+        const pos = this.getPos();
         this.popover.reposition(pos);
     }
 
     onInputChange(e: any) {
-        if(e==undefined) return;
+        if (e == undefined) return;
 
-        let selection=window.getSelection();
-        if(!selection||!selection.rangeCount||!selection.focusNode) return;
+        let selection = window.getSelection();
+        if (!selection || !selection.rangeCount || !selection.focusNode) return;
 
-        this.focusNode=selection.focusNode
-        let pos=selection.getRangeAt(0).startOffset;
-        let value=this.getValue();
+        this.focusNode = selection.focusNode;
+        let pos = selection.getRangeAt(0).startOffset;
+        let value = this.getValue();
 
-        if(e.inputType==="insertText"&&e.data) {
-            const closeChars=new Map([
-                ['{','}'],
-                ['[',']'],
-                ['(',')']
+        //Auto-complete brackets, parentheses, etc.
+        if (e.inputType === "insertText" && e.data) {
+            const closeChars = new Map([
+                ['{', '}'],
+                ['[', ']'],
+                ['(', ')']
             ]);
-            const closeChar=closeChars.get(e.data);
-            if(closeChar) {
-                this.setValue([value.slice(0,pos),closeChar,value.slice(pos)].join(''))
+            const closeChar = closeChars.get(e.data);
+            if (closeChar) {
+                this.setValue([value.slice(0, pos), closeChar, value.slice(pos)].join(''));
                 this.setCursorPosition(pos);
-            };
+            }
         }
-        value=this.getValue();
-        this.bracketsIndices=this.isBetweenBrackets(value,pos);
+        
+        value = this.getValue();
+        this.bracketsIndices = this.isBetweenBrackets(value, pos);
 
-        if(this.bracketsIndices.length>0) {
-            this.searchCriteria=value.slice(this.bracketsIndices[0],this.bracketsIndices[1]).toLowerCase().trim();
-            const suggests=this.searchCriteria===""
+        if (this.bracketsIndices.length > 0) {
+            this.searchCriteria = value.slice(this.bracketsIndices[0], this.bracketsIndices[1]).toLowerCase().trim();
+            const suggests = this.searchCriteria === ""
                 ? this.suggetsList
-                :this.suggetsList.filter(e => e.toLowerCase().trim().includes(this.searchCriteria));
+                : this.suggetsList.filter(e => e.toLowerCase().trim().includes(this.searchCriteria));
 
-            if(suggests.length>0) {
+            if (suggests.length > 0) {
                 this.popover.suggestions.setSuggestions(suggests);
                 this.popover.open();
                 this.popover.setAutoDestroy(this.parent);
@@ -106,88 +106,89 @@ class SuggestComponent {
         return;
     }
 
-
-    isBetweenBrackets(value: string,pos: number) {
+  
+    isBetweenBrackets(value: string, pos: number) {
         //Find the last [[ before cursor
-        const lastOpenBracket=value.lastIndexOf("[[",pos-1);
+        const lastOpenBracket = value.lastIndexOf("[[", pos - 1);
         //Find the next ]] after cursor
-        const nextCloseBracket=value.indexOf("]]",pos);
-        // Special case: "[[]]"
-        if(pos>=2&&pos<=value.length-2&&
-            value.substring(pos-2,pos)==="[["&&
-            value.substring(pos,pos+2)==="]]") {
-            return [pos,pos];
+        const nextCloseBracket = value.indexOf("]]", pos);
+        
+        //Special case: cursor is exactly between empty brackets [[]]
+        if (pos >= 2 && pos <= value.length - 2 &&
+            value.substring(pos - 2, pos) === "[[" &&
+            value.substring(pos, pos + 2) === "]]") {
+            return [pos, pos];
         }
-        //If either one is not found, return
-        if(lastOpenBracket===-1||nextCloseBracket===-1) {
+        
+        //If either bracket not found, return empty
+        if (lastOpenBracket === -1 || nextCloseBracket === -1) {
             return [];
         }
-        //Check if there's closing bracket between the last open and cursor
-        const closeBracketBetween=value.indexOf("]]",lastOpenBracket);
-        if(closeBracketBetween!==-1&&closeBracketBetween<pos) {
+        
+        //Check for closing bracket between opening and cursor
+        const closeBracketBetween = value.indexOf("]]", lastOpenBracket);
+        if (closeBracketBetween !== -1 && closeBracketBetween < pos) {
             return [];
         }
-        // Check if there's opening bracket between cursor and the next close
-        const openBracketBetween=value.indexOf("[[",pos);
-        if(openBracketBetween!==-1&&openBracketBetween<nextCloseBracket) {
+        
+        //Check for opening bracket between cursor and closing
+        const openBracketBetween = value.indexOf("[[", pos);
+        if (openBracketBetween !== -1 && openBracketBetween < nextCloseBracket) {
             return [];
         }
-        return [lastOpenBracket+2,nextCloseBracket];
+        
+        return [lastOpenBracket + 2, nextCloseBracket];
     }
 
     selectSuggestion(value: string) {
-        const oldValue=this.getValue();
-        const newValue=oldValue.slice(0,this.bracketsIndices[0])+
-            value+
+        const oldValue = this.getValue();
+        const newValue = oldValue.slice(0, this.bracketsIndices[0]) +
+            value +
             oldValue.slice(this.bracketsIndices[1]);
 
         this.setValue(newValue);
         //+2 to place cursor after "]]"
-        this.setCursorPosition(this.bracketsIndices[0]+value.length+2);
+        this.setCursorPosition(this.bracketsIndices[0] + value.length + 2);
         this.popover.close();
     }
 
     setCursorPosition(position: number) {
-        const selection=window.getSelection();
-        if(!selection) return;
+        const selection = window.getSelection();
+        if (!selection) return;
 
-        const range=document.createRange();
-        const actualPos=Math.min(position,this.focusNode.textContent?.length||0);
-        range.setStart(this.focusNode,actualPos);
+        const range = document.createRange();
+        const actualPos = Math.min(position, this.focusNode.textContent?.length || 0);
+        range.setStart(this.focusNode, actualPos);
         range.collapse(true);
 
         selection.removeAllRanges();
         selection.addRange(range);
     }
 
-    renderSuggestion(value: string,elmt: HTMLElement) {
-        const strong=this.searchCriteria;
-        const pos=value.toLowerCase().indexOf(strong.toLowerCase());
+    renderSuggestion(value: string, elmt: HTMLElement) {
+        const strong = this.searchCriteria;
+        const pos = value.toLowerCase().indexOf(strong.toLowerCase());
 
-        elmt.createDiv(void 0,(div) => {
-            div.createSpan({ text: value.substring(0,pos) });
-            div.createEl("strong",{ text: value.substring(pos,pos+strong.length) }).style.color="var(--text-accent)";
-            div.createSpan({ text: value.substring(pos+strong.length) });
+        elmt.createDiv(void 0, (div) => {
+            div.createSpan({ text: value.substring(0, pos) });
+            div.createEl("strong", { text: value.substring(pos, pos + strong.length) }).style.color = "var(--text-accent)";
+            div.createSpan({ text: value.substring(pos + strong.length) });
         });
     }
 
-    onRenderSuggest(cb: (value: string) => void) {
-        this.renderCb=cb;
-        return this;
-    }
-
     setSuggestList(values: string[]) {
-        this.suggetsList=values;
+        this.suggetsList = values;
         return this;
     }
 
     getValue(): string {
-        return this.focusNode? this.focusNode.textContent!:''
+        return this.focusNode ? this.focusNode.textContent! : '';
     }
 
     setValue(value: string) {
-        this.focusNode.textContent=value;
+        this.focusNode.textContent = value;
     }
+
     getPos(): {
         left: number;
         right: number;
@@ -196,7 +197,7 @@ class SuggestComponent {
         width: number;
         height: number;
     } {
-        let pos={
+        let pos = {
             left: 0,
             right: 0,
             top: 0,
@@ -205,189 +206,77 @@ class SuggestComponent {
             height: 0
         };
 
-        if(!this.focusNode) return pos;
-        const element=this.focusNode instanceof HTMLElement
+        if (!this.focusNode) return pos;
+        const element = this.focusNode instanceof HTMLElement
             ? this.focusNode
-            :this.focusNode.parentElement;
-        if(!element) return pos;
-        const rect=element.getBoundingClientRect();
-        pos.left=rect.left;
-        pos.right=rect.right;
-        pos.top=rect.top;
-        pos.bottom=rect.bottom;
-        pos.width=rect.width;
-        pos.height=rect.height;
-
-        //let parentElement=element.parentElement;
-        //while(parentElement) {
-        //    pos.top-=parentElement.scrollTop;
-        //    pos.left-=parentElement.scrollLeft;
-        //    parentElement=parentElement.parentElement;
-        //}
+            : this.focusNode.parentElement;
+        if (!element) return pos;
+        const rect = element.getBoundingClientRect();
+        pos.left = rect.left;
+        pos.right = rect.right;
+        pos.top = rect.top;
+        pos.bottom = rect.bottom;
+        pos.width = rect.width;
+        pos.height = rect.height;
 
         return pos;
     }
 }
 
+class RichTextEditor {
+    private app: App;
+    private pages: string[];
+    onChangeCb: (value: any) => void;
 
-
-export class DynamicFormModal extends Modal {
-    plugin: ContentCreatorPlugin;
-    data: FormTemplate;
-    multiValueFieldsMap: Map<string,MultiValueField>=new Map();
-    pages: string[];
-
-    constructor(app: App,plugin: ContentCreatorPlugin,data: FormTemplate) {
-        super(app);
-        this.plugin=plugin;
-        this.data=data;
-        this.pages=getAllPages(this.app);
+    constructor(app: App, pages: string[] = []) {
+        this.app = app;
+        this.pages = pages;
     }
 
-    onOpen() {
-        const { contentEl }=this;
-        const scrollContainer=node('div',{ class: 'form-scroll-container' });
-
-        this.modalEl.style.width="50%";
-        this.modalEl.style.resize="horizontal";
-        this.modalEl.style.minWidth="30%";
-        this.modalEl.style.maxWidth="95%";
-
-
-        this.contentEl.style.maxWidth="100%";
-
-        //Name input
-        const contentNameInput=node('input',{
-            classes: ['content-name'],
-            attributes: { 'type': 'text','value': this.data.name,'placeholder': 'Enter a name' }
-        });
-        contentNameInput.addEventListener('input',(e) => this.updateContentName((e.target as HTMLInputElement).value));
-
-        contentEl.empty();
-        contentEl.addClass('dynamic-form-modal');
-        contentEl.appendChild(scrollContainer);
-        scrollContainer.appendChild(contentNameInput);
-
-
-        this.generateForm(scrollContainer,this.data.template,"template");
-
-        const buttonContainer=node('div',{ class: 'button-container' });
-        contentEl.appendChild(buttonContainer);
-
-        // Cancel button
-        new ButtonComponent(buttonContainer)
-            .setButtonText('Cancel')
-            .onClick(() => this.close());
-
-        // Create button
-        new ButtonComponent(buttonContainer)
-            .setButtonText('Save')
-            .setCta()
-            .onClick(() => this.handleSubmit());
-    }
-
-    generateForm(container: HTMLElement,data: any,path: string='') {
-        Object.entries(data).forEach(([key,field]: [string,{ value: any,type: string }]) => {
-            const currentPath=path? `${path}.${key}`:key;
-            const fieldName=formatDisplayName(key);
-
-            if(!hasValueAndType(field)) {
-                const sectionContainer=node('div',{ class: `section-${key}` });
-                container.appendChild(node('h3',{ text: fieldName }));
-                container.appendChild(sectionContainer);
-                this.generateForm(sectionContainer,field,currentPath);
-            } else {
-
-                const fieldLabel=node('div',{ class: 'editor-label',text: fieldName });
-                const fieldContainer=node('div',{ class: 'dynamic-form-field-container' });
-                fieldContainer.appendChild(fieldLabel);
-
-
-                if(field.type.startsWith("array")) {
-                    const multiField=new MultiValueField(this.app,fieldContainer)
-                        .setName(fieldName)
-                        .setType(field.type.split(':')[1])
-                        .setValues(field.value as string[])
-                        .setScrollContainer(this.modalEl.querySelector('.form-scroll-container') as any)
-                        .onChange((newValues) => { this.updateData(currentPath,newValues); })
-                        .render();
-                    this.multiValueFieldsMap.set(currentPath,multiField);
-
-                } else if(field.type==="boolean") {
-                    new Setting(fieldContainer)
-                        .setName(fieldName)
-                        .addToggle(toggle => toggle
-                            .onChange(newValue => { this.updateData(currentPath,newValue); })
-                            .setValue(field.value as boolean));
-                } else {
-                    if(field.type==='textarea') {
-                        fieldContainer.addClass('textarea')
-                        this.createRichTextEditor(fieldContainer,currentPath,field.value,'textarea');
-                    } else {
-                        fieldContainer.addClass('text')
-                        this.createRichTextEditor(fieldContainer,currentPath,field.value,'text');
-
-
-                        //new SuggestComponent(this.app,fieldInput.controlEl.children[0]).setSuggestList(this.pages)
-
-                    }
-                }
-
-
-                container.appendChild(fieldContainer);
-
-            }
-        });
-    }
-
-
-    createRichTextEditor(container: HTMLElement,currentPath: string,value: any,inputType: string) {
-        const editorContainer=node('div',{ class: 'editor-container' });
-
-        const toolbar=node('div',{ class: 'editor-toolbar editor-toolbar-hidden' });
-        const contentArea=node('div',{ class: 'editor-content' });
-
-        const editor=new Editor({
+    createRichTextEditor(container: HTMLElement, value: any, inputType: string) {
+        const editorContainer = node('div', { class: 'editor-container' });
+        const toolbar = node('div', { class: 'editor-toolbar editor-toolbar-hidden' });
+        const contentArea = node('div', { class: 'editor-content' });
+        
+        //Can you add a placeholder to the things below ?
+        const editor = new Editor({
             element: contentArea,
             extensions: [
-                StarterKit.configure({ heading: { levels: [1,2,3] } }),
+                StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
                 TextStyle.configure({}),
                 Color,
             ],
-            content: value? value:Array(inputType=='textarea'? 5:1).fill('<p></p>').join(''),
+            content: value ? value : Array(inputType == 'textarea' ? 5 : 1).fill('<p></p>').join(''),
             onUpdate: ({ editor }) => {
-                const content=editor.getHTML();
-                this.updateData(currentPath,content);
+                const content = editor.getHTML();
+                this.onChangeCb(content);
             }
         });
 
-        //Bold
-        const boldButton=node('button',{ class: 'editor-button',text: 'B',attributes: { 'title': 'Bold','type': 'button' } });
-        boldButton.addEventListener('click',() => { editor.chain().focus().toggleBold().run(); });
+        //Create formatting buttons
+        const boldButton = node('button', { class: 'editor-button', text: 'B', attributes: { 'title': 'Bold', 'type': 'button' } });
+        boldButton.addEventListener('click', () => { editor.chain().focus().toggleBold().run(); });
 
-        //Italic
-        const italicButton=node('button',{ class: 'editor-button',text: 'I',attributes: { 'title': 'Italic','type': 'button','style': 'font-style:italic' } });
-        italicButton.addEventListener('click',() => { editor.chain().focus().toggleItalic().run(); });
+        const italicButton = node('button', { class: 'editor-button', text: 'I', attributes: { 'title': 'Italic', 'type': 'button', 'style': 'font-style:italic' } });
+        italicButton.addEventListener('click', () => { editor.chain().focus().toggleItalic().run(); });
 
-        //Strikethrough
-        const strikeButton=node('button',{ class: 'editor-button',text: 'S',attributes: { 'title': 'Strikethrough','type': 'button','style': 'text-decoration:line-through' } });
-        strikeButton.addEventListener('click',() => { editor.chain().focus().toggleStrike().run(); });
+        const strikeButton = node('button', { class: 'editor-button', text: 'S', attributes: { 'title': 'Strikethrough', 'type': 'button', 'style': 'text-decoration:line-through' } });
+        strikeButton.addEventListener('click', () => { editor.chain().focus().toggleStrike().run(); });
 
-        //Color (Hidden input color behind a button)
-        const colorContainer=node('div',{ class: 'editor-color-container' });
-        const colorButton=node('button',{ class: 'editor-button',text: 'A',attributes: { 'title': 'Text Color','type': 'button' } });
-        const colorInput=node('input',{ class: 'editor-color-input',attributes: { type: 'color',title: 'Pick Text Color',value: getComputedStyle(document.body).getPropertyValue('--text-normal') } });
+        //Color picker with hidden input
+        const colorContainer = node('div', { class: 'editor-color-container' });
+        const colorButton = node('button', { class: 'editor-button', text: 'A', attributes: { 'title': 'Text Color', 'type': 'button' } });
+        const colorInput = node('input', { class: 'editor-color-input', attributes: { type: 'color', title: 'Pick Text Color', value: getComputedStyle(document.body).getPropertyValue('--text-normal') } });
 
-        colorInput.addEventListener('input',(event: any) => {
-            const selectedColor=event.target.value;
-            colorButton.style.color=selectedColor;
+        colorInput.addEventListener('input', (event: any) => {
+            const selectedColor = event.target.value;
+            colorButton.style.color = selectedColor;
             editor.chain().focus().setColor(selectedColor).run();
         });
-        colorButton.style.color='#ffffff';
-        colorButton.addEventListener('click',() => { colorInput.click(); });
+        colorButton.style.color = '#ffffff';
+        colorButton.addEventListener('click', () => { colorInput.click(); });
 
         container.appendChild(editorContainer);
-
         editorContainer.appendChild(toolbar);
         editorContainer.appendChild(contentArea);
 
@@ -402,129 +291,238 @@ export class DynamicFormModal extends Modal {
         let bulletListButton: HTMLButtonElement;
         let numberedListButton: HTMLButtonElement;
 
-        if(inputType=="textarea") {
-            //Heading
-            const headingDropdown=document.createElement('select');
-            headingDropdown.className='editor-heading-select';
-            headingDropdown.title='Heading Level';
+        //Add extra formatting options for textarea fields
+        if (inputType == "textarea") {
+            //Heading dropdown
+            const headingDropdown = document.createElement('select');
+            headingDropdown.className = 'editor-heading-select';
+            headingDropdown.title = 'Heading Level';
 
-            const headingLevels=[{ level: 0,name: 'Normal' },{ level: 1,name: 'Title 1' },{ level: 2,name: 'Title 2' },{ level: 3,name: 'Title 3' }];
+            const headingLevels = [{ level: 0, name: 'Normal' }, { level: 1, name: 'Title 1' }, { level: 2, name: 'Title 2' }, { level: 3, name: 'Title 3' }];
             headingLevels.forEach(heading => {
-                const option=document.createElement('option');
-                option.value=heading.level.toString();
-                option.textContent=heading.name;
+                const option = document.createElement('option');
+                option.value = heading.level.toString();
+                option.textContent = heading.name;
                 headingDropdown.appendChild(option);
             });
-            headingDropdown.value='0';
+            headingDropdown.value = '0';
 
-            headingDropdown.addEventListener('change',() => {
-                const selectedLevel=parseInt(headingDropdown.value);
-                if(selectedLevel===0) {
+            headingDropdown.addEventListener('change', () => {
+                const selectedLevel = parseInt(headingDropdown.value);
+                if (selectedLevel === 0) {
                     editor.chain().focus().setParagraph().run();
                 } else {
-                    editor.chain().focus().setHeading({ level: selectedLevel as 1|2|3 }).run();
+                    editor.chain().focus().setHeading({ level: selectedLevel as 1 | 2 | 3 }).run();
                 }
             });
 
-            //Update dropdown
-            editor.on('transaction',() => {
-                if(editor.isActive('heading')) {
-                    const currentLevel=editor.getAttributes('heading').level;
-                    headingDropdown.value=currentLevel.toString();
+            //Update dropdown when editor selection changes
+            editor.on('transaction', () => {
+                if (editor.isActive('heading')) {
+                    const currentLevel = editor.getAttributes('heading').level;
+                    headingDropdown.value = currentLevel.toString();
                 } else {
-                    headingDropdown.value='0';
+                    headingDropdown.value = '0';
                 }
             });
 
-
-            //UL
-            bulletListButton=node('button',{ class: 'editor-button',text: '•',attributes: { 'title': 'Bullet List','type': 'button' } });
-            bulletListButton.addEventListener('click',() => {
+            //List formatting buttons
+            bulletListButton = node('button', { class: 'editor-button', text: '•', attributes: { 'title': 'Bullet List', 'type': 'button' } });
+            bulletListButton.addEventListener('click', () => {
                 editor.chain().focus().toggleBulletList().run();
-                bulletListButton.classList.toggle('is-active',editor.isActive('bulletList'));
+                bulletListButton.classList.toggle('is-active', editor.isActive('bulletList'));
             });
 
-            //OL
-            numberedListButton=node('button',{ class: 'editor-button',text: '#',attributes: { 'title': 'Numbered List','type': 'button' } });
-            numberedListButton.addEventListener('click',() => {
+            numberedListButton = node('button', { class: 'editor-button', text: '#', attributes: { 'title': 'Numbered List', 'type': 'button' } });
+            numberedListButton.addEventListener('click', () => {
                 editor.chain().focus().toggleOrderedList().run();
-                numberedListButton.classList.toggle('is-active',editor.isActive('orderedList'));
+                numberedListButton.classList.toggle('is-active', editor.isActive('orderedList'));
             });
-
 
             toolbar.appendChild(headingDropdown);
             toolbar.appendChild(bulletListButton);
             toolbar.appendChild(numberedListButton);
         }
 
+        //Update button states based on current formatting
+        editor.on('transaction', () => {
+            boldButton.classList.toggle('is-active', editor.isActive('bold'));
+            italicButton.classList.toggle('is-active', editor.isActive('italic'));
+            strikeButton.classList.toggle('is-active', editor.isActive('strike'));
 
-        editor.on('transaction',() => {
-            boldButton.classList.toggle('is-active',editor.isActive('bold'));
-            italicButton.classList.toggle('is-active',editor.isActive('italic'));
-            strikeButton.classList.toggle('is-active',editor.isActive('strike'));
-
-            if(inputType=="textarea") {
-                bulletListButton.classList.toggle('is-active',editor.isActive('bulletList'));
-                numberedListButton.classList.toggle('is-active',editor.isActive('orderedList'));
+            if (inputType == "textarea") {
+                bulletListButton.classList.toggle('is-active', editor.isActive('bulletList'));
+                numberedListButton.classList.toggle('is-active', editor.isActive('orderedList'));
             }
 
-            if(editor.isActive('textStyle')) {
-                const currentColor=editor.getAttributes('textStyle').color;
-                if(currentColor) {
-                    colorButton.style.color=currentColor;
-                    colorInput.value=currentColor;
+            if (editor.isActive('textStyle')) {
+                const currentColor = editor.getAttributes('textStyle').color;
+                if (currentColor) {
+                    colorButton.style.color = currentColor;
+                    colorInput.value = currentColor;
                 }
             }
         });
 
-        //Show toolbar
-        editor.on('focus',() => { toolbar.classList.remove('editor-toolbar-hidden'); });
+        //Show toolbar on focus
+        editor.on('focus', () => { toolbar.classList.remove('editor-toolbar-hidden'); });
 
-        //Hide toolbar (except if we click on toolbar element)
-        editor.on('blur',() => {
+        //Hide toolbar on blur (except when clicking toolbar itself)
+        editor.on('blur', () => {
             setTimeout(() => {
-                if(!editorContainer.contains(document.activeElement)) { toolbar.classList.add('editor-toolbar-hidden'); }
-            },100);
+                if (!editorContainer.contains(document.activeElement)) { 
+                    toolbar.classList.add('editor-toolbar-hidden'); 
+                }
+            }, 100);
         });
 
+        new SuggestComponent(this.app, contentArea).setSuggestList(this.pages);
+    }
 
-        new SuggestComponent(this.app,contentArea).setSuggestList(this.pages);
+    onChange(cb: (value: any) => void) {
+        this.onChangeCb = cb;
+        return this;
+    }
+}
+
+
+export class DynamicFormModal extends Modal {
+    plugin: ContentCreatorPlugin;
+    data: FormTemplate;
+    multiValueFieldsMap: Map<string, MultiValueField> = new Map();
+    pages: string[];
+
+    constructor(app: App, plugin: ContentCreatorPlugin, data: FormTemplate) {
+        super(app);
+        this.plugin = plugin;
+        this.data = data;
+        this.pages = getAllPages(this.app);
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        const scrollContainer = node('div', { class: 'form-scroll-container' });
+
+        //Configure modal appearance
+        this.modalEl.style.width = "50%";
+        this.modalEl.style.resize = "horizontal";
+        this.modalEl.style.minWidth = "30%";
+        this.modalEl.style.maxWidth = "95%";
+        this.contentEl.style.maxWidth = "100%";
+
+        //Create content name input field
+        const contentNameInput = node('input', {
+            classes: ['content-name'],
+            attributes: { 'type': 'text', 'value': this.data.name, 'placeholder': 'Enter a name' }
+        });
+        contentNameInput.addEventListener('input', (e) => this.updateContentName((e.target as HTMLInputElement).value));
+
+        //Build the form structure
+        contentEl.empty();
+        contentEl.addClass('dynamic-form-modal');
+        contentEl.appendChild(scrollContainer);
+        scrollContainer.appendChild(contentNameInput);
+
+        this.generateForm(scrollContainer, this.data.template, "template");
+
+        //Add action buttons
+        const buttonContainer = node('div', { class: 'button-container' });
+        contentEl.appendChild(buttonContainer);
+
+        new ButtonComponent(buttonContainer)
+            .setButtonText('Cancel')
+            .onClick(() => this.close());
+
+        new ButtonComponent(buttonContainer)
+            .setButtonText('Save')
+            .setCta()
+            .onClick(() => this.handleSubmit());
+    }
+
+    /**
+     * Recursively generates form fields based on the template structure
+     */
+    generateForm(container: HTMLElement, data: any, path: string = '') {
+        Object.entries(data).forEach(([key, field]: [string, { value: any, type: string }]) => {
+            const currentPath = path ? `${path}.${key}` : key;
+            const fieldName = formatDisplayName(key);
+
+            //Handle nested sections
+            if (!hasValueAndType(field)) {
+                const sectionContainer = node('div', { class: `section-${key}` });
+                container.appendChild(node('h3', { text: fieldName }));
+                container.appendChild(sectionContainer);
+                this.generateForm(sectionContainer, field, currentPath);
+            } else {
+                //Handle field types
+                const fieldContainer = node('div', { class: 'dynamic-form-field-container' });
+
+                if (field.type.startsWith("array")) {
+                    //Create multi-value field (array type)
+                    const multiField = new MultiValueField(this.app, fieldContainer)
+                        .setName(fieldName)
+                        .setType(field.type.split(':')[1])
+                        .setValues(field.value as string[])
+                        .setScrollContainer(this.modalEl.querySelector('.form-scroll-container') as any)
+                        .onChange((newValues) => { this.updateData(currentPath, newValues); })
+                        .render();
+                    this.multiValueFieldsMap.set(currentPath, multiField);
+                } else if (field.type === "boolean") {
+                    //Create toggle/checkbox for boolean values
+                    new Setting(fieldContainer)
+                        .setName(fieldName)
+                        .addToggle(toggle => toggle
+                            .onChange(newValue => { this.updateData(currentPath, newValue); })
+                            .setValue(field.value as boolean));
+                } else {
+                    //Create rich text editor for text/textarea
+                    const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
+                    fieldContainer.appendChild(fieldLabel);
+                    fieldContainer.addClass(field.type);
+                    const fieldEl = new RichTextEditor(this.app, this.pages);
+                    fieldEl.createRichTextEditor(fieldContainer, field.value, field.type);
+                    fieldEl.onChange(newValue => { this.updateData(currentPath, newValue); });
+                }
+
+                container.appendChild(fieldContainer);
+            }
+        });
     }
 
     updateContentName(value: any) {
-        this.data.name=value
+        this.data.name = value;
     }
 
-    updateData(path: string,value: any) {
-        const pathParts: string[]=path.split('.');
-        let current: any=this.data;
-        for(let i=0;i<pathParts.length-1;i++) {
-            current=current[pathParts[i]];
+    /**
+     * Updates field value in the data structure using the path
+     */
+    updateData(path: string, value: any) {
+        const pathParts: string[] = path.split('.');
+        let current: any = this.data;
+        for (let i = 0; i < pathParts.length - 1; i++) {
+            current = current[pathParts[i]];
         }
-        current[pathParts[pathParts.length-1]].value=value;
+        current[pathParts[pathParts.length - 1]].value = value;
+        
+        
+        console.log(this.data)
     }
 
     async handleSubmit() {
-        if(!this.data.name||this.data.name.trim()==="") {
+        if (!this.data.name || this.data.name.trim() === "") {
             new Notice("Please provide a name for the content");
             return;
         }
-        const file=await this.plugin.createContentFile(this.data);
-        if(file)
+        const file = await this.plugin.createContentFile(this.data);
+        if (file) {
             this.close();
+        }
     }
 }
 
-
-function adjustTextAreaSize(scrollContainer: HTMLElement,textarea: HTMLTextAreaElement) {
-    if(scrollContainer==null) return
-    const scrollTop=scrollContainer.scrollTop;
-    textarea.style.height="auto";
-    textarea.style.height=(textarea.scrollHeight+2)+'px';
-    scrollContainer.scrollTop=scrollTop;
-}
-
-
+/**
+ * Component for handling arrays of values (text or textarea)
+ */
 class MultiValueField {
     private app: App;
     private name: string;
@@ -535,86 +533,88 @@ class MultiValueField {
     private labelContainer: HTMLElement;
     private values: string[];
     private inputsContainer: HTMLElement;
-    private onValuesChanged: (values: string[]) => void;
+    private onChangeCb: (values: string[]) => void;
 
+    constructor(app: App, containerEl: HTMLElement) {
+        this.app = app;
+        this.container = containerEl;
+        this.name = "";
+        this.values = [];
+        this.pages = getAllPages(this.app);
 
-    constructor(app: App,containerEl: HTMLElement) {
-        this.app=app;
-        this.container=containerEl;
-        this.name="";
-        this.values=[];
-        this.pages=getAllPages(this.app);
-
-        this.labelContainer=node('div',{ class: 'multi-value-label' });
-        const addButton=node('button',{ class: 'multi-value-add-button',children: [node("span",{ text: '+',})] });
-        this.inputsContainer=node('div',{ class: 'multi-value-inputs' });
+        //Create UI structure
+        this.labelContainer = node('div', { class: 'multi-value-label' });
+        const addButton = node('button', { class: 'multi-value-add-button', children: [node("span", { text: '+' })] });
+        this.inputsContainer = node('div', { class: 'multi-value-inputs' });
 
         this.container.appendChild(this.labelContainer);
-        this.labelContainer.appendChild(node('span',{ text: this.name }));
+        this.labelContainer.appendChild(node('span', { text: this.name }));
         this.labelContainer.appendChild(addButton);
         this.container.appendChild(this.inputsContainer);
 
-        addButton.addEventListener('click',() => this.addValue());
+        addButton.addEventListener('click', () => this.addValue());
     }
+
     setName(value: string) {
-        this.name=value;
-        this.labelContainer.querySelector("span")!.innerText=this.name;
-        return this
-    }
-    setType(value: string) {
-        this.inputType=value;
-        return this
-    }
-    setScrollContainer(scrollContainer: HTMLElement) {
-        this.scrollContainer=scrollContainer;
-        return this
-    }
-    setValues(values: string[]) {
-        this.values=values||[''];
-        return this
-    }
-    onChange(cb: (value: string[]) => void) {
-        this.onValuesChanged=cb;
+        this.name = value;
+        this.labelContainer.querySelector("span")!.innerText = this.name;
         return this;
     }
+
+    setType(value: string) {
+        this.inputType = value;
+        return this;
+    }
+
+    setScrollContainer(scrollContainer: HTMLElement) {
+        this.scrollContainer = scrollContainer;
+        return this;
+    }
+
+    setValues(values: string[]) {
+        this.values = values || [''];
+        return this;
+    }
+
+    onChange(cb: (value: string[]) => void) {
+        this.onChangeCb = cb;
+        return this;
+    }
+
     render() {
         this.inputsContainer.empty();
 
-        this.values.forEach((value,index) => {
-            const inputRow=node('div',{ class: 'multi-value-input-row' });
-            const input=node(this.inputType=='text'? 'input':'textarea',{ class: 'input',attributes: { 'type': 'text','placeholder': 'Enter value...' } });
-            input.value=value;
+        //Create a field for each value in the array
+        this.values.forEach((value, index) => {
+            const inputRow = node('div', { class: 'multi-value-input-row' });
 
+            const fieldEl = new RichTextEditor(this.app, this.pages);
+            fieldEl.createRichTextEditor(inputRow, value, this.inputType);
 
-            this.inputsContainer.appendChild(inputRow);
-            inputRow.appendChild(input);
-            if(this.inputType=="textarea") {
-                adjustTextAreaSize(this.scrollContainer,input as HTMLTextAreaElement)
-            }
-
-            input.addEventListener('input',(e) => {
-                this.values[index]=(e.target as HTMLInputElement).value;
-                this.onValuesChanged(this.values);
-                if(this.inputType=="textarea") { adjustTextAreaSize(this.scrollContainer,input as HTMLTextAreaElement) }
+            fieldEl.onChange((newValue) => {
+                this.values[index] = newValue;
+                this.onChangeCb(this.values);
             });
 
-            new SuggestComponent(this.app,input).setSuggestList(this.pages);
-            if(this.values.length>1) {
-                const removeButton=node('button',{ class: 'multi-value-remove-button',children: [node("span",{ text: 'x',})] });
+            this.inputsContainer.appendChild(inputRow);
+
+            //Add removal button for all but the first item
+            if (this.values.length > 1) {
+                const removeButton = node('button', { class: 'multi-value-remove-button', children: [node("span", { text: 'x' })] });
                 inputRow.appendChild(removeButton);
-                removeButton.addEventListener('click',() => {
-                    this.values.splice(index,1);
-                    this.onValuesChanged(this.values);
+                removeButton.addEventListener('click', () => {
+                    this.values.splice(index, 1);
+                    this.onChangeCb(this.values);
                     this.render();
                 });
             }
         });
-        return this
+        return this;
     }
 
     private addValue() {
         this.values.push('');
-        this.onValuesChanged(this.values);
+        this.onChangeCb(this.values);
         this.render();
     }
 }
