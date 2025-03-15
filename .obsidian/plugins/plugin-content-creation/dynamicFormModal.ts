@@ -7,6 +7,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 
+
 function getAllPages(app: App): string[] {
     return app.vault.getMarkdownFiles().map(x => x.basename);
 }
@@ -78,7 +79,7 @@ class SuggestComponent {
                 this.setCursorPosition(pos);
             }
         }
-        
+
         //Get value again after auto-complete
         value=this.getValue();
         this.bracketsIndices=this.isBetweenBrackets(value,pos);
@@ -216,6 +217,10 @@ class SuggestComponent {
     }
 }
 
+
+
+
+
 class RichTextEditor {
     private app: App;
     private pages: string[];
@@ -231,7 +236,10 @@ class RichTextEditor {
         const toolbar=node('div',{ class: 'editor-toolbar editor-toolbar-hidden' });
         const contentArea=node('div',{ class: 'editor-content' });
 
-        //Can you add a placeholder to the things below ?
+
+        let processedContent=value;
+        console.log(processedContent);
+
         const editor=new Editor({
             element: contentArea,
             extensions: [
@@ -239,7 +247,7 @@ class RichTextEditor {
                 TextStyle.configure({}),
                 Color,
             ],
-            content: value? value:Array(inputType=='textarea'? 5:1).fill('<p></p>').join(''),
+            content: processedContent? processedContent:Array(inputType=='textarea'? 5:1).fill('<p></p>').join(''),
             onUpdate: ({ editor }) => {
                 const content=editor.getHTML();
                 this.onChangeCb(content);
@@ -385,6 +393,10 @@ export class DynamicFormModal extends Modal {
     multiValueFieldsMap: Map<string,MultiValueField>=new Map();
     pages: string[];
 
+    private isDragging: boolean=false;
+    private dragStartX: number=0;
+    private dragStartY: number=0;
+
     constructor(app: App,plugin: ContentCreatorPlugin,data: FormTemplate) {
         super(app);
         this.plugin=plugin;
@@ -394,7 +406,6 @@ export class DynamicFormModal extends Modal {
 
     onOpen() {
         const { contentEl }=this;
-        const scrollContainer=node('div',{ class: 'form-scroll-container' });
 
         //Configure modal appearance
         this.modalEl.style.width="50%";
@@ -402,6 +413,30 @@ export class DynamicFormModal extends Modal {
         this.modalEl.style.minWidth="30%";
         this.modalEl.style.maxWidth="95%";
         this.contentEl.style.maxWidth="100%";
+
+
+        // Create the title span separately so you can reference it
+        const titleSpan=node('span',{ text: `Edit ${this.data.contentType}` });
+
+        const dragHandle=node('div',{
+            class: 'modal-drag-handle',
+            children: [titleSpan]
+        });
+
+        dragHandle.addEventListener('mousedown',(e: MouseEvent) => {
+            if(e.target===dragHandle||e.target===titleSpan) {
+                this.isDragging=true;
+                this.dragStartX=e.clientX;
+                this.dragStartY=e.clientY;
+                this.modalEl.addClass('is-dragging');
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mousemove',this.handleMouseMove);
+        document.addEventListener('mouseup',this.handleMouseUp);
+
+        const scrollContainer=node('div',{ class: 'form-scroll-container' });
 
         //Create content name input field
         const contentNameInput=node('input',{
@@ -413,7 +448,9 @@ export class DynamicFormModal extends Modal {
         //Build the form structure
         contentEl.empty();
         contentEl.addClass('dynamic-form-modal');
+        contentEl.appendChild(dragHandle);
         contentEl.appendChild(scrollContainer);
+        
         scrollContainer.appendChild(contentNameInput);
 
         this.generateForm(scrollContainer,this.data.template,"template",0);
@@ -432,8 +469,8 @@ export class DynamicFormModal extends Modal {
             .onClick(() => this.handleSubmit());
     }
 
-    generateForm(container: HTMLElement,data: any,path: string='', deep:number) {
-        
+    generateForm(container: HTMLElement,data: any,path: string='',deep: number) {
+
         Object.entries(data).forEach(([key,field]: [string,{ value: any,type: string }]) => {
             const currentPath=path? `${path}.${key}`:key;
             const fieldName=formatDisplayName(key);
@@ -442,13 +479,13 @@ export class DynamicFormModal extends Modal {
             if(!hasValueAndType(field)) {
                 const headerContainer=node('div',{ class: `header-container` });
                 const sectionContainer=node('div',{ class: `section-container` });
-                headerContainer.appendChild(node('div',{ class:`header-${deep}`, text: fieldName }));
-                headerContainer.appendChild(node('div',{ class:`header-separator-${deep} header-separator`}));
-                
+                headerContainer.appendChild(node('div',{ class: `header-${deep}`,text: fieldName }));
+                headerContainer.appendChild(node('div',{ class: `header-separator-${deep} header-separator` }));
+
                 container.appendChild(headerContainer);
                 container.appendChild(sectionContainer);
-                
-                this.generateForm(sectionContainer,field,currentPath, deep+1);
+
+                this.generateForm(sectionContainer,field,currentPath,deep+1);
             } else {
                 //Handle field types
                 const fieldContainer=node('div',{ class: 'dynamic-form-field-container' });
@@ -496,9 +533,6 @@ export class DynamicFormModal extends Modal {
             current=current[pathParts[i]];
         }
         current[pathParts[pathParts.length-1]].value=value;
-
-
-        console.log(this.data)
     }
 
     async handleSubmit() {
@@ -510,6 +544,32 @@ export class DynamicFormModal extends Modal {
         if(file) {
             this.close();
         }
+    }
+
+    private handleMouseMove=(e: MouseEvent) => {
+        if(!this.isDragging) return;
+
+        const dx=e.clientX-this.dragStartX;
+        const dy=e.clientY-this.dragStartY;
+
+        const currentLeft=parseInt(getComputedStyle(this.modalEl).left,10)||0;
+        const currentTop=parseInt(getComputedStyle(this.modalEl).top,10)||0;
+
+        this.modalEl.style.left=`${currentLeft+dx}px`;
+        this.modalEl.style.top=`${currentTop+dy}px`;
+
+        this.dragStartX=e.clientX;
+        this.dragStartY=e.clientY;
+    }
+
+    private handleMouseUp=() => {
+        this.isDragging=false;
+        this.modalEl.removeClass('is-dragging');
+    }
+
+    onClose() {
+        document.removeEventListener('mousemove',this.handleMouseMove);
+        document.removeEventListener('mouseup',this.handleMouseUp);
     }
 }
 

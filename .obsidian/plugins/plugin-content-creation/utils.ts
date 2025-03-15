@@ -94,3 +94,28 @@ export function hasValueAndType(obj: any): boolean {
         &&'value' in obj
         &&'type' in obj;
 }
+
+
+export function convertLinks(text: string): string {
+    if(!text||typeof text!=='string') return text;
+    const wikiLinkRegex=/\[\[(.*?)(?:\|(.*?))?\]\]/g;
+    return text.replace(wikiLinkRegex,(match,linkPath,displayText) => {
+        const display=displayText? displayText:linkPath;
+        return `<a data-href="${linkPath}" href="${linkPath}" class="internal-link" target="_blank" rel="noopener nofollow">${display}</a>`;
+    });
+}
+
+export function processLinks(content: string): HTMLElement {
+    const linkElement = node('a', {
+        text: content,
+        attributes: {
+            'data-href': content,
+            'href': content,
+            'class': 'internal-link',
+            'target': '_blank',
+            'rel': 'noopener nofollow'
+        }
+    });
+    
+    return linkElement;
+}

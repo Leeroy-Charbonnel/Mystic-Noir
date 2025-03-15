@@ -1,38 +1,20 @@
 {
   "main": {
-    "id": "393f5294378c5b2d",
+    "id": "3b1b592b20de70d0",
     "type": "split",
     "children": [
       {
-        "id": "3a5555f0aa5a197c",
+        "id": "6b8e377c074e6024",
         "type": "tabs",
         "children": [
           {
-            "id": "eede6b96570fb521",
+            "id": "f05d52d5e5acefa2",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Home.md",
-                "mode": "preview",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Home"
-            }
-          },
-          {
-            "id": "b8c70006a431148f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "4. Stories/Shadows of the Crescent City.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Shadows of the Crescent City"
+              "title": "New tab"
             }
           }
         ]
@@ -41,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "7287d59e40c5567e",
+    "id": "8d867154dcc749ab",
     "type": "split",
     "children": [
       {
-        "id": "efed082afc961092",
+        "id": "5a3cfb41e65b25c6",
         "type": "tabs",
         "children": [
           {
-            "id": "af7454b029dc15df",
+            "id": "2c237956b5b4af41",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -62,13 +44,13 @@
             }
           },
           {
-            "id": "6fdd60d230c2dbf7",
+            "id": "c697e132c37fcfbd",
             "type": "leaf",
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#Evenement",
-                "matchingCase": true,
+                "query": "",
+                "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
                 "extraContext": false,
@@ -79,7 +61,7 @@
             }
           },
           {
-            "id": "59ad27ec3dc948d3",
+            "id": "c53e26ea8cdd5bc2",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -92,23 +74,23 @@
       }
     ],
     "direction": "horizontal",
-    "width": 284.5
+    "width": 300
   },
   "right": {
-    "id": "0a66d986e691d328",
+    "id": "137c8d881fd1f709",
     "type": "split",
     "children": [
       {
-        "id": "a0e8bafe24b1b4f5",
+        "id": "9e804982a85cc665",
         "type": "tabs",
         "children": [
           {
-            "id": "0875fe7ce113db38",
+            "id": "0dbf16b7c149611a",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "3. Locations/Stardust Lounge.md",
+                "file": "4. Stories/New (Stories).md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,40 +100,25 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Stardust Lounge"
+              "title": "Backlinks for New (Stories)"
             }
           },
           {
-            "id": "9675525a82a8c00b",
+            "id": "ec6ea1df3cd5c217",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Welcome.md",
+                "file": "4. Stories/New (Stories).md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Welcome"
+              "title": "Outgoing links from New (Stories)"
             }
           },
           {
-            "id": "5337d6e074d3d623",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "1. Characters/TEST CHARACTER.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "Outline of TEST CHARACTER"
-            }
-          },
-          {
-            "id": "22a60148fccdba0f",
+            "id": "6168cd05f7c78785",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -166,7 +133,22 @@
             }
           },
           {
-            "id": "7a64b98a1b40f871",
+            "id": "d6e45e999f8c9836",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "4. Stories/New (Stories).md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of New (Stories)"
+            }
+          },
+          {
+            "id": "d9e9d30e6911182f",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -180,56 +162,23 @@
       }
     ],
     "direction": "horizontal",
-    "width": 203.5
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
-      "graph:Open graph view": false,
+      "obsidian-git:Open Git source control": false,
       "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "obsidian-git:Open Git source control": false,
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "eede6b96570fb521",
+  "active": "f05d52d5e5acefa2",
   "lastOpenFiles": [
-    "4. Stories/The Missing Melody.md",
-    "4. Stories/The Last Gamble.md",
-    "4. Stories/Silenced Testimony.md",
-    "4. Stories/Shadows of the Crescent City.md",
-    "4. Stories/TEST STORY.md",
-    "1. Characters/TEST CHARACTER.md",
     "1. Characters/Samuel Blackwood.md",
-    "1. Characters/Samuel Blackwood 2.md",
-    "4. Stories/0. Chronology.canvas",
-    "3. Locations/Dupont's Mansion.md",
-    "1. Characters/The Shadow.md",
-    "3. Locations/Samuel's Office.md",
-    "Untitled.md",
-    "Home.md",
-    "99. Notes/Future.md",
-    "5. Events/Mr Dupont's death.md",
-    "4. Stories/New (Stories)2.md",
-    "1. Characters/Mr Dupont.md",
-    "3. Locations/Stardust Lounge.md",
-    "1. Characters/Evelyn Dupont.md",
-    "1. Characters/Samuel Blackwood3.md",
-    "1. Characters/New (Characters).md",
-    "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
-    "1. Characters/New (Characters)3.md",
-    "1. Characters/New [Characters].md",
-    "1. Characters/New [Characters]2.md",
-    "1. Characters/New [Characters]v8.md",
-    "5. Events",
-    "Untitled 1.canvas",
-    "99. Notes",
-    "3. Locations",
-    "4. Stories",
-    "2. Items",
-    "Characters/Shadows of the Crescent City",
-    "1. Characters"
+    "4. Stories/New (Stories).md"
   ]
 }

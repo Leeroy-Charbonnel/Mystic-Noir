@@ -1,6 +1,6 @@
 {
   "collapse-filter": true,
-  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories )",
+  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories ) ( -#Template )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -8,31 +8,31 @@
   "collapse-color-groups": true,
   "colorGroups": [
     {
-      "query": "tag:#Story",
+      "query": "tag:#Events",
       "color": {
         "a": 1,
-        "rgb": 12793655
+        "rgb": 14368240
       }
     },
     {
-      "query": "tag:#Item",
+      "query": "tag:#Items",
       "color": {
         "a": 1,
-        "rgb": 16756224
+        "rgb": 16762880
       }
     },
     {
-      "query": "tag:#Event",
+      "query": "tag:#Locations",
       "color": {
         "a": 1,
-        "rgb": 10115245
+        "rgb": 7368816
       }
     },
     {
-      "query": "tag:#Location",
+      "query": "tag:#Stories",
       "color": {
         "a": 1,
-        "rgb": 4539717
+        "rgb": 16135991
       }
     },
     {
@@ -40,34 +40,6 @@
       "color": {
         "a": 1,
         "rgb": 16777215
-      }
-    },
-    {
-      "query": "tag:#Items",
-      "color": {
-        "a": 1,
-        "rgb": 16766208
-      }
-    },
-    {
-      "query": "tag:#Locations",
-      "color": {
-        "a": 1,
-        "rgb": 6184542
-      }
-    },
-    {
-      "query": "tag:#Events",
-      "color": {
-        "a": 1,
-        "rgb": 13107455
-      }
-    },
-    {
-      "query": "tag:#Stories",
-      "color": {
-        "a": 1,
-        "rgb": 15617871
       }
     }
   ],

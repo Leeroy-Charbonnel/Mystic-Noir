@@ -33,6 +33,35 @@ button.mod-cta {
 
 
 /* Dynamic Form Modal */
+.dynamic-form-modal .modal-bg {
+  /* Override modal background to allow clicking through */
+  pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.dynamic-form-modal .modal-container {
+  /* Ensure the modal itself still receives pointer events */
+  pointer-events: auto;
+}
+
+
+.dynamic-form-modal .modal-drag-handle {
+  cursor: move;
+  user-select: none;
+  padding: 10px;
+  background-color: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dynamic-form-modal.is-dragging {
+  opacity: 0.8;
+}
+
+
+
 .dynamic-form-modal {
     padding: 20px;
     max-width: 600px;

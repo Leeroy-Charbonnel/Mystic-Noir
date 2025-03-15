@@ -1,7 +1,7 @@
 import { App,Plugin,PluginSettingTab,Setting,TFile,normalizePath,Notice,TFolder,Menu,MenuItem,FileManager,SuggestModal,WorkspaceLeaf,setIcon } from 'obsidian';
 import { DynamicFormModal } from './dynamicFormModal';
 import { ContentSelectorModal } from './contentSelectorModal';
-import { node,formatDisplayName,convertTemplateFormat,FormTemplate,getTemplates,hasValueAndType } from './utils';
+import { node,formatDisplayName,convertTemplateFormat,FormTemplate,getTemplates,hasValueAndType, convertLinks } from './utils';
 import './styles.css';
 
 
@@ -284,9 +284,13 @@ export default class ContentCreatorPlugin extends Plugin {
         return content;
     }
 
+
+
+
     private getTextField(value: string): HTMLElement {
         const element=node('div',{ class: 'field-value text-value' });
-        element.innerHTML=value;
+        // Use innerHTML to properly render HTML, and convert wiki links
+        element.innerHTML=convertLinks(value);
         return element;
     }
 
@@ -295,7 +299,12 @@ export default class ContentCreatorPlugin extends Plugin {
 
         const container=node('div',{ class: 'field-value' });
         const textareaContent=node('div',{ class: 'content-creation-textarea' });
-        textareaContent.innerHTML=value.split("<p></p>").map(item => item.trim()===""? "<br>":item).join("<br>");
+
+        // Process each paragraph and convert wiki links
+        const paragraphs=value.split("<p></p>").map(item =>
+            item.trim()===""? "<br>":convertLinks(item)
+        );
+        textareaContent.innerHTML=paragraphs.join("<br>");
 
         container.appendChild(textareaContent);
         return container;
@@ -306,7 +315,8 @@ export default class ContentCreatorPlugin extends Plugin {
 
         values.forEach(item => {
             const listItem=node('li',{ class: 'array-item text-item' });
-            listItem.innerHTML=item;
+            // Convert wiki links and use innerHTML
+            listItem.innerHTML=convertLinks(item);
             container.appendChild(listItem);
         });
         return container;
@@ -317,7 +327,11 @@ export default class ContentCreatorPlugin extends Plugin {
 
         values.forEach(item => {
             const textareaItem=node('div',{ class: 'array-item textarea-item content-creation-textarea' });
-            textareaItem.innerHTML=item.split("<p></p>").map(subItem => subItem.trim()===""? "<br>":subItem).join("<br>");
+            // Convert wiki links in each paragraph
+            const paragraphs=item.split("<p></p>").map(subItem =>
+                subItem.trim()===""? "<br>":convertLinks(subItem)
+            );
+            textareaItem.innerHTML=paragraphs.join("<br>");
             container.appendChild(textareaItem);
         });
         return container;
