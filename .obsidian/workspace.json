@@ -13,12 +13,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "4. Stories/TEST STORY.md",
+                "file": "Home.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "TEST STORY"
+              "title": "Home"
+            }
+          },
+          {
+            "id": "b8c70006a431148f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "4. Stories/Shadows of the Crescent City.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Shadows of the Crescent City"
             }
           }
         ]
@@ -166,48 +180,49 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 203.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "content-creation-plugin:Create Content": false,
       "graph:Open graph view": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "obsidian-git:Open Git source control": false
+      "obsidian-git:Open Git source control": false,
+      "content-creation-plugin:Create Content": false
     }
   },
   "active": "eede6b96570fb521",
   "lastOpenFiles": [
+    "4. Stories/The Missing Melody.md",
+    "4. Stories/The Last Gamble.md",
     "4. Stories/Silenced Testimony.md",
     "4. Stories/Shadows of the Crescent City.md",
+    "4. Stories/TEST STORY.md",
     "1. Characters/TEST CHARACTER.md",
+    "1. Characters/Samuel Blackwood.md",
+    "1. Characters/Samuel Blackwood 2.md",
+    "4. Stories/0. Chronology.canvas",
+    "3. Locations/Dupont's Mansion.md",
+    "1. Characters/The Shadow.md",
+    "3. Locations/Samuel's Office.md",
     "Untitled.md",
     "Home.md",
-    "4. Stories/TEST STORY.md",
-    "4. Stories/0. Chronology.canvas",
-    "1. Characters/Samuel Blackwood.md",
     "99. Notes/Future.md",
     "5. Events/Mr Dupont's death.md",
     "4. Stories/New (Stories)2.md",
-    "1. Characters/The Shadow.md",
     "1. Characters/Mr Dupont.md",
     "3. Locations/Stardust Lounge.md",
     "1. Characters/Evelyn Dupont.md",
-    "4. Stories/The Last Gamble.md",
     "1. Characters/Samuel Blackwood3.md",
-    "3. Locations/Samuel's Office.md",
     "1. Characters/New (Characters).md",
     "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
     "1. Characters/New (Characters)3.md",
     "1. Characters/New [Characters].md",
     "1. Characters/New [Characters]2.md",
     "1. Characters/New [Characters]v8.md",
-    "1. Characters/New [Characters]v5.md",
-    "1. Characters/New [Characters]v4.md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",

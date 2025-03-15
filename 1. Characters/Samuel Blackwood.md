@@ -1,84 +1,12 @@
 ---
 
-data: {"defaultFolder":"1. Characters","name":"Samuel Blackwood","oldName":"Samuel Blackwood","contentType":"characters","template":{"BasicInformation":{"FullName":{"value":"Samuel Blackwood","type":"text"},"Age":{"value":"Late 30s to early 40s","type":"text"},"Occupation":{"value":"Private Investigator","type":"text"},"Background":{"value":"Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.","type":"textarea"}},"Appearance":{"Description":{"value":"Height: 6'0\" (1.82m)\nBuild: Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times\nHair: Dark brown, unkempt, hidden under a fedora\nEyes: Steel-gray, and always analyzing\n\nClothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes\n\nDefining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. Smells of smoke and alcohol most of the time. Has various scars ranging from light to severe across his body.","type":"textarea"},"Accessories":{"value":["Fedora","Cigar"],"type":"array:text"}},"State":{"Dead":{"value":true,"type":"boolean"},"Injured":{"value":false,"type":"boolean"}},"Personality":{"GeneralTraits":{"value":"Cynical, sharp-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way","type":"textarea"},"Strengths":{"value":["Highly observant","Skilled at reading people","Resourceful in tough situations"],"type":"array:text"},"Weaknesses":{"value":["Drinks too much","Pushes people away","Reckless when chasing the truth","Difficulty controlling his temper around people he despises"],"type":"array:text"}},"Relationships":{"Family":{"value":["Unknown"],"type":"array:text"},"FriendsAndAllies":{"value":["A few trusted informants in the city's underworld","Former colleagues who still respect him"],"type":"array:text"},"EnemiesAndRivals":{"value":["Corrupt police officers","Criminals he's put behind bars","Anyone who stands in his way"],"type":"array:text"},"RomanticInterests":{"value":["Unknown"],"type":"array:text"}},"Other":{"Belongings":{"value":["Worn leather holster with a .38 revolver","Silver lighter with an engraving (origin unknown)","Dog-eared notebook filled with case notes"],"type":"array:text"},"AdditionalNotes":{"value":"Has a reputation in the city—people either respect or fear him\nKnows how to blend into both high society and the criminal underworld\nHaunted by a past case that still lingers in his mind\nHis office doubles as his living quarters during intense cases","type":"textarea"}}}}
+data: {"defaultFolder":"1. Characters","name":"Samuel Blackwood","oldName":"Samuel Blackwood","contentType":"characters","template":{"BasicInformation":{"FullName":{"value":"Samuel Blackwood","type":"text"},"Age":{"value":"Late 30s to early 40s","type":"text"},"Occupation":{"value":"Private Investigator","type":"text"},"Background":{"value":"Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.","type":"textarea"}},"Appearance":{"Description":{"value":"<p>Height: 6'0\" (1.82m) </p><p>Build: Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times </p><p>Hair: Dark brown, unkempt, hidden under a fedora Eyes: Steel-gray, and always analyzing </p><p>Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. </p><p>Smells of smoke and alcohol most of the time.</p><p>Has various scars ranging from light to severe across his body.</p>","type":"textarea"},"Accessories":{"value":["Fedora","Cigar"],"type":"array:text"}},"State":{"Dead":{"value":false,"type":"boolean"},"Injured":{"value":false,"type":"boolean"}},"Personality":{"GeneralTraits":{"value":"Cynical, sharp-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way","type":"textarea"},"Strengths":{"value":["Highly observant","Skilled at reading people","Resourceful in tough situations"],"type":"array:text"},"Weaknesses":{"value":["Drinks too much","Pushes people away","Reckless when chasing the truth","Difficulty controlling his temper around people he despises"],"type":"array:text"}},"Relationships":{"Family":{"value":["Unknown"],"type":"array:text"},"FriendsAndAllies":{"value":["A few trusted informants in the city's underworld","Former colleagues who still respect him"],"type":"array:text"},"EnemiesAndRivals":{"value":["Corrupt police officers","Criminals he's put behind bars","Anyone who stands in his way"],"type":"array:text"},"RomanticInterests":{"value":["Unknown"],"type":"array:text"}},"Other":{"Belongings":{"value":["Worn leather holster with a .38 revolver","Silver lighter with an engraving (origin unknown)","Dog-eared notebook filled with case notes"],"type":"array:text"},"AdditionalNotes":{"value":"Has a reputation in the city—people either respect or fear him\nKnows how to blend into both high society and the criminal underworld\nHaunted by a past case that still lingers in his mind\nHis office doubles as his living quarters during intense cases","type":"textarea"}}}}
 
 ---
 
 #Characters
 
-### Basic Information
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Full Name : </span> Samuel Blackwood 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Age : </span> Late 30s to early 40s 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Occupation : </span> Private Investigator 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Background : </span> <span class='content-creation-textarea'><span>Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.</span> 
-</span>
-
-
----
-### Appearance
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Description : </span> <span class='content-creation-textarea'><span>Height: 6'0" (1.82m)</span>
-<span>Build: Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times</span>
-<span>Hair: Dark brown, unkempt, hidden under a fedora</span>
-<span>Eyes: Steel-gray, and always analyzing</span>
-</br>
-<span>Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes</span>
-</br>
-<span>Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. Smells of smoke and alcohol most of the time. Has various scars ranging from light to severe across his body.</span> 
-</span>
-
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Accessories : </span> 
->+ Fedora 
->+ Cigar 
-
-
----
-### State
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Dead : </span>  <input type="checkbox" checked>
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Injured : </span>  <input type="checkbox" >
-
----
-### Personality
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>General Traits : </span> <span class='content-creation-textarea'><span>Cynical, sharp-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way</span> 
-</span>
-
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Strengths : </span> 
->+ Highly observant 
->+ Skilled at reading people 
->+ Resourceful in tough situations 
-
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Weaknesses : </span> 
->+ Drinks too much 
->+ Pushes people away 
->+ Reckless when chasing the truth 
->+ Difficulty controlling his temper around people he despises 
-
-
----
-### Relationships
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Family : </span> Unknown 
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Friends And Allies : </span> 
->+ A few trusted informants in the city's underworld 
->+ Former colleagues who still respect him 
-
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Enemies And Rivals : </span> 
->+ Corrupt police officers 
->+ Criminals he's put behind bars 
->+ Anyone who stands in his way 
-
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Romantic Interests : </span> Unknown 
-
----
-### Other
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Belongings : </span> 
->+ Worn leather holster with a .38 revolver 
->+ Silver lighter with an engraving (origin unknown) 
->+ Dog-eared notebook filled with case notes 
-
-> <span style='display: inline-flex;font-weight: bold;white-space: nowrap;overflow: hidden;margin: 3px 0px;'>Additional Notes : </span> <span class='content-creation-textarea'><span>Has a reputation in the city—people either respect or fear him</span>
-<span>Knows how to blend into both high society and the criminal underworld</span>
-<span>Haunted by a past case that still lingers in his mind</span>
-<span>His office doubles as his living quarters during intense cases</span> 
-</span>
-
-
----
+<div class="section level-3"><h3 class="section-header">Basic Information</h3><div class="section-content"><div class="content-container"><div class="field-container field-type-text"><div class="field-label">Full Name : </div><div class="field-value text-value">Samuel Blackwood</div></div><div class="field-container field-type-text"><div class="field-label">Age : </div><div class="field-value text-value">Late 30s to early 40s</div></div><div class="field-container field-type-text"><div class="field-label">Occupation : </div><div class="field-value text-value">Private Investigator</div></div><div class="field-container field-type-textarea"><div class="field-label">Background : </div><div class="field-value"><div class="content-creation-textarea">Former police detective who left the force due to mysterious circumstances. Now works as a private investigator, cases that others won't touch. Has a reputation for getting results, his methods are not always clean.</div></div></div></div></div></div><div class="section-separator"></div><div class="section level-3"><h3 class="section-header">Appearance</h3><div class="section-content"><div class="content-container"><div class="field-container field-type-textarea"><div class="field-label">Description : </div><div class="field-value"><div class="content-creation-textarea"><p>Height: 6'0" (1.82m) </p><p>Build: Strong with a rectangular frame, and imposing without being bulky. Has the sturdy, physique of a man who's been through tough times </p><p>Hair: Dark brown, unkempt, hidden under a fedora Eyes: Steel-gray, and always analyzing </p><p>Clothing Style: Wears a worn-out trench coat, button-up shirt with the collar slightly undone, scuffed leather shoes Defining Features: Deep scar on his left hand from an old case, the constant presence of a cigar. </p><p>Smells of smoke and alcohol most of the time.</p><p>Has various scars ranging from light to severe across his body.</p></div></div></div><div class="field-container field-type-array:text"><div class="field-label">Accessories : </div><nav class="field-value array-container"><li class="array-item text-item">Fedora</li><li class="array-item text-item">Cigar</li></nav></div></div></div></div><div class="section-separator"></div><div class="section level-3"><h3 class="section-header">State</h3><div class="section-content"><div class="content-container"><div class="field-container field-type-boolean"><div class="field-label">Dead : </div><div class="field-value"><input type="checkbox" disabled="true"></div></div><div class="field-container field-type-boolean"><div class="field-label">Injured : </div><div class="field-value"><input type="checkbox" disabled="true"></div></div></div></div></div><div class="section-separator"></div><div class="section level-3"><h3 class="section-header">Personality</h3><div class="section-content"><div class="content-container"><div class="field-container field-type-textarea"><div class="field-label">General Traits : </div><div class="field-value"><div class="content-creation-textarea">Cynical, sharp-minded, relentless. He doesn't trust easily but has a strong sense of justice in his own way</div></div></div><div class="field-container field-type-array:text"><div class="field-label">Strengths : </div><nav class="field-value array-container"><li class="array-item text-item">Highly observant</li><li class="array-item text-item">Skilled at reading people</li><li class="array-item text-item">Resourceful in tough situations</li></nav></div><div class="field-container field-type-array:text"><div class="field-label">Weaknesses : </div><nav class="field-value array-container"><li class="array-item text-item">Drinks too much</li><li class="array-item text-item">Pushes people away</li><li class="array-item text-item">Reckless when chasing the truth</li><li class="array-item text-item">Difficulty controlling his temper around people he despises</li></nav></div></div></div></div><div class="section-separator"></div><div class="section level-3"><h3 class="section-header">Relationships</h3><div class="section-content"><div class="content-container"><div class="field-container field-type-text"><div class="field-label">Family : </div><div class="field-value text-value">Unknown</div></div><div class="field-container field-type-array:text"><div class="field-label">Friends And Allies : </div><nav class="field-value array-container"><li class="array-item text-item">A few trusted informants in the city's underworld</li><li class="array-item text-item">Former colleagues who still respect him</li></nav></div><div class="field-container field-type-array:text"><div class="field-label">Enemies And Rivals : </div><nav class="field-value array-container"><li class="array-item text-item">Corrupt police officers</li><li class="array-item text-item">Criminals he's put behind bars</li><li class="array-item text-item">Anyone who stands in his way</li></nav></div><div class="field-container field-type-text"><div class="field-label">Romantic Interests : </div><div class="field-value text-value">Unknown</div></div></div></div></div><div class="section-separator"></div><div class="section level-3"><h3 class="section-header">Other</h3><div class="section-content"><div class="content-container"><div class="field-container field-type-array:text"><div class="field-label">Belongings : </div><nav class="field-value array-container"><li class="array-item text-item">Worn leather holster with a .38 revolver</li><li class="array-item text-item">Silver lighter with an engraving (origin unknown)</li><li class="array-item text-item">Dog-eared notebook filled with case notes</li></nav></div><div class="field-container field-type-textarea"><div class="field-label">Additional Notes : </div><div class="field-value"><div class="content-creation-textarea">Has a reputation in the city—people either respect or fear him
+Knows how to blend into both high society and the criminal underworld
+Haunted by a past case that still lingers in his mind
+His office doubles as his living quarters during intense cases</div></div></div></div></div></div><div class="section-separator"></div>

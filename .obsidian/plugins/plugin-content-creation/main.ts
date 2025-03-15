@@ -77,7 +77,7 @@ class EditContentButtons {
         } catch(error) {}
 
         //Check if leaf has the property data
-        if(this.leaf.metadataEditor && this.leaf.metadataEditor.properties.filter((x: any) => x.key=="data").length==0) return
+        if(this.leaf.metadataEditor&&this.leaf.metadataEditor.properties.filter((x: any) => x.key=="data").length==0) return
 
         const formButton=document.createElement('button');
         formButton.id="editContent"
@@ -186,24 +186,24 @@ export default class ContentCreatorPlugin extends Plugin {
 
     async editExistingContent(file: TFile) {
         //try {
-            const properties=this.getFileProperties(this.app,file);
+        const properties=this.getFileProperties(this.app,file);
 
-            if(properties==null) {
-                new Notice("Error editing content: Could not find properties");
-                console.error("Error editing content: Could not find properties");
-                return
-            }
+        if(properties==null) {
+            new Notice("Error editing content: Could not find properties");
+            console.error("Error editing content: Could not find properties");
+            return
+        }
 
-            //Fill template with data
-            const data=properties?.data;
-            const template=this.templates[data.contentType];
-            const result=this.fillTemplateWithData(template,data);
+        //Fill template with data
+        const data=properties?.data;
+        const template=this.templates[data.contentType];
+        const result=this.fillTemplateWithData(template,data);
 
-            new DynamicFormModal(this.app,this,result).open();
+        new DynamicFormModal(this.app,this,result).open();
         //} catch(error) {
         //    new Notice(`Error editing content: ${error.message}`);
         //    console.error(`Error editing content: ${error.message}`);
-            
+
         //}
     }
 
@@ -280,74 +280,128 @@ export default class ContentCreatorPlugin extends Plugin {
         content+=`#${contentTypeTag}\n\n`;
 
 
-        content+=this.formatContentData(data.template,3,"template");
+        content+=this.formatContentData(data.template,3,"template").innerHTML;
         return content;
     }
 
-    private formatContentData(data: any,depth: number,path: string=''): string {
-        let content='';
+    private getTextField(value: string): HTMLElement {
+        const element=node('div',{ class: 'field-value text-value' });
+        element.innerHTML=value;
+        return element;
+    }
+
+    private getTextAreaField(value: string): HTMLElement|null {
+        if(!String(value).trim()) return null;
+
+        const container=node('div',{ class: 'field-value' });
+        const textareaContent=node('div',{ class: 'content-creation-textarea' });
+        textareaContent.innerHTML=value.split("<p></p>").map(item => item.trim()===""? "<br>":item).join("<br>");
+
+        container.appendChild(textareaContent);
+        return container;
+    }
+
+    private getTextArray(values: string[]): HTMLElement {
+        const container=node('nav',{ class: 'field-value array-container' });
+
+        values.forEach(item => {
+            const listItem=node('li',{ class: 'array-item text-item' });
+            listItem.innerHTML=item;
+            container.appendChild(listItem);
+        });
+        return container;
+    }
+
+    private getTextAreaArray(values: string[]): HTMLElement {
+        const container=node('nav',{ class: 'field-value array-container' });
+
+        values.forEach(item => {
+            const textareaItem=node('div',{ class: 'array-item textarea-item content-creation-textarea' });
+            textareaItem.innerHTML=item.split("<p></p>").map(subItem => subItem.trim()===""? "<br>":subItem).join("<br>");
+            container.appendChild(textareaItem);
+        });
+        return container;
+    }
+
+    private formatContentData(data: any,depth: number,path: string=''): HTMLElement {
+        const contentContainer=node('div',{ class: 'content-container' });
+
         Object.entries(data).forEach(([key,field]: [string,{ value: any,type: string }]) => {
             const currentPath=path? `${path}.${key}`:key;
+            const displayName=formatDisplayName(key);
 
             if(!hasValueAndType(field)) {
-                const heading='#'.repeat(depth);
-                const displayName=formatDisplayName(key);
-                content+=`${heading} ${displayName}\n`;
-                content+=this.formatContentData(field,depth+1,currentPath)+`\n`;
-                content+="---\n"
-            } else {
-                if(field.value==null||field.value==undefined) return ""
+                const sectionHeader=node(('h'+depth as "h1"|"h2"|"h3"),{ class: 'section-header',text: displayName });
+                const sectionContent=node('div',{ class: 'section-content' });
+                sectionContent.appendChild(this.formatContentData(field,depth+1,currentPath));
 
-                const displayName=formatDisplayName(key);
-                let prefix=">";
-                content+=prefix;
+                const section=node('div',{ class: `section level-${depth}`,children: [sectionHeader,sectionContent] });
+                contentContainer.appendChild(section);
+                contentContainer.appendChild(node('div',{ class: 'section-separator' }));
+            }
+            else {
+                if(field.value==null||field.value==undefined) return;
 
+                const fieldContainer=node('div',{ class: `field-container` });
+                fieldContainer.appendChild(node('div',{ class: 'field-label',text: `${displayName} : ` }));
 
-                let style_header=[
-                    "display: inline-flex;",
-                    "font-weight: bold;",
-                    "white-space: nowrap;",
-                    "overflow: hidden;",
-                    "margin: 3px 0px;"
-                ]
-
-                content+=` <span style='${style_header.join("")}'>${displayName} : </span> `
+                let fieldValueElement: HTMLElement|null=null;
                 if(field.type.startsWith("array")) {
-                    const fieldType=field.type.split(':')[1]
-                    let values=field.value;
+                    const fieldType=field.type.split(':')[1];
+                    let values=field.value||[];
+                    if(values.length===0) return;
 
-                    if(fieldType=="textarea") {
-                        values=values.map((item: string) => {
-                            let subContent=""
-                            subContent+=`<span class='content-creation-textarea'>`;
-                            subContent+=`${item.split("\n").map((x: string) => (x.trim()==""? "</br>":`<span>${x}</span>`)).join("\n")} \n`;
-                            subContent+=`</span>\n\n`;
-                            return subContent
+                    fieldContainer.classList.add(`field-type-${values.length<=1? fieldType:field.type}`);
+
+                    //Text areas
+                    if(fieldType==="textarea") {
+                        if(values.length<=1) {
+                            fieldValueElement=this.getTextAreaField(values[0]||"");
+                        } else {
+                            fieldValueElement=this.getTextAreaArray(values);
                         }
-                        )
-                        content+=values.map((item: string) => `> ${item} `).join('\n')+"\n\n";
-
+                        //Text
                     } else {
-                        content+=`${values[0]} \n`;
+                        if(values.length<=1) {
+                            fieldValueElement=this.getTextField(values[0]||"");
+                        } else {
+                            fieldValueElement=this.getTextArray(values);
+                        }
+                    }
+                } else if(field.type==="textarea") {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    fieldValueElement=this.getTextAreaField(field.value);
+
+                } else if(field.type==="boolean") {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    const checkboxContainer=node('div',{ class: 'field-value' });
+                    const checkbox=node('input',{
+                        attributes: {
+                            type: 'checkbox',
+                            disabled: 'true'
+                        }
+                    }) as HTMLInputElement;
+
+                    if(field.value) {
+                        checkbox.checked=true;
                     }
 
-                } else if(field.type.startsWith("textarea")) {
-                    if(!String(field.value).trim()) return ""
-                    content+=`<span class='content-creation-textarea'>`;
-                    content+=`${(field.value as string).split("\n").map((x: string) => (x.trim()==""? "</br>":`<span>${x}</span>`)).join("\n")} \n`;
-                    content+=`</span>\n\n`;
+                    checkboxContainer.appendChild(checkbox);
+                    fieldValueElement=checkboxContainer;
+                } else if(String(field.value).trim()) {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    fieldValueElement=this.getTextField(field.value);
+                }
 
-                } else if(field.type=="boolean") {
-                    content+=` <input type="checkbox" ${field.value? "checked":""}>\n`;
+                if(fieldValueElement) {
+                    fieldContainer.appendChild(fieldValueElement);
+                    contentContainer.appendChild(fieldContainer);
                 }
-                else if(String(field.value).trim()) {
-                    content+=`${field.value} \n`;
-                }
-                //content+=">\n"
             }
-        })
-        return content;
+        });
+        return contentContainer;
     }
+
 
     onunload() {
         console.log("unloading plugin");

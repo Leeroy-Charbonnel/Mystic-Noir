@@ -70,7 +70,8 @@ export const templates={
         BasicInformation: {
             Name: "text",
             Date: "text",
-            Synopsis: "textarea"
+            Synopsis: "textarea",
+            Synopsis2: "textarea"
         },
         Characters: {
             Characters: "array:text",

@@ -33,7 +33,6 @@ export class ContentSelectorModal extends Modal {
       
       new Setting(optionContainer)
         .setName(label)
-        .setDesc(`Create ${label.toLowerCase()}`)
         .addButton(button => button
           .setButtonText('Create')
           .setCta()

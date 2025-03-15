@@ -1,3 +1,5 @@
+/* Content selector model */
+
 .content-selector-modal {
     padding: 20px;
 }
@@ -6,6 +8,10 @@
     text-align: center;
     margin-bottom: 20px;
     color: var(--text-normal);
+}
+
+button.mod-cta {
+    background-color: var(--interactive-accent) !important;
 }
 
 .content-options-container {
@@ -24,6 +30,7 @@
 .content-option:hover {
     background-color: var(--background-secondary);
 }
+
 
 /* Dynamic Form Modal */
 .dynamic-form-modal {
@@ -47,9 +54,7 @@
 .multi-value-label {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    font-weight: 600;
+    margin-right: 10px;
 }
 
 .multi-value-add-button {
@@ -86,16 +91,12 @@
 }
 
 .multi-value-remove-button {
-    color: white;
     border: none;
-    border-radius: 25%;
     width: 24px;
-    height: 24px;
+    height: 100%;
     font-size: 16px;
     cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: end;
+    padding: 0;
     background: none !important;
     box-shadow: 0 0 0 !important;
 }
@@ -121,7 +122,9 @@
 
 
 
-
+.dynamic-form-field-container.textarea .editor-label, .multi-value-label {
+    margin-top: 7px;
+}
 
 .dynamic-form-field-container.text .editor-label {
     display: flex;
@@ -146,8 +149,8 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-weight: bold;
     position: relative;
+    color: var(--text-muted);
 }
 
 .editor-container {
@@ -227,56 +230,44 @@ button:not(.clickable-icon) {
 }
 
 
+/* Header container */
+.header-container {
+    font-weight: bold;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: row;
+}
+
+.header-0 {
+    color: var(--color-accent);
+    font-size: 1.5em;
+}
+
+.header-1 {
+    font-size: 1.3em;
+}
+
+.header-2 {
+    font-size: 1.2em;
+}
 
 
-/*
-
-
-
-
-.dynamic-form-modal .setting-item {
-    display: grid;
-    grid-template-columns: 30% auto;
-    border-top: none;
-    padding: 10px 0;
-  }
-  
-  .dynamic-form-modal .setting-item-info {
-    font-size: 14px;
-  }
-  
-  .dynamic-form-modal .setting-item-control input,
-  .dynamic-form-modal .setting-item-control textarea {
+/* Header separator */
+.header-separator {
     width: 100%;
-    background-color: var(--background-primary);
-    border: 1px solid var(--background-modifier-border);
-    color: var(--text-normal);
-    border-radius: 4px;
-    padding: 8px;
-  }
-  
-  .dynamic-form-modal .setting-item-control textarea {
-    min-height: 100px;
-    resize: vertical;
-  }
+    margin: auto auto auto 10px;
 
+}
 
-.content-option .setting-item {
-    border: none;
-    padding: 0;
-  }
-  
-  .content-option .setting-item-info {
-    margin-bottom: 8px;
-  }
-  
-  .content-option .setting-item-name {
-    font-size: 1.1em;
-    font-weight: 600;
-  }
-  
-  .content-option .setting-item-description {
-    font-size: 0.9em;
-    color: var(--text-muted);
-  }
-  */
+.header-separator-0 {
+    border-bottom: 1px solid var(--color-accent);
+}
+
+.header-separator-1 {
+    border-bottom: 1px dotted var(--color-base-50);
+}
+
+.section-container {
+    margin: 10px 0px 0px auto;
+    padding-left: 5px;
+}
