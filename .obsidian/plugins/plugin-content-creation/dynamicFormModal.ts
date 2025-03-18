@@ -218,9 +218,6 @@ class SuggestComponent {
 }
 
 
-
-
-
 class RichTextEditor {
     private app: App;
     private pages: string[];
@@ -236,9 +233,7 @@ class RichTextEditor {
         const toolbar=node('div',{ class: 'editor-toolbar editor-toolbar-hidden' });
         const contentArea=node('div',{ class: 'editor-content' });
 
-
         let processedContent=value;
-        console.log(processedContent);
 
         const editor=new Editor({
             element: contentArea,

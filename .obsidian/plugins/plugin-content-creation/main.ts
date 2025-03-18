@@ -271,7 +271,6 @@ export default class ContentCreatorPlugin extends Plugin {
     private generateFileContent(data: FormTemplate): string {
         const contentTypeTag=data.contentType.charAt(0).toUpperCase()+data.contentType.slice(1);
 
-
         let content=""
         content+=`---\n\n`;
         content+=`data: ${JSON.stringify(data)}\n\n`;
@@ -327,7 +326,6 @@ export default class ContentCreatorPlugin extends Plugin {
 
         values.forEach(item => {
             const textareaItem=node('div',{ class: 'array-item textarea-item content-creation-textarea' });
-            // Convert wiki links in each paragraph
             const paragraphs=item.split("<p></p>").map(subItem =>
                 subItem.trim()===""? "<br>":convertLinks(subItem)
             );
