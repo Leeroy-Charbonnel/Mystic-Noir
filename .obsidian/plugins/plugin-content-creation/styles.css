@@ -1,4 +1,4 @@
-/* Content selector model */
+/* Content selector modal */
 
 .content-selector-modal {
     padding: 20px;
@@ -31,54 +31,49 @@ button.mod-cta {
     background-color: var(--background-secondary);
 }
 
-
-/* Dynamic Form Modal */
-.dynamic-form-modal .modal-bg {
-  /* Override modal background to allow clicking through */
-  pointer-events: none;
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-.dynamic-form-modal .modal-container {
-  /* Ensure the modal itself still receives pointer events */
-  pointer-events: auto;
-}
-
-
-.dynamic-form-modal .modal-drag-handle {
-  cursor: move;
-  user-select: none;
-  padding: 10px;
-  background-color: var(--background-secondary);
-  border-bottom: 1px solid var(--background-modifier-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dynamic-form-modal.is-dragging {
-  opacity: 0.8;
-}
-
-
-
-.dynamic-form-modal {
+/* Content creator view styles */
+.content-creator-view {
     padding: 20px;
-    max-width: 600px;
-    max-height: 100%;
+    overflow-y: auto;
 }
 
-.form-scroll-container {
-    max-height: 70vh;
-    background: "rgb(255 0 0 / 64%)";
+.content-creator-view .form-scroll-container {
+    max-height: 100%;
     overflow: auto;
     padding-right: 20px;
-
     padding: 10px;
     border-radius: 5px;
     background-color: var(--background-primary);
 }
 
+.content-creator-view .content-name {
+    font-size: x-large !important;
+    font-weight: bold;
+    display: inline;
+    padding: 25px 0px !important;
+    margin: 0 !important;
+    border: none !important;
+    background: none !important;
+    width: 100%;
+}
+
+.content-creator-view .button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-bottom: 30px;
+}
+
+/* Form field styles - used by both modal and view */
+.form-scroll-container {
+    max-height: 70vh;
+    overflow: auto;
+    padding-right: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: var(--background-primary);
+}
 
 .multi-value-label {
     display: flex;
@@ -137,8 +132,6 @@ button.mod-cta {
     gap: 10px;
 }
 
-
-
 .content-name {
     border: none !important;
     background: none !important;
@@ -148,8 +141,6 @@ button.mod-cta {
     padding: 25px 0px !important;
     margin: 0 !important;
 }
-
-
 
 .dynamic-form-field-container.textarea .editor-label, .multi-value-label {
     margin-top: 7px;
@@ -187,7 +178,6 @@ button.mod-cta {
     position: relative;
 }
 
-
 .editor-toolbar {
     display: flex;
     gap: 3px;
@@ -205,7 +195,6 @@ button.mod-cta {
     height: 100%;
     aspect-ratio: 1;
 }
-
 
 button:not(.clickable-icon) {
     color: var(--text-color);
@@ -245,19 +234,14 @@ button:not(.clickable-icon) {
     word-break: break-word;
 }
 
-
-
 .editor-toolbar-hidden {
     transform: translateY(0%);
 }
-
-
 
 .editor-button.is-active {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
 }
-
 
 /* Header container */
 .header-container {
@@ -280,12 +264,10 @@ button:not(.clickable-icon) {
     font-size: 1.2em;
 }
 
-
 /* Header separator */
 .header-separator {
     width: 100%;
     margin: auto auto auto 10px;
-
 }
 
 .header-separator-0 {
