@@ -31,6 +31,7 @@ blockquote {
 
 .content-creation-textarea {
     display: block;
+    text-align: justify;
     padding: var(--size-4-3) var(--size-4-4);
     min-height: 38px;
     background-color: var(--code-background);
@@ -40,7 +41,6 @@ blockquote {
 }
 
 .content-creation-textarea * {
-    color: var(--code-normal);
     /*font-family: var(--font-monospace);*/
     font-size: 0.95em;
 }

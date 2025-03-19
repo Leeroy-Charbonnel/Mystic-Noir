@@ -1,4 +1,4 @@
-export const templates={
+export const templates = {
     characters: {
         BasicInformation: {
             FullName: "text",

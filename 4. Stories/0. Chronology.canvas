@@ -1,10 +1,10 @@
 {
 	"nodes":[
-		{"id":"silenced-testimony","type":"text","text":"Silenced Testimony","x":-320,"y":-80,"width":300,"height":60},
 		{"id":"missing-melody","type":"text","text":"The Missing Melody","x":-320,"y":200,"width":300,"height":60},
 		{"id":"mr-dupont-death","type":"text","text":"Mr Dupont's death","x":-660,"y":-80,"width":250,"height":60},
 		{"id":"last-gamble","type":"text","text":"The Last Gamble","x":120,"y":-80,"width":300,"height":60},
-		{"id":"shadows-cc","type":"text","text":"Shadows of the Crescent City","x":-100,"y":-260,"width":300,"height":60}
+		{"id":"shadows-cc","type":"text","text":"Shadows of the Crescent City","x":-100,"y":-260,"width":300,"height":60},
+		{"id":"silenced-testimony","type":"text","text":"Silenced Testimony","x":-320,"y":-80,"width":300,"height":60}
 	],
 	"edges":[
 		{"id":"a10e6b98ec95925f","fromNode":"shadows-cc","fromSide":"bottom","toNode":"silenced-testimony","toSide":"top"},

@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "89c9475e20db798a",
+        "id": "1b68110ca722f8bd",
         "type": "tabs",
         "children": [
           {
-            "id": "35dd4a52cd4208ff",
+            "id": "fde78cd80ae87fe9",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "1. Characters/TEST DE CHARS2.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "TEST DE CHARS2"
             }
           }
         ]
@@ -162,7 +166,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 227.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -176,34 +180,35 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "b607e2787be68599",
+  "active": "fde78cd80ae87fe9",
   "lastOpenFiles": [
-    "3. Locations/Samuel's Office.md",
-    "4. Stories/0. Chronology.canvas",
+    "1. Characters/TEST DE CHARS2.md",
+    "1. Characters/klj,dfgprl^hlkprokhiorkh.md",
+    "1. Characters/CHAR1.md",
+    "1. Characters/CHAR2.md",
+    "1. Characters/The Shadow.md",
     "1. Characters/Samuel Blackwood.md",
-    "2. Items/Dupont's Heirloom.md",
-    "4. Stories/The Last Gamble.md",
+    "1. Characters/Mr Dupont.md",
+    "4. Stories/0. Chronology.canvas",
     "4. Stories/Shadows of the Crescent City.md",
+    "New (CharactersTEST).md",
+    "2. Items/Dupont's Heirloom.md",
+    "4. Stories/Silenced Testimony.md",
+    "4. Stories/The Last Gamble.md",
+    "4. Stories/The Missing Melody.md",
+    "5. Events/Mr Dupont's death.md",
+    "3. Locations/Samuel's Office.md",
     "1. Characters/Evelyn Dupont.md",
     "Untitled.md",
     "TEST GIT.md",
     "99. Notes/Future.md",
     "4. Stories/New (Stories).md",
-    "4. Stories/The Missing Melody.md",
-    "4. Stories/Silenced Testimony.md",
     "Home.md",
     "1. Characters/TEST CHARACTER.md",
     "4. Stories/TEST STORY.md",
-    "5. Events/Mr Dupont's death.md",
     "4. Stories/New (Stories)2.md",
-    "1. Characters/The Shadow.md",
-    "1. Characters/Mr Dupont.md",
     "3. Locations/Stardust Lounge.md",
     "1. Characters/Samuel Blackwood3.md",
-    "1. Characters/New (Characters).md",
-    "1. Characters/New (Characters)aaaaaaaaaaaaaaaaaaa.md",
-    "1. Characters/New (Characters)3.md",
-    "1. Characters/New [Characters].md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",
