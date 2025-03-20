@@ -211,6 +211,7 @@ export default class ContentCreatorPlugin extends Plugin {
         const data = this.getFileProperties(this.app, file)?.data;
         const template = this.templates[data.contentType];
         const result = this.fillTemplateWithData(template, data);
+        result.name = file.basename;
         this.activateView(result, false);
     }
 
@@ -388,8 +389,9 @@ export default class ContentCreatorPlugin extends Plugin {
                         }
                     }) as HTMLInputElement;
 
+
                     if (field.value) {
-                        checkbox.checked = true;
+                        checkbox.setAttr("checked", "checked");
                     }
 
                     checkboxContainer.appendChild(checkbox);

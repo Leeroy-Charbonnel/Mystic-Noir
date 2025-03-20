@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, MarkdownView, TFile, Notice } from 'obsidian';
-import { statsKeys, node } from "./utils"
+import { statsKeys, node, convertLinks } from "./utils"
 
 export default class HomeStatsPlugin extends Plugin {
     lastRefresh: number = 0;
@@ -35,7 +35,6 @@ export default class HomeStatsPlugin extends Plugin {
         return file.path === 'Home.md';
     }
 
-    // Main function to refresh stats
     async refreshHomeStats() {
         console.log('Refreshing Home Stats');
         const activeFile = this.app.workspace.getActiveFile();
@@ -151,7 +150,7 @@ export default class HomeStatsPlugin extends Plugin {
                                         name = this.cleanHtml(data.template.BasicInformation.Name.value);
 
                                     if (data.template?.BasicInformation?.Description?.value)
-                                        note = this.cleanHtml(data.template.BasicInformation.Description.value).substring(0, 100);
+                                        note = this.cleanHtml(data.template.BasicInformation.Description.value).substring(0, 50) + "...";
 
                                     details.items.push({
                                         name: name,
@@ -226,8 +225,8 @@ export default class HomeStatsPlugin extends Plugin {
             class: 'home-stats-grid',
             children: [
                 this.createStatCardNode('Stories', stats.stories, '📚'),
-                this.createStatCardNode('Characters', stats.characters, '👤'),
-                this.createStatCardNode('Locations', stats.locations, '🏙️'),
+                this.createStatCardNode('Characters', stats.characters, '🎭'),
+                this.createStatCardNode('Locations', stats.locations, '🧭'),
                 this.createStatCardNode('Items', stats.items, '🧰'),
                 this.createStatCardNode('Events', stats.events, '📅'),
             ]
@@ -270,12 +269,9 @@ export default class HomeStatsPlugin extends Plugin {
 
     private createStatCardNode(label: string, value: number, icon: string): HTMLElement {
         const card = node('div', { class: 'home-stats-card has-details' });
-
         card.appendChild(node('div', { class: 'home-stats-icon', text: icon }));
         card.appendChild(node('div', { class: 'home-stats-value', text: value.toString() }));
         card.appendChild(node('div', { class: 'home-stats-label', text: label }));
-        card.appendChild(node('div', { class: 'home-stats-expand-icon', text: '↓' }));
-
         return card;
     }
 
@@ -323,7 +319,10 @@ export default class HomeStatsPlugin extends Plugin {
     private createDetailSection(title: string, items: any[], itemFormatter?: (item: any) => HTMLElement): HTMLElement {
         if (!items || items.length === 0) return document.createElement('div');
 
-        const section = node('div', { class: 'home-stats-details-section' });
+        const section = node('div', {
+            class: 'home-stats-details-section',
+            attributes: { 'id': title.toLowerCase().replace(/ /g, '-') }
+        });
 
         section.appendChild(node('div', {
             class: 'home-stats-details-header',
@@ -336,6 +335,8 @@ export default class HomeStatsPlugin extends Plugin {
 
         if (!itemFormatter) {
             itemFormatter = (item) => {
+                const metaDiv = node('div', { class: 'home-stats-detail-meta' });
+                metaDiv.innerHTML = convertLinks(item.note);
                 const itemEl = node('div', {
                     class: 'home-stats-detail-item',
                     children: [
@@ -344,7 +345,7 @@ export default class HomeStatsPlugin extends Plugin {
                                 node('a', { text: item.name, attributes: { 'href': item.path, 'class': 'internal-link' } })
                             ]
                         }),
-                        node('div', { class: 'home-stats-detail-meta', text: `${item.note}` })
+                        metaDiv
                     ]
                 });
                 return itemEl;
