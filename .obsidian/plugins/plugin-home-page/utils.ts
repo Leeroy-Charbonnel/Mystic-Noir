@@ -1,5 +1,13 @@
 export const statsKeys: string[] = ["characters", "stories", "locations", "items", "events"];
 
+export interface NodeProperties {
+    children?: HTMLElement[];
+    attributes?: Record<string, string>;
+    text?: string;
+    class?: string;
+    classes?: string[];
+    style?: Record<string, string>;
+}
 
 export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?: NodeProperties): HTMLElementTagNameMap[K] {
     const element = document.createElement(tag);

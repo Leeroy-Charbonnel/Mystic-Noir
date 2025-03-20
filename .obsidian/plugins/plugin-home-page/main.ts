@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, MarkdownView, TFile, Notice } from 'obsidian';
-import statsKeys from "./utils"
+import { statsKeys, node } from "./utils"
 
 export default class HomeStatsPlugin extends Plugin {
     lastRefresh: number = 0;
@@ -24,11 +24,6 @@ export default class HomeStatsPlugin extends Plugin {
                 }
             })
         );
-
-        // if (this.app.workspace.getActiveFile() && this.isHomePage(this.app.workspace.getActiveFile())) {
-        //     this.refreshHomeStats();
-        //     this.lastRefresh = Date.now();
-        // }
     }
 
     onunload() {
@@ -49,7 +44,6 @@ export default class HomeStatsPlugin extends Plugin {
         }
 
         const stats = await this.generateStats();
-        console.log(stats)
         const statsHtml = this.formatStats(stats);
 
         this.updateHomePageContent(activeFile, statsHtml);
@@ -73,7 +67,6 @@ export default class HomeStatsPlugin extends Plugin {
             details[stat] = [];
         });
 
-        const now = Date.now();
         const markdownFiles = this.app.vault.getMarkdownFiles();
 
         for (const file of markdownFiles) {
@@ -128,7 +121,7 @@ export default class HomeStatsPlugin extends Plugin {
                                     details.stories.push({
                                         name: file.basename,
                                         path: file.path,
-                                        note: fileWordscount
+                                        note: `${fileWordscount} words`
                                     });
                                 }
 
@@ -211,168 +204,163 @@ export default class HomeStatsPlugin extends Plugin {
         return text.replace(/<\/?[^>]+(>|$)/g, "").trim();
     }
 
-    // Format statistics as HTML
+
+
     private formatStats(statsData: { stats: Record<string, number>, details: Record<string, any[]> }): string {
         const stats = statsData.stats;
         const details = statsData.details;
         const currentDate = new Date().toLocaleDateString();
         const currentTime = new Date().toLocaleTimeString();
 
-        let html = `<div class="home-stats-container">
-            <h2>Vault Statistics</h2>
-            <div class="home-stats-date">Last updated: ${currentDate} ${currentTime}</div>
-            <div class="home-stats-grid">`;
+        //Main container
+        const statsContainer = node('div', { class: 'home-stats-container' });
 
-        html += this.createStatCard('Stories', stats.stories, '📚', 'stories-details');
-        html += this.createStatCard('Characters', stats.characters, '👤', 'characters-details');
-        html += this.createStatCard('Locations', stats.locations, '🏙️', 'locations-details');
-        html += this.createStatCard('Items', stats.items, '🧰', 'items-details');
-        html += this.createStatCard('Events', stats.events, '📅', 'events-details');
+        //Header
+        statsContainer.appendChild(node('h2', { text: 'Mystic Noir' }));
+        statsContainer.appendChild(node('div', {
+            class: 'home-stats-date',
+            text: `Last updated: ${currentDate} ${currentTime}`
+        }));
 
-        html += `</div>`;
+        const statsGrid = node('div', {
+            class: 'home-stats-grid',
+            children: [
+                this.createStatCardNode('Stories', stats.stories, '📚'),
+                this.createStatCardNode('Characters', stats.characters, '👤'),
+                this.createStatCardNode('Locations', stats.locations, '🏙️'),
+                this.createStatCardNode('Items', stats.items, '🧰'),
+                this.createStatCardNode('Events', stats.events, '📅'),
+            ]
+        });
 
-        // Advanced metrics
-        html += `<div class="home-stats-advanced-metrics">
-            <h3>Advanced Metrics</h3>
-            <div class="home-stats-metrics-grid">
-                <div class="home-stats-metric">
-                    <div class="home-stats-metric-value">${stats.totalWords.toLocaleString()}</div>
-                    <div class="home-stats-metric-label">Total Words</div>
-                </div>
-                <div class="home-stats-metric">
-                    <div class="home-stats-metric-value">${stats.totalLinks}</div>
-                    <div class="home-stats-metric-label">Total Links</div>
-                </div>
-                <div class="home-stats-metric">
-                    <div class="home-stats-metric-value">${stats.recentlyUpdatedFiles}</div>
-                    <div class="home-stats-metric-label">Recently Updated</div>
-                </div>
-                <div class="home-stats-metric">
-                    <div class="home-stats-metric-value">${stats.unlinkedFiles}</div>
-                    <div class="home-stats-metric-label">Unlinked Files</div>
-                </div>
-            </div>
-        </div>`;
+        const advancedMetrics = node('div', { class: 'home-stats-advanced-metrics' });
+        advancedMetrics.appendChild(node('h3', { text: 'Advanced' }));
+        const metricsGrid = node('div', { class: 'home-stats-metrics-grid' });
 
-        // Detailed expandable sections
-        html += this.createDetailSection('Characters', details.characters,
-            item => `<div class="home-stats-detail-item">
-                <div class="home-stats-detail-name">
-                    <a href="${item.path}" class="internal-link">${item.name}</a>
-                    ${item.state === 'Dead' ? '<span class="home-stats-state-badge dead">Dead</span>' :
-                    item.state === 'Injured' ? '<span class="home-stats-state-badge injured">Injured</span>' : ''}
-                </div>
-                <div class="home-stats-detail-meta">${item.occupation}</div>
-            </div>`
-        );
+        const advancedMetricsToShow = [
+            { key: 'totalWords', label: 'Total Words' },
+            { key: 'totalLinks', label: 'Total Links' },
+            { key: 'unlinkedFiles', label: 'Unlinked Files' }
+        ];
 
-        html += this.createDetailSection('Stories', details.stories,
-            item => `<div class="home-stats-detail-item">
-                <div class="home-stats-detail-name">
-                    <a href="${item.path}" class="internal-link">${item.name}</a>
-                </div>
-                <div class="home-stats-detail-meta">
-                    ${item.characters} character${item.characters !== 1 ? 's' : ''} referenced
-                </div>
-            </div>`
-        );
+        advancedMetricsToShow.forEach(metric => {
+            const metricEl = node('div', { class: 'home-stats-metric' });
+            const value = stats[metric.key];
 
-        html += this.createDetailSection('Locations', details.locations,
-            item => `<div class="home-stats-detail-item">
-                <div class="home-stats-detail-name">
-                    <a href="${item.path}" class="internal-link">${item.name}</a>
-                </div>
-                <div class="home-stats-detail-meta">${item.description}</div>
-            </div>`
-        );
+            metricEl.appendChild(node('div', {
+                class: 'home-stats-metric-value',
+                text: value.toString()
+            }));
 
-        html += this.createDetailSection('Items', details.items,
-            item => `<div class="home-stats-detail-item">
-                <div class="home-stats-detail-name">
-                    <a href="${item.path}" class="internal-link">${item.name}</a>
-                </div>
-                <div class="home-stats-detail-meta">${item.description}</div>
-            </div>`
-        );
+            metricEl.appendChild(node('div', {
+                class: 'home-stats-metric-label',
+                text: metric.label
+            }));
 
-        html += this.createDetailSection('Recently Updated', details.recentlyUpdatedFiles,
-            item => `<div class="home-stats-detail-item">
-                <div class="home-stats-detail-name">
-                    <a href="${item.path}" class="internal-link">${item.name}</a>
-                </div>
-                <div class="home-stats-detail-meta">Updated: ${item.modifiedDate}</div>
-            </div>`
-        );
+            metricsGrid.appendChild(metricEl);
+        });
 
-        html += this.createDetailSection('Unlinked Files', details.unlinkedFiles,
-            item => `<div class="home-stats-detail-item">
-                <div class="home-stats-detail-name">
-                    <a href="${item.path}" class="internal-link">${item.name}</a>
-                </div>
-            </div>`
-        );
+        statsContainer.appendChild(statsGrid);
+        statsContainer.appendChild(advancedMetrics);
+        advancedMetrics.appendChild(metricsGrid);
 
-        html += `</div>`;
-
-        return html;
+        this.addDetailSections(statsContainer, details);
+        return statsContainer.outerHTML;
     }
 
-    // Create a detailed section for specific type of details
-    private createDetailSection(title: string, items: any[], itemFormatter: (item: any) => string): string {
-        if (!items || items.length === 0) return '';
+    private createStatCardNode(label: string, value: number, icon: string): HTMLElement {
+        const card = node('div', { class: 'home-stats-card has-details' });
 
-        return `
-        <div class="home-stats-details-section">
-            <div class="home-stats-details-header">${title} (${items.length})</div>
-            <div class="home-stats-details-content">
-                ${items.map(itemFormatter).join('')}
-            </div>
-        </div>`;
+        card.appendChild(node('div', { class: 'home-stats-icon', text: icon }));
+        card.appendChild(node('div', { class: 'home-stats-value', text: value.toString() }));
+        card.appendChild(node('div', { class: 'home-stats-label', text: label }));
+        card.appendChild(node('div', { class: 'home-stats-expand-icon', text: '↓' }));
+
+        return card;
     }
 
-    // Create a stat card with optional details
-    private createStatCard(label: string, value: number, icon: string, detailsId?: string): string {
-        return `<div class="home-stats-card ${detailsId ? 'has-details' : ''}" ${detailsId ? `data-details="${detailsId}"` : ''}>
-            <div class="home-stats-icon">${icon}</div>
-            <div class="home-stats-value">${value}</div>
-            <div class="home-stats-label">${label}</div>
-            ${detailsId ? `<div class="home-stats-expand-icon">↓</div>` : ''}
-        </div>`;
+    private addDetailSections(container: HTMLElement, details: Record<string, any[]>): void {
+        container.appendChild(this.createDetailSection('Characters', details.characters,
+            item => {
+                const itemEl = node('div', { class: 'home-stats-detail-item' });
+                const nameEl = node('div', { class: 'home-stats-detail-name' });
+                nameEl.appendChild(node('a', {
+                    text: item.name,
+                    attributes: {
+                        'href': item.path,
+                        'class': 'internal-link'
+                    }
+                }));
+
+                if (item.state === 'Dead') {
+                    nameEl.appendChild(node('span', {
+                        text: 'Dead',
+                        class: 'home-stats-state-badge dead'
+                    }));
+                } else if (item.state === 'Injured') {
+                    nameEl.appendChild(node('span', {
+                        text: 'Injured',
+                        class: 'home-stats-state-badge injured'
+                    }));
+                }
+
+                itemEl.appendChild(nameEl);
+                itemEl.appendChild(node('div', {
+                    class: 'home-stats-detail-meta',
+                    text: item.note
+                }));
+
+                return itemEl;
+            }
+        ));
+
+        container.appendChild(this.createDetailSection('Stories', details.stories));
+        container.appendChild(this.createDetailSection('Locations', details.locations));
+        container.appendChild(this.createDetailSection('Items', details.items));
+        container.appendChild(this.createDetailSection('Events', details.events));
     }
 
-    // Update home page content with the stats
+    private createDetailSection(title: string, items: any[], itemFormatter?: (item: any) => HTMLElement): HTMLElement {
+        if (!items || items.length === 0) return document.createElement('div');
+
+        const section = node('div', { class: 'home-stats-details-section' });
+
+        section.appendChild(node('div', {
+            class: 'home-stats-details-header',
+            text: `${title} (${items.length})`
+        }));
+
+        const content = node('div', { class: 'home-stats-details-content' });
+        section.appendChild(content);
+
+
+        if (!itemFormatter) {
+            itemFormatter = (item) => {
+                const itemEl = node('div', {
+                    class: 'home-stats-detail-item',
+                    children: [
+                        node('div', {
+                            class: 'home-stats-detail-name', children: [
+                                node('a', { text: item.name, attributes: { 'href': item.path, 'class': 'internal-link' } })
+                            ]
+                        }),
+                        node('div', { class: 'home-stats-detail-meta', text: `${item.note}` })
+                    ]
+                });
+                return itemEl;
+            }
+        }
+
+        items.forEach(item => {
+            content.appendChild(itemFormatter(item));
+        });
+
+        return section;
+    }
+
     private async updateHomePageContent(homeFile: TFile, statsHtml: string) {
         try {
-            // Read the current content
-            let content = await this.app.vault.read(homeFile);
-
-            // Check if the content contains the #Home tag
-            if (!content.includes('#Home')) {
-                new Notice('The Home page does not have the #Home tag. Stats not added.');
-                return;
-            }
-
-            // If setting is enabled, clear the home page content
-            if (this.settings.clearHomePageOnRefresh) {
-                // Keep only the #Home tag and any YAML frontmatter
-                const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n/);
-                const frontmatterContent = frontmatterMatch ? frontmatterMatch[0] : '';
-
-                content = frontmatterContent + '#Home\n\n' + statsHtml;
-            } else {
-                // Append stats to the existing content
-                if (this.settings.insertLocation === 'top') {
-                    content = content.includes('#Home')
-                        ? content.replace('#Home', '#Home\n\n' + statsHtml)
-                        : statsHtml + '\n\n' + content;
-                } else {
-                    // Bottom insertion
-                    content += '\n\n' + statsHtml;
-                }
-            }
-
-            // Modify the file
-            await this.app.vault.modify(homeFile, content);
+            await this.app.vault.modify(homeFile, statsHtml);
         } catch (error) {
             console.error('Error updating home page:', error);
             new Notice('Failed to update home page stats');
@@ -380,93 +368,3 @@ export default class HomeStatsPlugin extends Plugin {
     }
 }
 
-// Settings Tab
-class HomeStatsSettingTab extends PluginSettingTab {
-    plugin: HomeStatsPlugin;
-
-    constructor(app: App, plugin: HomeStatsPlugin) {
-        super(app, plugin);
-        this.plugin = plugin;
-    }
-
-    display(): void {
-        const { containerEl } = this;
-        containerEl.empty();
-
-        containerEl.createEl('h2', { text: 'Home Stats Settings' });
-
-        // Insert Location Setting
-        new Setting(containerEl)
-            .setName('Insert Location')
-            .setDesc('Where to insert the stats on the Home page')
-            .addDropdown(dropdown => dropdown
-                .addOption('top', 'Top of page')
-                .addOption('bottom', 'Bottom of page')
-                .setValue(this.plugin.settings.insertLocation)
-                .onChange(async (value) => {
-                    this.plugin.settings.insertLocation = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        // Clear Home Page Setting
-        new Setting(containerEl)
-            .setName('Clear Home Page')
-            .setDesc('Clear the home page content before inserting stats')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.clearHomePageOnRefresh)
-                .onChange(async (value) => {
-                    this.plugin.settings.clearHomePageOnRefresh = value;
-                    await this.plugin.saveSettings();
-                }));
-
-        // Stats to Show
-        const statsOptions = [
-            { id: 'stories', name: 'Stories' },
-            { id: 'characters', name: 'Characters' },
-            { id: 'locations', name: 'Locations' },
-            { id: 'items', name: 'Items' },
-            { id: 'events', name: 'Events' },
-            { id: 'detailedStats', name: 'Detailed Stats' }
-        ];
-
-        const statsSetting = new Setting(containerEl)
-            .setName('Stats to Show')
-            .setDesc('Select which statistics to display on your Home page');
-
-        statsOptions.forEach(option => {
-            statsSetting.addToggle(toggle => toggle
-                .setValue(this.plugin.settings.statsToShow.includes(option.id))
-                .setTooltip(option.name)
-                .onChange(async (value) => {
-                    if (value && !this.plugin.settings.statsToShow.includes(option.id)) {
-                        this.plugin.settings.statsToShow.push(option.id);
-                    } else if (!value) {
-                        this.plugin.settings.statsToShow = this.plugin.settings.statsToShow.filter(id => id !== option.id);
-                    }
-                    await this.plugin.saveSettings();
-                }));
-        });
-
-        // Refresh Frequency
-        new Setting(containerEl)
-            .setName('Refresh Frequency')
-            .setDesc('How often to refresh stats (in minutes) when opening the Home page')
-            .addSlider(slider => slider
-                .setLimits(5, 1440, 5)
-                .setValue(this.plugin.settings.refreshFrequency)
-                .setDynamicTooltip()
-                .onChange(async (value) => {
-                    this.plugin.settings.refreshFrequency = value;
-                    await this.plugin.saveSettings();
-                })
-            );
-
-        // Refresh Button
-        const refreshContainer = containerEl.createDiv('setting-item');
-        const refreshButton = refreshContainer.createEl('button', { text: 'Refresh Stats Now' });
-        refreshButton.addEventListener('click', () => {
-            this.plugin.refreshHomeStats();
-            new Notice('Home Stats refreshed');
-        });
-    }
-}
