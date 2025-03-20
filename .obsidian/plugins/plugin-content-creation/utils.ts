@@ -11,7 +11,6 @@ export interface NodeProperties {
 
 export interface FormTemplate {
     name: string,
-    oldName: string,
     contentType: string,
     defaultFolder: string,
     template: any
@@ -78,7 +77,6 @@ export function getTemplates(): { [key: string]: FormTemplate } {
         const newObj: FormTemplate={
             defaultFolder: templateObj.defaultFolder||'',
             name: templateObj.name||'',
-            oldName: '',
             contentType: key,
             template: convertTemplateFormat(JSON.parse(JSON.stringify(templateObj||{})))
         };

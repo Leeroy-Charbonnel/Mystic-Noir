@@ -4,7 +4,7 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
-import SuggestComponent from './suggestComponent';
+import SuggestComponent from './SuggestComponent';
 
 export class RichTextEditor {
     private app: App;

@@ -6,6 +6,7 @@ blockquote {
 }
 
 
+
 .field-container.field-type-text,
 .field-container.field-type-boolean {
     display: flex;
@@ -14,6 +15,12 @@ blockquote {
 .field-label {
     font-weight: bold;
     margin-right: 10px;
+    white-space: nowrap;
+}
+
+.field-container.field-type-boolean {
+    display: grid;
+    grid-template-columns: 20% auto;
 }
 
 .section-content {
@@ -60,8 +67,8 @@ blockquote {
     top: 50%;
     transform: translateY(-50%);
     background: var(--text-normal);
-    width: 7px;
-    height: 3px;
+    width: 6px;
+    height: 6px;
     border-radius: 100vw;
 }
 

@@ -16,7 +16,6 @@ export class ContentSelectorModal extends Modal {
     contentEl.empty();
     
     contentEl.addClass('content-selector-modal');
-
     contentEl.appendChild(node('h2', { 
       text: 'Select Content Type to Create',
       class: 'selector-title' 

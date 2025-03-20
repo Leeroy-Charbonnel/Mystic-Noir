@@ -115,11 +115,15 @@ export class ContentCreatorView extends ItemView {
         return "Content Creator";
     }
 
-    updateContent(contentData: FormTemplate) {
+    updateContent(contentData: FormTemplate, newContent: boolean) {
         this.containerEl.addClass("content-creator-container");
         this.contentData = contentData;
         this.contentEl.empty();
-        this.formView = new DynamicFormView(this.app, this.plugin, this.contentData, this.containerEl);
+
+        const wrapper = node('div', { class: 'content-creator-wrapper' });
+        this.contentEl.appendChild(wrapper);
+
+        this.formView = new DynamicFormView(this.app, this.plugin, this.contentData, wrapper, newContent);
         this.formView.render();
     }
 }
@@ -182,7 +186,7 @@ export default class ContentCreatorPlugin extends Plugin {
         });
     }
 
-    async activateView(contentData: FormTemplate) {
+    async activateView(contentData: FormTemplate, newContent: boolean) {
         const leaf = this.app.workspace.getLeaf();
 
         await leaf.setViewState({
@@ -191,7 +195,7 @@ export default class ContentCreatorPlugin extends Plugin {
         })
 
         if (leaf.view) {
-            (leaf.view as ContentCreatorView).updateContent(contentData);
+            (leaf.view as ContentCreatorView).updateContent(contentData, newContent);
             this.activeView = leaf.view as ContentCreatorView;
         }
     }
@@ -199,25 +203,15 @@ export default class ContentCreatorPlugin extends Plugin {
     openFormForContentType(contentType: string) {
         let result = JSON.parse(JSON.stringify(this.templates[contentType as keyof typeof this.templates]));
         result.name = `New (${contentType.charAt(0).toUpperCase() + contentType.slice(1)})`;
-        result.oldName = null;
-        this.activateView(result);
+        this.activateView(result, true);
     }
 
 
     async editExistingContent(file: TFile) {
-        const properties = this.getFileProperties(this.app, file);
-
-        if (properties == null) {
-            new Notice("Error editing content: Could not find properties");
-            console.error("Error editing content: Could not find properties");
-            return;
-        }
-
-        //Fill template with data
-        const data = properties?.data;
+        const data = this.getFileProperties(this.app, file)?.data;
         const template = this.templates[data.contentType];
         const result = this.fillTemplateWithData(template, data);
-        this.activateView(result);
+        this.activateView(result, false);
     }
 
     fillTemplateWithData(template: any, data: any) {
@@ -251,38 +245,19 @@ export default class ContentCreatorPlugin extends Plugin {
     async createContentFile(data: any) {
         try {
             const folderPath = data.defaultFolder;
-
-            // Check if folder is specified
-            if (!folderPath || folderPath.trim() == '') {
-                new Notice(`No default folder : ${data.contentType}`);
-            }
-
-            // Check if folder exist, create it otherwise
-            await this.ensureFolderExists(folderPath);
-
-            // Generate content markdown
-            let file;
-            let newContent = (data.oldName == null);
-            const fileOldPath = normalizePath(`${folderPath}/${data.oldName}.md`);
-            const fileNewPath = normalizePath(`${folderPath}/${data.name}.md`);
-
-            data.oldName = data.name;
+            const filePath = normalizePath(`${folderPath}/${data.name}.md`);
             const fileContent = this.generateFileContent(data);
 
-            if (newContent) {
-                file = await this.app.vault.create(fileNewPath, fileContent);
-            } else {
-                // If exist, modify content and rename to keep link
-                file = this.app.vault.getAbstractFileByPath(fileOldPath) as TFile;
+            let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+
+            if (file) {
                 await this.app.vault.modify(file, fileContent);
-                await this.app.fileManager.renameFile(file, fileNewPath);
+            } else {
+                file = await this.app.vault.create(filePath, fileContent);
             }
 
             new Notice(`Saved : ${data.name}`);
-
-            this.app.workspace.getLeaf(false).openFile(file);
             return file;
-
         } catch (error) {
             console.error("Error creating content:", error);
             new Notice(`Error creating content: ${error.message}`);
@@ -290,17 +265,6 @@ export default class ContentCreatorPlugin extends Plugin {
         }
     }
 
-    private async ensureFolderExists(folderPath: string) {
-        const folders = folderPath.split('/').filter(p => p.trim());
-        let currentPath = '';
-
-        for (const folder of folders) {
-            currentPath = currentPath ? `${currentPath}/${folder}` : folder;
-            if (!(await this.app.vault.adapter.exists(currentPath))) {
-                await this.app.vault.createFolder(currentPath);
-            }
-        }
-    }
 
     private generateFileContent(data: FormTemplate): string {
         const contentTypeTag = data.contentType.charAt(0).toUpperCase() + data.contentType.slice(1);

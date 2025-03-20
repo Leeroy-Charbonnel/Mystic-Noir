@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "1b68110ca722f8bd",
+        "id": "d051da10f3a09e88",
         "type": "tabs",
         "children": [
           {
-            "id": "fde78cd80ae87fe9",
+            "id": "21e60dbf4039a4f8",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "1. Characters/TEST DE CHARS2.md",
+                "file": "Home.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "TEST DE CHARS2"
+              "title": "Home"
             }
           }
         ]
@@ -166,7 +166,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 227.5
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -180,35 +180,34 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "fde78cd80ae87fe9",
+  "active": "21e60dbf4039a4f8",
   "lastOpenFiles": [
-    "1. Characters/TEST DE CHARS2.md",
-    "1. Characters/klj,dfgprl^hlkprokhiorkh.md",
-    "1. Characters/CHAR1.md",
-    "1. Characters/CHAR2.md",
-    "1. Characters/The Shadow.md",
-    "1. Characters/Samuel Blackwood.md",
-    "1. Characters/Mr Dupont.md",
-    "4. Stories/0. Chronology.canvas",
-    "4. Stories/Shadows of the Crescent City.md",
-    "New (CharactersTEST).md",
-    "2. Items/Dupont's Heirloom.md",
-    "4. Stories/Silenced Testimony.md",
-    "4. Stories/The Last Gamble.md",
-    "4. Stories/The Missing Melody.md",
-    "5. Events/Mr Dupont's death.md",
-    "3. Locations/Samuel's Office.md",
-    "1. Characters/Evelyn Dupont.md",
     "Untitled.md",
     "TEST GIT.md",
-    "99. Notes/Future.md",
-    "4. Stories/New (Stories).md",
+    "New (CharactersTEST).md",
     "Home.md",
+    "99. Notes/Future.md",
+    "5. Events/Mr Dupont's death.md",
+    "4. Stories/The Missing Melody.md",
+    "4. Stories/The Last Gamble.md",
+    "4. Stories/Silenced Testimony.md",
+    "4. Stories/Shadows of the Crescent City.md",
+    "4. Stories/New (Stories).md",
+    "4. Stories/0. Chronology.canvas",
+    "1. Characters/Mr Dupont.md",
+    "1. Characters/Evelyn Dupont.md",
+    "1. Characters/Samuel Blackwood.md",
+    "2. Items/Dupont's Heirloom.md",
+    "1. Characters/The Shadow.md",
+    "1. Characters/New (Characters)fef.md",
+    "1. Characters/New (Characters).md",
+    "1. Characters/TEST DE CHARS2.md",
+    "1. Characters/CHAR2.md",
+    "1. Characters/CHAR1.md",
+    "1. Characters/TEST DE CHARS20.md",
+    "1. Characters/klj,dfgprl^hlkprokhiorkh.md",
+    "3. Locations/Samuel's Office.md",
     "1. Characters/TEST CHARACTER.md",
-    "4. Stories/TEST STORY.md",
-    "4. Stories/New (Stories)2.md",
-    "3. Locations/Stardust Lounge.md",
-    "1. Characters/Samuel Blackwood3.md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",

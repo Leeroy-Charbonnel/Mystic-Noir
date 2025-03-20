@@ -1,4 +1,4 @@
-import { App, ButtonComponent, ToggleComponent, Notice, TextComponent } from 'obsidian';
+import { App, ButtonComponent, ToggleComponent, Notice, TextComponent, TFile } from 'obsidian';
 import ContentCreatorPlugin from './main';
 import { node, formatDisplayName, isObject, FormTemplate, hasValueAndType } from './utils';
 
@@ -17,13 +17,15 @@ export class DynamicFormView {
     private formContainer: HTMLElement;
     private multiValueFieldsMap: Map<string, MultiValueField> = new Map();
     private pages: string[];
+    private newContent: boolean;
 
-    constructor(app: App, plugin: ContentCreatorPlugin, data: FormTemplate, container: HTMLElement) {
+    constructor(app: App, plugin: ContentCreatorPlugin, data: FormTemplate, container: HTMLElement, newContent: boolean) {
         this.app = app;
         this.plugin = plugin;
         this.data = data;
         this.container = container;
         this.pages = this.getAllPages();
+        this.newContent = newContent;
     }
 
     getAllPages(): string[] {
@@ -44,6 +46,8 @@ export class DynamicFormView {
             classes: ['content-name'],
             attributes: { 'type': 'text', 'value': this.data.name, 'placeholder': 'Enter a name' }
         });
+        contentNameInput.disabled = !this.newContent;
+
         contentNameInput.addEventListener('input', (e) => this.updateContentName((e.target as HTMLInputElement).value));
         this.formContainer.appendChild(contentNameInput);
 
@@ -99,7 +103,7 @@ export class DynamicFormView {
                     fieldContainer.appendChild(fieldLabel);
                     const toggleContainer = node('div', { class: 'toggle-container' });
                     fieldContainer.appendChild(toggleContainer);
-                    
+
                     new ToggleComponent(toggleContainer)
                         .setValue(field.value as boolean)
                         .onChange((value) => {
@@ -138,20 +142,28 @@ export class DynamicFormView {
             new Notice("Please provide a name for the content");
             return;
         }
+        const leaf = this.app.workspace.activeLeaf;
+        if (!leaf) return;
+
         const file = await this.plugin.createContentFile(this.data);
-        if (file) {
-            //The content was saved successfully
-            this.handleCancel();
-        }
+        if (!file) return;
+
+        await leaf.openFile(file, { state: { mode: 'preview' } });
     }
 
     handleCancel() {
-        //Navigate back to the previous view or close the form
-        const activeLeaf = this.app.workspace.getMostRecentLeaf();
-        if (activeLeaf && activeLeaf.getViewState().type !== 'content-creator-view') {
-            activeLeaf.setViewState(activeLeaf.getViewState());
+        const leaf = this.app.workspace.activeLeaf;
+        if (!leaf) return;
+
+        if (this.data.name && this.data.defaultFolder) {
+            const filePath = `${this.data.defaultFolder}/${this.data.name}.md`;
+            const file = this.app.vault.getAbstractFileByPath(filePath);
+            if (!file) return;
+            leaf.openFile(file as TFile, { state: { mode: 'preview' } });
+
         } else {
-            const leaf = this.app.workspace.getLeaf();
+            // Close the view
+            const leaf = this.app.workspace.getLeaf(false);
             leaf.setViewState({ type: 'empty' });
         }
     }

@@ -31,9 +31,14 @@ button.mod-cta {
     background-color: var(--background-secondary);
 }
 
-/* Content creator view styles */
+.content-creator-wrapper {
+    max-width: var(--file-line-width);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
 .content-creator-view {
-    padding: 20px;
     overflow-y: auto;
 }
 
@@ -57,13 +62,7 @@ button.mod-cta {
     width: 100%;
 }
 
-.content-creator-view .button-container {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding-bottom: 30px;
-}
+
 
 /* Form field styles - used by both modal and view */
 .form-scroll-container {
@@ -126,10 +125,15 @@ button.mod-cta {
 }
 
 .button-container {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    position: absolute;
+    bottom: 45px;
+    right: 20px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.button-container button {
+    margin: 0px 5px;
 }
 
 .content-name {
@@ -142,7 +146,8 @@ button.mod-cta {
     margin: 0 !important;
 }
 
-.dynamic-form-field-container.textarea .editor-label, .multi-value-label {
+.dynamic-form-field-container.textarea .editor-label,
+.multi-value-label {
     margin-top: 7px;
 }
 
