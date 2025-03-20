@@ -30,7 +30,6 @@ export default class SuggestComponent {
             (element as any) = element.parentElement;
         }
 
-        // Add global scroll listener to reposition popover
         window.addEventListener('scroll', () => {
             if (this.popover.isOpen) this.updatePopoverPosition();
         }, true);

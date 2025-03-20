@@ -75,9 +75,9 @@ export class RichTextEditor {
         let bulletListButton: HTMLButtonElement;
         let numberedListButton: HTMLButtonElement;
 
-        // Add extra formatting options for textarea fields
+        //Add extra formatting options for textarea fields
         if (inputType == "textarea") {
-            // Heading dropdown
+            //Heading dropdown
             const headingDropdown = document.createElement('select');
             headingDropdown.className = 'editor-heading-select';
             headingDropdown.title = 'Heading Level';
@@ -100,7 +100,7 @@ export class RichTextEditor {
                 }
             });
 
-            // Update dropdown when editor selection changes
+            //Update dropdown when editor selection changes
             editor.on('transaction', () => {
                 if (editor.isActive('heading')) {
                     const currentLevel = editor.getAttributes('heading').level;
@@ -110,7 +110,6 @@ export class RichTextEditor {
                 }
             });
 
-            // List formatting buttons
             bulletListButton = node('button', { class: 'editor-button', text: '•', attributes: { 'title': 'Bullet List', 'type': 'button' } });
             bulletListButton.addEventListener('click', () => {
                 editor.chain().focus().toggleBulletList().run();
@@ -128,7 +127,6 @@ export class RichTextEditor {
             toolbar.appendChild(numberedListButton);
         }
 
-        // Update button states based on current formatting
         editor.on('transaction', () => {
             boldButton.classList.toggle('is-active', editor.isActive('bold'));
             italicButton.classList.toggle('is-active', editor.isActive('italic'));
@@ -148,10 +146,10 @@ export class RichTextEditor {
             }
         });
 
-        // Show toolbar on focus
+        //Show toolbar on focus
         editor.on('focus', () => { toolbar.classList.remove('editor-toolbar-hidden'); });
 
-        // Hide toolbar on blur (except when clicking toolbar itself)
+        //Hide toolbar on blur (except when clicking toolbar itself)
         editor.on('blur', () => {
             setTimeout(() => {
                 if (!editorContainer.contains(document.activeElement)) {
