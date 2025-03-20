@@ -1,5 +1,3 @@
-#Home
-
 <div class="home-stats-container">
             <h2>Vault Statistics</h2>
             <div class="home-stats-date">Last updated: 20/03/2025</div>
@@ -54,3 +52,4 @@
             <div class="home-stats-value">1</div>
             <div class="home-stats-label">Items</div>
         </div></div></div>
+

@@ -92,7 +92,7 @@ export default class HomeStatsPlugin extends Plugin {
     }
 
     // Generate statistics from vault files
-    private async generateStats(): Promise<Record<string, number>> {
+    private async generateStats(): Promise<{ counts: Record<string, number>, details: Record<string, any[]> }> {
         const stats: Record<string, number> = {
             stories: 0,
             characters: 0,
@@ -102,7 +102,22 @@ export default class HomeStatsPlugin extends Plugin {
             deadCharacters: 0,
             injuredCharacters: 0,
             totalLinks: 0,
-            totalTags: 0
+            totalTags: 0,
+            // Additional indicators
+            storyWords: 0,
+            averageStoryLength: 0,
+            charactersWithLinks: 0,
+            locationsUsed: 0,
+            itemsUsed: 0
+        };
+        
+        // Details of each type for expanded view
+        const details: Record<string, any[]> = {
+            characters: [],
+            stories: [],
+            locations: [],
+            items: [],
+            events: []
         };
 
         const markdownFiles = this.app.vault.getMarkdownFiles();
@@ -110,11 +125,15 @@ export default class HomeStatsPlugin extends Plugin {
         // Collect all tags for analysis
         const allTags = new Set<string>();
         
+        // Track which items are linked to
+        const linkedItems = new Set<string>();
+        
         for (const file of markdownFiles) {
             // Skip the home page itself
             if (this.isHomePage(file)) continue;
             
             const cache = this.app.metadataCache.getFileCache(file);
+            const fileContent = await this.app.vault.read(file);
             
             if (cache) {
                 // Count by tags in the file
@@ -123,83 +142,310 @@ export default class HomeStatsPlugin extends Plugin {
                         const tag = tagObj.tag.toLowerCase();
                         allTags.add(tag);
                         
-                        if (tag === '#stories') stats.stories++;
-                        else if (tag === '#characters') stats.characters++;
-                        else if (tag === '#locations') stats.locations++;
-                        else if (tag === '#items') stats.items++;
-                        else if (tag === '#events') stats.events++;
+                        if (tag === '#stories') {
+                            stats.stories++;
+                            stats.storyWords += fileContent.split(/\s+/).length;
+                            
+                            // Add to details with additional story info
+                            details.stories.push({
+                                name: file.basename,
+                                path: file.path,
+                                words: fileContent.split(/\s+/).length,
+                                characters: cache.links?.filter(link => 
+                                    link.displayText.includes("Character") || 
+                                    this.isCharacter(link.link)).length || 0
+                            });
+                        }
+                        else if (tag === '#characters') {
+                            stats.characters++;
+                            
+                            // Get character name from frontmatter or filename
+                            let characterName = file.basename;
+                            let occupation = "";
+                            let state = "Alive";
+                            
+                            if (cache.frontmatter && cache.frontmatter.data) {
+                                try {
+                                    const data = typeof cache.frontmatter.data === 'string' 
+                                        ? JSON.parse(cache.frontmatter.data) 
+                                        : cache.frontmatter.data;
+                                    
+                                    if (data.template?.BasicInformation?.FullName?.value) {
+                                        characterName = this.cleanHtml(data.template.BasicInformation.FullName.value);
+                                    }
+                                    
+                                    if (data.template?.BasicInformation?.Occupation?.value) {
+                                        occupation = this.cleanHtml(data.template.BasicInformation.Occupation.value);
+                                    }
+                                    
+                                    if (data.template?.State?.Dead?.value === true) {
+                                        state = "Dead";
+                                        stats.deadCharacters++;
+                                    } else if (data.template?.State?.Injured?.value === true) {
+                                        state = "Injured";
+                                        stats.injuredCharacters++;
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing character data:", e);
+                                }
+                            }
+                            
+                            // Add to character details
+                            details.characters.push({
+                                name: characterName,
+                                path: file.path,
+                                occupation: occupation,
+                                state: state
+                            });
+                        }
+                        else if (tag === '#locations') {
+                            stats.locations++;
+                            
+                            // Add to location details
+                            let locationName = file.basename;
+                            let description = "";
+                            
+                            if (cache.frontmatter && cache.frontmatter.data) {
+                                try {
+                                    const data = typeof cache.frontmatter.data === 'string' 
+                                        ? JSON.parse(cache.frontmatter.data) 
+                                        : cache.frontmatter.data;
+                                    
+                                    if (data.template?.BasicInformation?.Name?.value) {
+                                        locationName = this.cleanHtml(data.template.BasicInformation.Name.value);
+                                    }
+                                    
+                                    if (data.template?.BasicInformation?.location?.value) {
+                                        description = this.cleanHtml(data.template.BasicInformation.location.value);
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing location data:", e);
+                                }
+                            }
+                            
+                            details.locations.push({
+                                name: locationName,
+                                path: file.path,
+                                description: description
+                            });
+                        }
+                        else if (tag === '#items') {
+                            stats.items++;
+                            
+                            // Add to item details
+                            let itemName = file.basename;
+                            let description = "";
+                            
+                            if (cache.frontmatter && cache.frontmatter.data) {
+                                try {
+                                    const data = typeof cache.frontmatter.data === 'string' 
+                                        ? JSON.parse(cache.frontmatter.data) 
+                                        : cache.frontmatter.data;
+                                    
+                                    if (data.template?.BasicInformation?.Name?.value) {
+                                        itemName = this.cleanHtml(data.template.BasicInformation.Name.value);
+                                    }
+                                    
+                                    if (data.template?.BasicInformation?.Description?.value) {
+                                        description = this.cleanHtml(data.template.BasicInformation.Description.value).substring(0, 100) + "...";
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing item data:", e);
+                                }
+                            }
+                            
+                            details.items.push({
+                                name: itemName,
+                                path: file.path,
+                                description: description
+                            });
+                        }
+                        else if (tag === '#events') {
+                            stats.events++;
+                            
+                            // Add to event details
+                            let eventName = file.basename;
+                            let date = "";
+                            
+                            if (cache.frontmatter && cache.frontmatter.data) {
+                                try {
+                                    const data = typeof cache.frontmatter.data === 'string' 
+                                        ? JSON.parse(cache.frontmatter.data) 
+                                        : cache.frontmatter.data;
+                                    
+                                    if (data.template?.BasicInformation?.Name?.value) {
+                                        eventName = this.cleanHtml(data.template.BasicInformation.Name.value);
+                                    }
+                                    
+                                    if (data.template?.BasicInformation?.Date?.value) {
+                                        date = this.cleanHtml(data.template.BasicInformation.Date.value);
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing event data:", e);
+                                }
+                            }
+                            
+                            details.events.push({
+                                name: eventName,
+                                path: file.path,
+                                date: date
+                            });
+                        }
                     }
                     
                     stats.totalTags += cache.tags.length;
                 }
                 
-                // Count links
+                // Process links to track used items, locations, and characters
                 if (cache.links) {
                     stats.totalLinks += cache.links.length;
-                }
-                
-                // Check for dead/injured characters
-                if (cache.frontmatter && cache.tags?.some(t => t.tag.toLowerCase() === '#characters')) {
-                    try {
-                        const data = cache.frontmatter.data;
-                        if (data && typeof data === 'object') {
-                            // Parse the data JSON if it's a string
-                            const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-                            
-                            // Check for character state
-                            if (parsedData.template?.State?.Dead?.value === true) {
-                                stats.deadCharacters++;
-                            }
-                            
-                            if (parsedData.template?.State?.Injured?.value === true) {
-                                stats.injuredCharacters++;
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Error parsing frontmatter data:", e);
+                    
+                    // Record which items are linked to
+                    for (const link of cache.links) {
+                        linkedItems.add(link.link);
                     }
                 }
             }
         }
 
-        return stats;
+        // Calculate derived statistics
+        stats.averageStoryLength = stats.stories > 0 ? Math.round(stats.storyWords / stats.stories) : 0;
+        
+        // Count characters that appear in stories (via links)
+        stats.charactersWithLinks = details.characters.filter(char => 
+            linkedItems.has(char.path.replace('.md', '')) || 
+            linkedItems.has(char.name)
+        ).length;
+        
+        // Count locations used in stories
+        stats.locationsUsed = details.locations.filter(loc => 
+            linkedItems.has(loc.path.replace('.md', '')) || 
+            linkedItems.has(loc.name)
+        ).length;
+        
+        // Count items used in stories
+        stats.itemsUsed = details.items.filter(item => 
+            linkedItems.has(item.path.replace('.md', '')) || 
+            linkedItems.has(item.name)
+        ).length;
+
+        return { counts: stats, details: details };
+    }
+    
+    // Helper function to check if a link points to a character
+    private isCharacter(link: string): boolean {
+        // Check if the link is in the Characters folder or has specific patterns
+        return link.includes("Characters/") || 
+               link.includes("characters/") || 
+               this.app.metadataCache.getFirstLinkpathDest(link, "")?.path.includes("Characters");
+    }
+    
+    // Helper function to clean HTML from text (for displaying names)
+    private cleanHtml(text: string): string {
+        if (!text) return "";
+        return text.replace(/<\/?[^>]+(>|$)/g, "").trim();
     }
 
     // Format statistics as HTML
-    private formatStats(stats: Record<string, number>): string {
+    private formatStats(statsData: { counts: Record<string, number>, details: Record<string, any[]> }): string {
+        const stats = statsData.counts;
+        const details = statsData.details;
         const currentDate = new Date().toLocaleDateString();
+        const currentTime = new Date().toLocaleTimeString();
         
         let html = `<div class="home-stats-container">
             <h2>Vault Statistics</h2>
-            <div class="home-stats-date">Last updated: ${currentDate}</div>
+            <div class="home-stats-date">Last updated: ${currentDate} ${currentTime}</div>
             <div class="home-stats-grid">`;
         
-        // Core stats
+        // Core stats with expanded details
         if (this.settings.statsToShow.includes('stories')) {
-            html += this.createStatCard('Stories', stats.stories, '📚');
+            html += this.createStatCard('Stories', stats.stories, '📚', 'stories-details');
         }
         
         if (this.settings.statsToShow.includes('characters')) {
-            html += this.createStatCard('Characters', stats.characters, '👤');
+            html += this.createStatCard('Characters', stats.characters, '👤', 'characters-details');
         }
         
         if (this.settings.statsToShow.includes('locations')) {
-            html += this.createStatCard('Locations', stats.locations, '🏙️');
+            html += this.createStatCard('Locations', stats.locations, '🏙️', 'locations-details');
         }
         
         if (this.settings.statsToShow.includes('items')) {
-            html += this.createStatCard('Items', stats.items, '🧰');
+            html += this.createStatCard('Items', stats.items, '🧰', 'items-details');
         }
         
         if (this.settings.statsToShow.includes('events')) {
-            html += this.createStatCard('Events', stats.events, '📅');
+            html += this.createStatCard('Events', stats.events, '📅', 'events-details');
         }
         
         html += `</div>`;
         
+        // Additional derived stats
+        html += `<div class="home-stats-advanced-metrics">
+            <h3>Advanced Metrics</h3>
+            <div class="home-stats-metrics-grid">`;
+            
+        if (this.settings.statsToShow.includes('storyMetrics')) {
+            html += `<div class="home-stats-metric">
+                <div class="home-stats-metric-value">${stats.averageStoryLength.toLocaleString()}</div>
+                <div class="home-stats-metric-label">Words per Story</div>
+            </div>`;
+            
+            html += `<div class="home-stats-metric">
+                <div class="home-stats-metric-value">${stats.storyWords.toLocaleString()}</div>
+                <div class="home-stats-metric-label">Total Words</div>
+            </div>`;
+        }
+        
+        if (this.settings.statsToShow.includes('characterUsage')) {
+            const characterUsagePercent = stats.characters > 0 
+                ? Math.round((stats.charactersWithLinks / stats.characters) * 100) 
+                : 0;
+            
+            html += `<div class="home-stats-metric">
+                <div class="home-stats-metric-value">${stats.charactersWithLinks}/${stats.characters}</div>
+                <div class="home-stats-metric-label">Used Characters</div>
+                <div class="home-stats-mini-bar">
+                    <div class="home-stats-mini-bar-fill" style="width: ${characterUsagePercent}%"></div>
+                </div>
+            </div>`;
+        }
+        
+        if (this.settings.statsToShow.includes('locationUsage')) {
+            const locationUsagePercent = stats.locations > 0 
+                ? Math.round((stats.locationsUsed / stats.locations) * 100) 
+                : 0;
+            
+            html += `<div class="home-stats-metric">
+                <div class="home-stats-metric-value">${stats.locationsUsed}/${stats.locations}</div>
+                <div class="home-stats-metric-label">Used Locations</div>
+                <div class="home-stats-mini-bar">
+                    <div class="home-stats-mini-bar-fill" style="width: ${locationUsagePercent}%"></div>
+                </div>
+            </div>`;
+        }
+        
+        if (this.settings.statsToShow.includes('itemUsage')) {
+            const itemUsagePercent = stats.items > 0 
+                ? Math.round((stats.itemsUsed / stats.items) * 100) 
+                : 0;
+            
+            html += `<div class="home-stats-metric">
+                <div class="home-stats-metric-value">${stats.itemsUsed}/${stats.items}</div>
+                <div class="home-stats-metric-label">Used Items</div>
+                <div class="home-stats-mini-bar">
+                    <div class="home-stats-mini-bar-fill" style="width: ${itemUsagePercent}%"></div>
+                </div>
+            </div>`;
+        }
+        
+        html += `</div></div>`;
+        
         // Character stats
         if (stats.characters > 0 && (this.settings.statsToShow.includes('deadCharacters') || this.settings.statsToShow.includes('injuredCharacters'))) {
-            html += `<div class="home-stats-character-status">`;
+            html += `<div class="home-stats-character-status">
+                <h3>Character Status</h3>`;
             
             if (this.settings.statsToShow.includes('deadCharacters')) {
                 const deadPercent = stats.characters > 0 ? Math.round((stats.deadCharacters / stats.characters) * 100) : 0;
@@ -239,16 +485,90 @@ export default class HomeStatsPlugin extends Plugin {
             </div>`;
         }
         
+        // Detailed expandable sections
+        if (this.settings.statsToShow.includes('characterDetails')) {
+            html += this.createExpandableSection('characters-details', 'Character Details', details.characters, item => 
+                `<div class="home-stats-detail-item">
+                    <div class="home-stats-detail-name">
+                        <a href="${item.path}" class="internal-link">${item.name}</a>
+                        ${item.state === 'Dead' ? '<span class="home-stats-state-badge dead">Dead</span>' : 
+                         item.state === 'Injured' ? '<span class="home-stats-state-badge injured">Injured</span>' : ''}
+                    </div>
+                    <div class="home-stats-detail-meta">${item.occupation || 'No occupation'}</div>
+                </div>`
+            );
+        }
+        
+        if (this.settings.statsToShow.includes('storyDetails')) {
+            html += this.createExpandableSection('stories-details', 'Story Details', details.stories, item => 
+                `<div class="home-stats-detail-item">
+                    <div class="home-stats-detail-name">
+                        <a href="${item.path}" class="internal-link">${item.name}</a>
+                    </div>
+                    <div class="home-stats-detail-meta">
+                        ${item.words.toLocaleString()} words • ${item.characters} character${item.characters !== 1 ? 's' : ''}
+                    </div>
+                </div>`
+            );
+        }
+        
+        if (this.settings.statsToShow.includes('locationDetails')) {
+            html += this.createExpandableSection('locations-details', 'Location Details', details.locations, item => 
+                `<div class="home-stats-detail-item">
+                    <div class="home-stats-detail-name">
+                        <a href="${item.path}" class="internal-link">${item.name}</a>
+                    </div>
+                    <div class="home-stats-detail-meta">${item.description || 'No description'}</div>
+                </div>`
+            );
+        }
+        
+        if (this.settings.statsToShow.includes('itemDetails')) {
+            html += this.createExpandableSection('items-details', 'Item Details', details.items, item => 
+                `<div class="home-stats-detail-item">
+                    <div class="home-stats-detail-name">
+                        <a href="${item.path}" class="internal-link">${item.name}</a>
+                    </div>
+                    <div class="home-stats-detail-meta">${item.description || 'No description'}</div>
+                </div>`
+            );
+        }
+        
+        if (this.settings.statsToShow.includes('eventDetails')) {
+            html += this.createExpandableSection('events-details', 'Event Details', details.events, item => 
+                `<div class="home-stats-detail-item">
+                    <div class="home-stats-detail-name">
+                        <a href="${item.path}" class="internal-link">${item.name}</a>
+                    </div>
+                    <div class="home-stats-detail-meta">${item.date || 'No date'}</div>
+                </div>`
+            );
+        }
+        
         html += `</div>`;
         
         return html;
     }
     
-    private createStatCard(label: string, value: number, icon: string): string {
-        return `<div class="home-stats-card">
+    // Create an expandable section for details
+    private createExpandableSection(id: string, title: string, items: any[], itemFormatter: (item: any) => string): string {
+        if (!items || items.length === 0) return '';
+        
+        return `
+        <div class="home-stats-details-section" id="${id}">
+            <div class="home-stats-details-header">${title} (${items.length})</div>
+            <div class="home-stats-details-content">
+                ${items.map(itemFormatter).join('')}
+            </div>
+        </div>`;
+    }
+    
+    private createStatCard(label: string, value: number, icon: string, detailsId?: string): string {
+        return `<div class="home-stats-card ${detailsId ? 'has-details' : ''}" ${detailsId ? `data-details="${detailsId}"` : ''}>
             <div class="home-stats-icon">${icon}</div>
             <div class="home-stats-value">${value}</div>
             <div class="home-stats-label">${label}</div>
+            ${detailsId ? `<div class="home-stats-expand-icon">↓</div>` : ''}
         </div>`;
     }
 
@@ -258,29 +578,17 @@ export default class HomeStatsPlugin extends Plugin {
             // Read the current content
             let content = await this.app.vault.read(homeFile);
             
-            // Check if stats block already exists
-            const statsBlockRegex = /<div class="home-stats-container">[\s\S]*?<\/div>/g;
-            
-            if (statsBlockRegex.test(content)) {
-                // Replace existing stats block
-                content = content.replace(statsBlockRegex, statsHtml);
-            } else {
-                // Add stats based on settings
-                if (this.settings.insertLocation === 'top') {
-                    content = statsHtml + '\n\n' + content;
-                } else {
-                    content = content + '\n\n' + statsHtml;
-                }
+            // First check if the content contains the #Home tag
+            if (!content.includes('#Home')) {
+                new Notice('The Home page does not have the #Home tag. Stats not added.');
+                return;
             }
             
-            // Save the updated content
-            await this.app.vault.modify(homeFile, content);
-            
-        } catch (error) {
-            console.error('Failed to update home page content:', error);
-            new Notice('Failed to update Home Stats');
-        }
-    }
+            // Clear the home page content except for the #Home tag if setting is enabled
+            if (this.settings.clearHomePageOnRefresh) {
+                // Keep only the #Home tag and any YAML frontmatter
+                const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n/);
+                const front
 }
 
 class HomeStatsSettingTab extends PluginSettingTab {
