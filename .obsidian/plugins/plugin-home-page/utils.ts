@@ -1,4 +1,4 @@
-        export string  statsKey = ["characters", "stories", "locations", "items", "events"];
+export const statsKeys: string[] = ["characters", "stories", "locations", "items", "events"];
 
 
 export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?: NodeProperties): HTMLElementTagNameMap[K] {

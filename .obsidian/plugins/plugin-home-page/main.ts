@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, MarkdownView, TFile, Notice } from 'obsidian';
-
+import statsKeys from "./utils"
 
 export default class HomeStatsPlugin extends Plugin {
     lastRefresh: number = 0;
@@ -68,7 +68,7 @@ export default class HomeStatsPlugin extends Plugin {
             recentlyUpdatedFiles: []
         };
 
-        statsKey.forEach(stat => {
+        statsKeys.forEach((stat: string) => {
             stats[stat] = 0;
             details[stat] = [];
         });
@@ -93,7 +93,7 @@ export default class HomeStatsPlugin extends Plugin {
                     for (const tagObj of cache.tags) {
                         const tag = tagObj.tag.toLowerCase().slice(1);
 
-                        if (statsKey.includes(tag)) {
+                        if (statsKeys.includes(tag)) {
                             stats[tag]++;
 
                             if (cache.frontmatter && cache.frontmatter.data) {
