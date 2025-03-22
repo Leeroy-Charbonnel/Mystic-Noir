@@ -11,108 +11,50 @@ export function cleanLink(text: string): string {
     });
 }
 
-interface ParsedDate {
-    sortableDate: string; // YYYY-MM-DD format for sorting
-    displayDate: string; // Original format for display
-    year: number;
-    month: number | null;
-    day: number | null;
+export function parseDateString(dateString: string, roundUp: boolean): string {
+    if (!dateString) return ""
+
+    const cleanedString = dateString.trim();
+
+    if (cleanedString.length === 4 && !cleanedString.includes('/')) {
+        //Format: yyyy
+        const year = parseInt(cleanedString, 10);
+        if (roundUp)
+            return `31/12/${year}`;
+        else
+            return `01/01/${year}`;
+    } else if (cleanedString.includes('/')) {
+        const parts = cleanedString.split('/');
+
+        //Format: mm/yyyy
+        if (parts.length === 2) {
+            const month = parseInt(parts[0], 10);
+            const year = parseInt(parts[1], 10);
+            if (roundUp)
+                return `31/${month}/${year}`;
+            else
+                return `01/${month}/${year}`;
+            //Format: dd/mm/yyyy
+        } else if (parts.length === 3) {
+            return dateString
+        }
+    }
+    return ''
 }
 
-export function parseDateString(dateString: string): ParsedDate {
-    if (!dateString) {
-        return { 
-            sortableDate: '', 
-            displayDate: '', 
-            year: 0, 
-            month: null, 
-            day: null 
-        };
+
+export function extractLinks(text: string): string[] {
+    if (!text) return [];
+
+    const wikiLinkRegex = /\[\[(.*?)(?:\|.*?)?\]\]/g;
+    const links: string[] = [];
+    let match;
+
+    while ((match = wikiLinkRegex.exec(text)) !== null) {
+        //Extract the link part (before the pipe if it exists)
+        const linkText = match[1].split('|')[0].trim();
+        links.push(linkText);
     }
 
-    // Remove any HTML tags first
-    dateString = cleanHtml(dateString);
-
-    // Try to parse the date string
-    let year = 0;
-    let month: number | null = null;
-    let day: number | null = null;
-    let sortableDate = '';
-
-    // Check for YYYY format (just year)
-    const yearRegex = /^\s*(\d{4})\s*$/;
-    const yearMatch = dateString.match(yearRegex);
-    if (yearMatch) {
-        year = parseInt(yearMatch[1]);
-        sortableDate = `${year}`;
-        return {
-            sortableDate,
-            displayDate: dateString,
-            year,
-            month,
-            day
-        };
-    }
-
-    // Check for MM/YYYY or MM-YYYY format
-    const monthYearRegex = /^\s*(\d{1,2})[\/\-\.](\d{4})\s*$/;
-    const monthYearMatch = dateString.match(monthYearRegex);
-    if (monthYearMatch) {
-        month = parseInt(monthYearMatch[1]);
-        year = parseInt(monthYearMatch[2]);
-        sortableDate = `${year}-${month.toString().padStart(2, '0')}`;
-        return {
-            sortableDate,
-            displayDate: dateString,
-            year,
-            month,
-            day
-        };
-    }
-
-    // Check for DD/MM/YYYY or similar formats
-    const fullDateRegex = /^\s*(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\s*$/;
-    const fullDateMatch = dateString.match(fullDateRegex);
-    if (fullDateMatch) {
-        day = parseInt(fullDateMatch[1]);
-        month = parseInt(fullDateMatch[2]);
-        year = parseInt(fullDateMatch[3]);
-        sortableDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        return {
-            sortableDate,
-            displayDate: dateString,
-            year,
-            month,
-            day
-        };
-    }
-
-    // If we get here, try to use a generic Date parser as fallback
-    try {
-        const date = new Date(dateString);
-        if (!isNaN(date.getTime())) {
-            year = date.getFullYear();
-            month = date.getMonth() + 1; // JavaScript months are 0-indexed
-            day = date.getDate();
-            sortableDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-            return {
-                sortableDate,
-                displayDate: dateString,
-                year,
-                month,
-                day
-            };
-        }
-    } catch (e) {
-        console.log("Failed to parse date: ", dateString);
-    }
-
-    // If all else fails, just return the original string
-    return {
-        sortableDate: dateString,
-        displayDate: dateString,
-        year: 0,
-        month: null,
-        day: null
-    };
+    return links;
 }
