@@ -1,11 +1,13 @@
 import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, WorkspaceLeaf, ItemView, ViewStateResult } from 'obsidian';
 import { TimelineView, VIEW_TYPE_TIMELINE } from './TimelineView';
+import { cleanHtml, cleanLink } from 'utils';
 
 interface TimelineVisualizerSettings {
     storiesFolder: string;
     eventsFolder: string;
     charactersFolder: string;
     defaultColor: string;
+    characterColor: string;
     storyColor: string;
     eventColor: string;
     characterEventColor: string;
@@ -16,6 +18,7 @@ const DEFAULT_SETTINGS: TimelineVisualizerSettings = {
     eventsFolder: '',
     charactersFolder: '',
     defaultColor: '',
+    characterColor: '',
     storyColor: '',
     eventColor: '',
     characterEventColor: ''
@@ -98,16 +101,16 @@ export default class TimelineVisualizerPlugin extends Plugin {
                 const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
                 if (frontmatter && frontmatter.data) {
                     const data = frontmatter.data;
-                    const date = data.template?.BasicInformation?.Date?.value || 'Unknown';
+                    const date = data.template?.BasicInformation?.BeginDate?.value || '';
                     const name = data.template?.BasicInformation?.Name?.value || file.basename;
                     const synopsis = data.template?.BasicInformation?.Synopsis?.value || '';
 
                     events.push({
                         id: file.path,
-                        title: name,
-                        date: date,
+                        title: cleanHtml(name),
+                        date: cleanHtml(date),
                         type: 'story',
-                        description: synopsis,
+                        description: cleanHtml(synopsis),
                         file: file.path
                     });
 
@@ -118,7 +121,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
                             //Extract character name from link
                             const match = characterRef.match(/\[\[(.*?)(\|.*?)?\]\]/);
                             if (match) {
-                                const characterName = match[1];
+                                const characterName = cleanHtml(cleanLink(characterRef));
                                 connections.push({
                                     from: file.path,
                                     to: `${this.settings.charactersFolder}/${characterName}.md`,
@@ -141,20 +144,20 @@ export default class TimelineVisualizerPlugin extends Plugin {
 
                 if (frontmatter && frontmatter.data) {
                     const data = frontmatter.data;
-                    const date = data.template?.BasicInformation?.Date?.value || 'Unknown';
+                    const date = data.template?.BasicInformation?.Date?.value || '';
                     const name = data.template?.BasicInformation?.Name?.value || file.basename;
                     const description = data.template?.BasicInformation?.Description?.value || '';
 
                     events.push({
                         id: file.path,
-                        title: name,
-                        date: date,
+                        title: cleanHtml(name),
+                        date: cleanHtml(date),
                         type: 'event',
-                        description: description,
+                        description: cleanHtml(description),
                         file: file.path
                     });
 
-                    // Try to find related stories or characters
+                    //Try to find related stories or characters
                     const fileLinks = this.app.metadataCache.getFileCache(file)?.links || [];
                     fileLinks.forEach(link => {
                         const targetFile = this.app.metadataCache.getFirstLinkpathDest(link.link, file.path);
@@ -181,6 +184,26 @@ export default class TimelineVisualizerPlugin extends Plugin {
                     const name = data.template?.BasicInformation?.FullName?.value || file.basename;
                     let status = "alive";
 
+
+                    if (data.template?.BasicInformation?.BirthDate?.value) {
+                        //Add Birth death as an event
+                        events.push({
+                            id: `${file.path}-birth`,
+                            title: `Birth of ${name}`,
+                            date: cleanHtml(data.template?.BasicInformation.BirthDate?.value) || '',
+                            type: 'characterEvent',
+                            description: `Birth of ${name}`,
+                            file: file.path,
+                            status: status as TimelineEvent['status']
+                        });
+
+                        connections.push({
+                            from: `${file.path}-birth`,
+                            to: file.path,
+                            type: 'status_change'
+                        });
+                    }
+
                     if (data.template?.State?.Dead?.value === true) {
                         status = "dead";
 
@@ -188,8 +211,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
                         events.push({
                             id: `${file.path}-death`,
                             title: `Death of ${name}`,
-                            date: data.template?.BasicInformation.DeathDate?.value || 'Unknown',
-                            type: 'event',
+                            date: cleanHtml(data.template?.BasicInformation.DeathDate?.value) || '',
+                            type: 'characterEvent',
                             description: `Death of ${name}`,
                             file: file.path,
                             status: status as TimelineEvent['status']
@@ -207,10 +230,10 @@ export default class TimelineVisualizerPlugin extends Plugin {
                     // Add character as entity
                     events.push({
                         id: file.path,
-                        title: name,
-                        date: data.template?.BasicInformation?.BirthDate?.value || 'Unknown',
+                        title: cleanHtml(name),
+                        date: cleanHtml(data.template?.BasicInformation?.BirthDate?.value) || '',
                         type: 'character',
-                        description: data.template?.BasicInformation?.Background?.value || '',
+                        description: cleanHtml(data.template?.BasicInformation?.Background?.value) || '',
                         file: file.path,
                         status: status as TimelineEvent['status']
                     });
@@ -231,7 +254,7 @@ export interface TimelineEvent {
     id: string;
     title: string;
     date: string;
-    type: 'story' | 'event' | 'character';
+    type: 'story' | 'event' | 'character' | 'characterEvent';
     description: string;
     file: string;
     status?: 'alive' | 'dead' | 'injured';
@@ -289,6 +312,15 @@ class TimelineVisualizerSettingTab extends PluginSettingTab {
                 .setValue(this.plugin.settings.charactersFolder)
                 .onChange(async (value) => {
                     this.plugin.settings.charactersFolder = value;
+                    await this.plugin.saveSettings();
+                }));
+        new Setting(containerEl)
+            .setName('Character Color')
+            .setDesc('Color for characters on the timeline')
+            .addColorPicker(color => color
+                .setValue(this.plugin.settings.characterColor)
+                .onChange(async (value) => {
+                    this.plugin.settings.characterColor = value;
                     await this.plugin.saveSettings();
                 }));
 

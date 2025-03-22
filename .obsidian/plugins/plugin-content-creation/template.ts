@@ -2,7 +2,6 @@ export const templates = {
     characters: {
         BasicInformation: {
             FullName: "text",
-            Age: "text",
             BirthDate: "text",
             DeathDate: "text",
             Occupation: "text",
@@ -45,7 +44,8 @@ export const templates = {
     events: {
         BasicInformation: {
             Name: "text",
-            Date: "text",
+            BeginDate: "text",
+            EndDate: "text",
             Location: "text",
             Description: "textarea"
         },
@@ -71,7 +71,8 @@ export const templates = {
     stories: {
         BasicInformation: {
             Name: "text",
-            Date: "text",
+            BeginDate: "text",
+            EndDate: "text",
             Synopsis: "textarea"
         },
         Characters: {

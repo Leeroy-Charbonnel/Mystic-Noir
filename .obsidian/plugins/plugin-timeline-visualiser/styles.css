@@ -50,7 +50,7 @@
   background-color: var(--background-modifier-hover);
 }
 
-.timeline-view-button.active {
+.timeline-view-button.active,button.filter-button.is-active{
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
@@ -297,25 +297,20 @@
   transform: translateX(-50%);
 }
 
-.timeline-events-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  position: relative;
-}
+
 
 /* Apply the same alternating pattern to character timeline events */
-.timeline-events-container .timeline-event:nth-child(odd) {
-  margin-right: 55%;
-  margin-left: 3%;
+.timeline-event-odd {
+  margin-right: 55% !important;
+  margin-left: 3% !important;
 }
 
-.timeline-events-container .timeline-event:nth-child(even) {
-  margin-left: 55%;
-  margin-right: 3%;
+.timeline-event-even{
+  margin-left: 55% !important;
+  margin-right: 3% !important;
 }
 
-.timeline-events-container .timeline-event:nth-child(odd)::after {
+ .timeline-event:nth-child(odd)::after {
   content: '';
   position: absolute;
   right: -15px;
@@ -325,7 +320,7 @@
   background-color: var(--background-modifier-border);
 }
 
-.timeline-events-container .timeline-event:nth-child(even)::after {
+.timeline-event:nth-child(even)::after {
   content: '';
   position: absolute;
   left: -15px;
@@ -534,14 +529,7 @@
   }
 }
 
-/* Dark theme adjustments */
-.theme-dark .timeline-event {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
-.theme-dark .timeline-event:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
 
 /* Additional timeline nodes */
 .timeline-date-marker::after {
