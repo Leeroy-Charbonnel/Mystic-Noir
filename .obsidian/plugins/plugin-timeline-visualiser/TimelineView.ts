@@ -77,7 +77,6 @@ export class TimelineView extends ItemView {
         this.createFilterButton(filterButtonsContainer, 'event', 'Events');
         this.createFilterButton(filterButtonsContainer, 'characterEvent', 'Characters Events');
 
-
         this.timelineEl = this.contentEl.createEl('div', { cls: 'timeline-content' });
         await this.refresh();
     }
@@ -118,7 +117,6 @@ export class TimelineView extends ItemView {
             console.error("Timeline Visualizer error:", error);
         }
     }
-
 
     private applyFilters() {
         if (!this.timelineData) return;
@@ -168,71 +166,62 @@ export class TimelineView extends ItemView {
     private renderChronologicalTimeline() {
         if (!this.filteredTimelineData) return;
 
-        const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
-
+        // Group events by date
         const eventsByDate = this.groupEventsByDate(this.filteredTimelineData);
         const sortedDates = this.getSortedDates(eventsByDate);
-
-        const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
         
+        // Create a simple timeline container
+        const timelineContainer = this.timelineEl.createDiv({ cls: "simple-timeline" });
+        
+        // Add a center line
+        const centerLine = document.createElement('div');
+        centerLine.className = 'center-line';
+        timelineContainer.appendChild(centerLine);
+        
+        // Track which side to place events (left/right alternating)
+        let side = 'left';
+        
+        // Add each date with its events
         sortedDates.forEach(date => {
-            const events = eventsByDate[date].filter(event => event.type !== "character");
-            
+            const events = eventsByDate[date].filter(e => e.type !== 'character');
             if (events.length === 0) return;
             
-            const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
-            dateMarker.createEl('div', { cls: 'timeline-date', text: date });
+            // Create a date section
+            const dateSection = document.createElement('div');
+            dateSection.className = `date-section date-${side}`;
+            timelineContainer.appendChild(dateSection);
             
-            const dateEventsContainer = timelineLine.createEl('div', { cls: 'timeline-date-events' });
+            // Add date label
+            const dateLabel = document.createElement('div');
+            dateLabel.className = 'date-label';
+            dateLabel.textContent = date;
+            dateSection.appendChild(dateLabel);
             
-            // Create rows for concurrent events
-            const groupedEvents = this.groupConcurrentEvents(events);
+            // Create container for all events on this date
+            const eventsContainer = document.createElement('div');
+            eventsContainer.className = 'date-events-container';
+            dateSection.appendChild(eventsContainer);
             
-            groupedEvents.forEach((eventGroup, groupIndex) => {
-                const eventRow = dateEventsContainer.createEl('div', { 
-                    cls: 'timeline-event-row'
-                });
-                
-                eventGroup.forEach((event, eventIndex) => {
-                    const eventEl = this.createEventElement(event, eventIndex, groupIndex);
-                    eventRow.appendChild(eventEl);
-                });
+            // Add each event
+            events.forEach(event => {
+                const eventDiv = this.createSimpleEventElement(event);
+                eventsContainer.appendChild(eventDiv);
             });
-        });
-    }
-
-    private groupConcurrentEvents(events: TimelineEvent[]): TimelineEvent[][] {
-        // Group events by exact begin date for concurrent display
-        const dateGroups: Record<string, TimelineEvent[]> = {};
-        
-        events.forEach(event => {
-            if (!event.beginDate) return;
             
-            if (!dateGroups[event.beginDate]) {
-                dateGroups[event.beginDate] = [];
-            }
-            dateGroups[event.beginDate].push(event);
+            // Switch sides for next date
+            side = side === 'left' ? 'right' : 'left';
         });
-        
-        // Convert to array of groups
-        return Object.values(dateGroups);
     }
-
+    
     private renderCharacterTimeline() {
-        if (!this.focusCharacter) {
+        if (!this.focusCharacter || !this.filteredTimelineData || !this.timelineData) {
             this.timelineEl.createEl('div', {
                 cls: 'timeline-empty',
-                text: 'No character selected.'
+                text: 'No character selected or no data available.'
             });
             return;
         }
-        if (!this.filteredTimelineData || !this.timelineData) {
-            this.timelineEl.createEl('div', {
-                cls: 'timeline-empty',
-                text: 'No timeline data.'
-            });
-            return;
-        }
+        
         const character = this.timelineData.events.find(e => e.id === this.focusCharacter);
         if (!character) {
             this.timelineEl.createEl('div', {
@@ -242,9 +231,10 @@ export class TimelineView extends ItemView {
             return;
         }
 
+        // Add character header
         const characterHeader = this.timelineEl.createEl('div', { cls: 'character-timeline-header' });
         characterHeader.createEl('h3', { text: `Timeline for ${character.title}` });
-
+        
         if (character.status && character.status !== 'alive') {
             characterHeader.appendChild(document.createTextNode(' '));
             characterHeader.createEl('span', {
@@ -253,8 +243,8 @@ export class TimelineView extends ItemView {
             });
         }
 
+        // Get related events
         const relatedEventIds = new Set<string>();
-
         this.filteredTimelineData.connections.forEach(conn => {
             if (conn.from === this.focusCharacter) {
                 relatedEventIds.add(conn.to);
@@ -264,104 +254,136 @@ export class TimelineView extends ItemView {
             }
         });
 
-        let characterEvents: TimelineData = {
-            events: this.filteredTimelineData.events.filter(e =>
-                relatedEventIds.has(e.id)
-            ),
+        const characterEvents = {
+            events: this.filteredTimelineData.events.filter(e => relatedEventIds.has(e.id)),
             connections: []
-        }
+        };
 
+        // Group events by date
         const eventsByDate = this.groupEventsByDate(characterEvents);
         const sortedDates = this.getSortedDates(eventsByDate);
-
-        const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
-        const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
-
+        
+        // Create timeline container
+        const timelineContainer = this.timelineEl.createDiv({ cls: "simple-timeline" });
+        
+        // Add center line
+        const centerLine = document.createElement('div');
+        centerLine.className = 'center-line';
+        timelineContainer.appendChild(centerLine);
+        
+        // Track which side to place events (left/right alternating)
+        let side = 'left';
+        
+        // Add each date with its events
         sortedDates.forEach(date => {
             const events = eventsByDate[date];
-            
             if (events.length === 0) return;
             
-            const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
-            dateMarker.createEl('div', { cls: 'timeline-date', text: date });
+            // Create a date section
+            const dateSection = document.createElement('div');
+            dateSection.className = `date-section date-${side}`;
+            timelineContainer.appendChild(dateSection);
             
-            const dateEventsContainer = timelineLine.createEl('div', { cls: 'timeline-date-events' });
+            // Add date label
+            const dateLabel = document.createElement('div');
+            dateLabel.className = 'date-label';
+            dateLabel.textContent = date;
+            dateSection.appendChild(dateLabel);
             
-            // Create rows for concurrent events
-            const groupedEvents = this.groupConcurrentEvents(events);
+            // Create container for all events on this date
+            const eventsContainer = document.createElement('div');
+            eventsContainer.className = 'date-events-container';
+            dateSection.appendChild(eventsContainer);
             
-            groupedEvents.forEach((eventGroup, groupIndex) => {
-                const eventRow = dateEventsContainer.createEl('div', { 
-                    cls: 'timeline-event-row'
-                });
-                
-                eventGroup.forEach((event, eventIndex) => {
-                    const eventEl = this.createEventElement(event, eventIndex, groupIndex);
-                    eventRow.appendChild(eventEl);
-                });
+            // Add each event
+            events.forEach(event => {
+                const eventDiv = this.createSimpleEventElement(event);
+                eventsContainer.appendChild(eventDiv);
             });
+            
+            // Switch sides for next date
+            side = side === 'left' ? 'right' : 'left';
         });
     }
 
-    private createEventElement(event: TimelineEvent, index: number, rowIndex: number): HTMLElement {
-        const eventEl = document.createElement('div');
+    private createSimpleEventElement(event: TimelineEvent): HTMLElement {
+        const eventDiv = document.createElement('div');
+        eventDiv.className = `timeline-event timeline-event-${event.type}`;
+        eventDiv.dataset.id = event.id;
         
-        // Assign positioning class - alternating only between rows, not within the same row
-        eventEl.className = `timeline-event timeline-event-${event.type} ${rowIndex % 2 == 0 ? 'timeline-event-odd' : 'timeline-event-even'}`;
-        eventEl.dataset.id = event.id;
-
+        // Set background color based on event type
         switch (event.type) {
             case 'story':
-                eventEl.style.backgroundColor = this.plugin.settings.storyColor || '#3498db';
+                eventDiv.style.backgroundColor = this.plugin.settings.storyColor || '#3498db';
                 break;
             case 'event':
-                eventEl.style.backgroundColor = this.plugin.settings.eventColor || '#2ecc71';
+                eventDiv.style.backgroundColor = this.plugin.settings.eventColor || '#2ecc71';
                 break;
             case 'characterEvent':
-                eventEl.style.backgroundColor = this.plugin.settings.characterEventColor || '#e74c3c';
+                eventDiv.style.backgroundColor = this.plugin.settings.characterEventColor || '#e74c3c';
                 break;
         }
-
-        const eventHeader = eventEl.createEl('div', { cls: 'event-header' });
-        const titleSpan = eventHeader.createEl('span', { cls: 'event-title', text: event.title });
-
-        if (event.status && event.status != 'alive') {
-            titleSpan.appendChild(document.createTextNode(' '));
-            titleSpan.createEl('span', { cls: `status-badge ${event.status}`, text: event.status });
+        
+        // Event header with title and date
+        const header = document.createElement('div');
+        header.className = 'event-header';
+        
+        const title = document.createElement('div');
+        title.className = 'event-title';
+        title.textContent = event.title;
+        header.appendChild(title);
+        
+        if (event.beginDate) {
+            const date = document.createElement('div');
+            date.className = 'event-date';
+            date.textContent = event.beginDate;
+            header.appendChild(date);
         }
-
-        // Add date if available
-        if (event.beginDate && event.beginDate !== '') {
-            eventHeader.createEl('span', { cls: 'event-date', text: event.beginDate });
-        }
-
-        //Description
+        
+        eventDiv.appendChild(header);
+        
+        // Event description
         if (event.description) {
-            const desc = eventEl.createEl('div', { cls: 'event-description' });
+            const desc = document.createElement('div');
+            desc.className = 'event-description';
             desc.innerHTML = this.truncateDescription(event.description, 150);
+            eventDiv.appendChild(desc);
         }
-
-        //Actions buttons
-        const actionBar = eventEl.createEl('div', { cls: 'event-actions' });
-
+        
+        // Event type badge
+        const badge = document.createElement('div');
+        badge.className = 'event-type-badge';
+        badge.textContent = event.type;
+        eventDiv.appendChild(badge);
+        
+        // Action buttons
+        const actions = document.createElement('div');
+        actions.className = 'event-actions';
+        
+        // Add character timeline button for character events
         if (event.type === 'characterEvent') {
-            const viewTimelineBtn = actionBar.createEl('button', { cls: 'event-action-button', text: 'View Timeline' });
+            const viewTimelineBtn = document.createElement('button');
+            viewTimelineBtn.className = 'event-action-button';
+            viewTimelineBtn.textContent = 'View Timeline';
             viewTimelineBtn.addEventListener('click', () => {
                 this.focusCharacter = event.id;
                 this.setDisplayMode('character');
             });
+            actions.appendChild(viewTimelineBtn);
         }
-
-        const openFileBtn = actionBar.createEl('button', { cls: 'event-action-button', text: 'Open File' });
-        openFileBtn.addEventListener('click', () => { this.openFile(event.file); });
-
-
-        eventEl.createEl('span', {
-            cls: 'event-type-badge',
-            text: event.type
+        
+        // Add open file button
+        const openFileBtn = document.createElement('button');
+        openFileBtn.className = 'event-action-button';
+        openFileBtn.textContent = 'Open File';
+        openFileBtn.addEventListener('click', () => {
+            this.openFile(event.file);
         });
-
-        return eventEl;
+        actions.appendChild(openFileBtn);
+        
+        eventDiv.appendChild(actions);
+        
+        return eventDiv;
     }
 
     private truncateDescription(description: string, maxLength: number): string {
@@ -449,7 +471,6 @@ export class TimelineView extends ItemView {
         modal.open();
     }
 }
-
 
 // Simple modal for character selection
 class CharacterSelectModal extends Modal {
