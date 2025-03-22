@@ -3,6 +3,8 @@ export const templates = {
         BasicInformation: {
             FullName: "text",
             Age: "text",
+            BirthDate: "text",
+            DeathDate: "text",
             Occupation: "text",
             Background: "textarea"
         },
@@ -70,8 +72,7 @@ export const templates = {
         BasicInformation: {
             Name: "text",
             Date: "text",
-            Synopsis: "textarea",
-            Synopsis2: "textarea"
+            Synopsis: "textarea"
         },
         Characters: {
             Characters: "array:text",

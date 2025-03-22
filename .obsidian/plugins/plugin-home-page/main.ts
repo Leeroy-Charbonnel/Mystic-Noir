@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, MarkdownView, TFile, Notice } from 'obsidian';
-import { statsKeys, node, convertLinks } from "./utils"
+import { statsKeys, node, convertLinks, cleanHtml } from "./utils"
 
 export default class HomeStatsPlugin extends Plugin {
     lastRefresh: number = 0;
@@ -47,7 +47,11 @@ export default class HomeStatsPlugin extends Plugin {
 
         this.updateHomePageContent(activeFile, statsHtml);
     }
-
+    private countAnchorTags(content: string): number {
+        const anchorRegex = /<a\s+(?:[^>]*?\s+)?href="[^"]*"[^>]*?>/g;
+        const matches = content.match(anchorRegex);
+        return matches ? matches.length : 0;
+    }
     private async generateStats(): Promise<{ stats: Record<string, number>, details: Record<string, any[]> }> {
 
         const stats: Record<string, number> = {
@@ -81,6 +85,8 @@ export default class HomeStatsPlugin extends Plugin {
                 if (cache.links)
                     stats.totalLinks += cache.links.length;
 
+                stats.totalLinks += this.countAnchorTags(fileContent);
+
                 if (cache.tags) {
                     for (const tagObj of cache.tags) {
                         const tag = tagObj.tag.toLowerCase().slice(1);
@@ -97,10 +103,10 @@ export default class HomeStatsPlugin extends Plugin {
                                     let state = "Alive";
 
                                     if (data.template?.BasicInformation?.FullName?.value)
-                                        name = this.cleanHtml(data.template.BasicInformation.FullName.value);
+                                        name = cleanHtml(data.template.BasicInformation.FullName.value);
 
                                     if (data.template?.BasicInformation?.Occupation?.value)
-                                        note = this.cleanHtml(data.template.BasicInformation.Occupation.value);
+                                        note = cleanHtml(data.template.BasicInformation.Occupation.value);
 
                                     if (data.template?.State.Dead?.value === true) {
                                         state = "Dead";
@@ -130,10 +136,10 @@ export default class HomeStatsPlugin extends Plugin {
                                     let note = "No description";
 
                                     if (data.template?.BasicInformation?.Name?.value)
-                                        name = this.cleanHtml(data.template.BasicInformation.Name.value);
+                                        name = cleanHtml(data.template.BasicInformation.Name.value);
 
                                     if (data.template?.BasicInformation?.location?.value)
-                                        note = this.cleanHtml(data.template.BasicInformation.location.value);
+                                        note = cleanHtml(data.template.BasicInformation.location.value);
 
                                     details.locations.push({
                                         name: name,
@@ -147,10 +153,10 @@ export default class HomeStatsPlugin extends Plugin {
                                     let note = "No description";
 
                                     if (data.template?.BasicInformation?.Name?.value)
-                                        name = this.cleanHtml(data.template.BasicInformation.Name.value);
+                                        name = cleanHtml(data.template.BasicInformation.Name.value);
 
                                     if (data.template?.BasicInformation?.Description?.value)
-                                        note = this.cleanHtml(data.template.BasicInformation.Description.value).substring(0, 50) + "...";
+                                        note = cleanHtml(data.template.BasicInformation.Description.value).substring(0, 50) + "...";
 
                                     details.items.push({
                                         name: name,
@@ -166,10 +172,10 @@ export default class HomeStatsPlugin extends Plugin {
 
                                     if (cache.frontmatter && cache.frontmatter.data) {
                                         if (data.template?.BasicInformation?.Name?.value)
-                                            name = this.cleanHtml(data.template.BasicInformation.Name.value);
+                                            name = cleanHtml(data.template.BasicInformation.Name.value);
 
                                         if (data.template?.BasicInformation?.Date?.value)
-                                            note = this.cleanHtml(data.template.BasicInformation.Date.value);
+                                            note = cleanHtml(data.template.BasicInformation.Date.value);
                                     }
                                     details.events.push({
                                         name: name,
@@ -198,10 +204,7 @@ export default class HomeStatsPlugin extends Plugin {
         return { stats, details };
     }
 
-    private cleanHtml(text: string): string {
-        if (!text) return "";
-        return text.replace(/<\/?[^>]+(>|$)/g, "").trim();
-    }
+
 
 
 

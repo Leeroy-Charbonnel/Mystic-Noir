@@ -35,10 +35,16 @@ export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?:
 
 
 export function convertLinks(text: string): string {
-    if(!text||typeof text!=='string') return text;
-    const wikiLinkRegex=/\[\[(.*?)(?:\|(.*?))?\]\]/g;
-    return text.replace(wikiLinkRegex,(match,linkPath,displayText) => {
-        const display=displayText? displayText:linkPath;
+    if (!text || typeof text !== 'string') return text;
+    const wikiLinkRegex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
+    return text.replace(wikiLinkRegex, (match, linkPath, displayText) => {
+        const display = displayText ? displayText : linkPath;
         return `<a data-href="${linkPath}" href="${linkPath}" class="internal-link" target="_blank" rel="noopener nofollow">${display}</a>`;
     });
+}
+
+
+export function cleanHtml(text: string): string {
+    if (!text) return "";
+    return text.replace(/<\/?[^>]+(>|$)/g, "").trim();
 }
