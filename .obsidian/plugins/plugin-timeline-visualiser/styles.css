@@ -90,6 +90,20 @@
   gap: 10px;
 }
 
+.filter-button {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filter-button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
 .filter-checkbox-wrapper {
   display: flex;
   align-items: center;
@@ -426,6 +440,37 @@
 
 .event-action-button:hover {
   background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Year markers for long timelines */
+.year-marker {
+  font-weight: bold;
+  font-size: 20px;
+  text-align: center;
+  margin: 30px 0 15px;
+  color: var(--text-accent);
+  position: relative;
+}
+
+.year-marker::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--interactive-accent);
+  transform: translate(-50%, -50%);
+  z-index: -1;
+}
+
+/* Empty timeline message */
+.empty-timeline {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* Responsive adjustments */

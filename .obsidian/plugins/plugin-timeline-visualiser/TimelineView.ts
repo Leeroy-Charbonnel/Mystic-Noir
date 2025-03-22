@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Modal, Notice, App } from 'obsidian';
 import TimelineVisualizerPlugin, { TimelineEvent, TimelineConnection, TimelineData } from './main';
 
 export const VIEW_TYPE_TIMELINE = 'timeline-visualizer';
@@ -21,6 +21,7 @@ export class TimelineView extends ItemView {
         'character': true,
         'characterEvent': true
     };
+    private searchTerm: string = '';
 
     constructor(leaf: WorkspaceLeaf, plugin: TimelineVisualizerPlugin) {
         super(leaf);
@@ -41,48 +42,66 @@ export class TimelineView extends ItemView {
         this.contentEl.addClass('timeline-visualizer-container');
 
         this.headerEl = this.contentEl.createEl('div', { cls: 'timeline-header' });
+        this.headerEl.createEl('h2', { text: 'Timeline Visualizer' });
+        
         this.controlsEl = this.headerEl.createEl('div', { cls: 'timeline-controls' });
         const viewModeContainer = this.controlsEl.createEl('div', { cls: 'timeline-view-mode' });
         viewModeContainer.createEl('span', { text: 'View Mode: ' });
 
-        //Chrono
+        // Chronological view button
         const chronoButton = viewModeContainer.createEl('button', {
             cls: 'timeline-view-button active',
             text: 'Chronological'
         });
         chronoButton.addEventListener('click', () => this.setDisplayMode('chronological'));
 
-        //Characters
+        // Character-centric view button
         const characterButton = viewModeContainer.createEl('button', {
             cls: 'timeline-view-button',
-            text: 'Character-Centric'
+            text: 'Character'
         });
         characterButton.addEventListener('click', () => this.promptForCharacter());
 
-        //Stories
+        // Story-centric view button
         const storyButton = viewModeContainer.createEl('button', {
             cls: 'timeline-view-button',
-            text: 'Story-Centric'
+            text: 'Story'
         });
         storyButton.addEventListener('click', () => this.promptForStory());
 
-        //Refresh
+        // Refresh button
         const refreshButton = this.controlsEl.createEl('button', {
             cls: 'timeline-refresh-button',
-            text: 'Refresh Timeline'
+            text: 'Refresh'
         });
         refreshButton.addEventListener('click', () => this.refresh());
 
-        //Filters 
+        // Filters section
         this.filterEl = this.contentEl.createEl('div', { cls: 'timeline-filters' });
         const filterControls = this.filterEl.createEl('div', { cls: 'filter-controls' });
 
+        // Type filters
         const typeFilterContainer = filterControls.createEl('div', { cls: 'filter-section' });
         const filterButtonsContainer = typeFilterContainer.createEl('div', { cls: 'filter-buttons' });
 
         this.createFilterButton(filterButtonsContainer, 'story', 'Stories');
         this.createFilterButton(filterButtonsContainer, 'event', 'Events');
-        this.createFilterButton(filterButtonsContainer, 'characterEvent', 'Characters Events');
+        this.createFilterButton(filterButtonsContainer, 'character', 'Characters');
+        this.createFilterButton(filterButtonsContainer, 'characterEvent', 'Character Events');
+
+        // Search filter
+        const searchContainer = filterControls.createEl('div', { cls: 'filter-section filter-search' });
+        const searchInput = searchContainer.createEl('input', {
+            cls: 'timeline-search-input',
+            attr: {
+                type: 'text',
+                placeholder: 'Search timeline...'
+            }
+        });
+        searchInput.addEventListener('input', (e) => {
+            this.searchTerm = (e.target as HTMLInputElement).value;
+            this.applyFilters();
+        });
 
         this.timelineEl = this.contentEl.createEl('div', { cls: 'timeline-content' });
         await this.refresh();
@@ -109,12 +128,15 @@ export class TimelineView extends ItemView {
 
     async refresh() {
         this.timelineEl.empty();
+        this.timelineEl.createEl('div', {
+            cls: 'timeline-loading',
+            text: 'Loading timeline data...'
+        });
 
         try {
             this.timelineData = await this.plugin.getTimelineData();
             this.filteredTimelineData = this.timelineData;
             this.applyFilters();
-            this.renderTimeline();
         } catch (error) {
             this.timelineEl.empty();
             this.timelineEl.createEl('div', {
@@ -128,17 +150,30 @@ export class TimelineView extends ItemView {
     private applyFilters() {
         if (!this.timelineData) return;
 
-        //Get active filters
+        // Get active filters
         const activeTypes = Object.entries(this.activeFilters)
             .filter(([_, isActive]) => isActive)
             .map(([type]) => type);
 
-        //Filter
-        const filteredEvents = this.timelineData.events.filter(event =>
-            activeTypes.includes(event.type)
-        );
+        // Filter by type and search term
+        const filteredEvents = this.timelineData.events.filter(event => {
+            // Check if the event type is active
+            if (!activeTypes.includes(event.type)) return false;
+            
+            // Apply search filter if a search term exists
+            if (this.searchTerm) {
+                const searchLower = this.searchTerm.toLowerCase();
+                return (
+                    event.title.toLowerCase().includes(searchLower) ||
+                    event.description.toLowerCase().includes(searchLower) ||
+                    (event.displayDate && event.displayDate.toLowerCase().includes(searchLower))
+                );
+            }
+            
+            return true;
+        });
 
-        //Filter connections
+        // Filter connections based on filtered events
         const filteredEventIds = new Set(filteredEvents.map(e => e.id));
         const filteredConnections = this.timelineData.connections.filter(conn =>
             filteredEventIds.has(conn.from) && filteredEventIds.has(conn.to)
@@ -178,13 +213,13 @@ export class TimelineView extends ItemView {
         const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
 
         const events = this.processEventsWithDateRanges(this.filteredTimelineData.events);
-        const eventsByDate = this.groupEventsByDate(events);
-        const sortedDates = this.getSortedDates(eventsByDate);
+        const eventsByYear = this.groupEventsByYear(events);
+        const sortedYears = this.getSortedYears(eventsByYear);
 
         const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
         let index = 0;
         
-        //Process range events and create visuals for them
+        // Process range events (events that span multiple years)
         const rangeEvents = events.filter(event => event.isRange && event.type !== 'character');
         const dateRanges = new Map<string, {start: string, end: string, events: TimelineEvent[]}>();
         
@@ -203,22 +238,22 @@ export class TimelineView extends ItemView {
             }
         });
 
-        //Render date markers with events
-        sortedDates.forEach(date => {
-            const events = eventsByDate[date];
+        // Render year markers with events
+        sortedYears.forEach(year => {
+            const yearEvents = eventsByYear[year];
             
             const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
-            dateMarker.createEl('div', { cls: 'timeline-date', text: date });
+            dateMarker.createEl('div', { cls: 'timeline-date', text: year });
             
-            //Check if any range spans this date
+            // Check if any range spans this year
             const activeRanges = Array.from(dateRanges.values()).filter(range => 
-                this.isDateInRange(date, range.start, range.end)
+                this.isDateInRange(year, range.start, range.end)
             );
             
             if (activeRanges.length > 0) {
                 const rangeIndicator = timelineLine.createEl('div', { 
                     cls: 'timeline-range-indicator',
-                    attr: { 'data-date': date }
+                    attr: { 'data-date': year }
                 });
                 
                 activeRanges.forEach(range => {
@@ -237,7 +272,7 @@ export class TimelineView extends ItemView {
                         });
                         rangeEventEl.style.backgroundColor = this.getEventColor(event.type);
                         
-                        //Add click handler to open the file
+                        // Add click handler to open the file
                         rangeEventEl.addEventListener('click', () => {
                             this.openFile(event.file);
                         });
@@ -245,8 +280,8 @@ export class TimelineView extends ItemView {
                 });
             }
             
-            //Render point events
-            events
+            // Render point events for this year
+            yearEvents
                 .filter(event => event.type !== 'character' && !event.isRange)
                 .forEach((event) => {
                     const eventEl = this.createEventElement(event, index++);
@@ -255,24 +290,30 @@ export class TimelineView extends ItemView {
         });
     }
     
-    private isDateInRange(date: string, startDate: string, endDate: string): boolean {
-        //Simple string comparison for dates in format YYYY or YYYY/MM or YYYY/MM/DD
-        return date >= startDate && date <= endDate;
+    private isDateInRange(year: string, startYear: string, endYear: string): boolean {
+        // Simple string comparison for years (or year components of dates)
+        // Extract just the year if full dates are provided
+        const yearOnly = (dateStr: string) => {
+            if (!dateStr) return '';
+            // If the date is just a year, use it directly
+            if (/^\d{4}$/.test(dateStr)) return dateStr;
+            // Otherwise extract the year from the sortable format (YYYY-MM-DD)
+            return dateStr.split('-')[0];
+        };
+        
+        const startYearOnly = yearOnly(startYear);
+        const endYearOnly = yearOnly(endYear);
+        
+        return year >= startYearOnly && year <= endYearOnly;
     }
     
     private processEventsWithDateRanges(events: TimelineEvent[]): TimelineEvent[] {
-        //Process events to determine which ones are ranges vs. points
+        // Process events to determine which ones are ranges vs. points
         return events.map(event => {
             const processed = { ...event };
             
-            //Extract begin and end dates from the event
-            processed.beginDate = event.date; //Default to the date field
-            processed.endDate = event.date;
-            
-            //If beginDate and endDate exist and are different, it's a range
+            // If beginDate and endDate exist and are different, it's a range
             if (event.beginDate && event.endDate && event.beginDate !== event.endDate) {
-                processed.beginDate = event.beginDate;
-                processed.endDate = event.endDate;
                 processed.isRange = true;
             } else {
                 processed.isRange = false;
@@ -336,20 +377,20 @@ export class TimelineView extends ItemView {
         }
 
         const processedEvents = this.processEventsWithDateRanges(characterEvents.events);
-        const eventsByDate = this.groupEventsByDate(processedEvents);
-        const sortedDates = this.getSortedDates(eventsByDate);
+        const eventsByYear = this.groupEventsByYear(processedEvents);
+        const sortedYears = this.getSortedYears(eventsByYear);
 
         const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
         const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
 
         let index = 0;
-        sortedDates.forEach(date => {
-            const events = eventsByDate[date];
+        sortedYears.forEach(year => {
+            const yearEvents = eventsByYear[year];
 
             const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
-            dateMarker.createEl('div', { cls: 'timeline-date', text: date });
+            dateMarker.createEl('div', { cls: 'timeline-date', text: year });
 
-            events.forEach((event) => {
+            yearEvents.forEach((event) => {
                 const eventEl = this.createEventElement(event, index++);
                 timelineLine.appendChild(eventEl);
             });
@@ -384,24 +425,24 @@ export class TimelineView extends ItemView {
         const storyHeader = this.timelineEl.createEl('div', { cls: 'story-timeline-header' });
         storyHeader.createEl('h3', { text: `Timeline for ${story.title}` });
 
-        //Find story date range
+        // Find story date range
         const storyBeginDate = story.beginDate || story.date;
         const storyEndDate = story.endDate || story.date;
         
-        if (storyBeginDate && storyEndDate) {
+        if (story.displayBeginDate && story.displayEndDate) {
             storyHeader.createEl('div', { 
                 cls: 'story-date-range',
-                text: `${storyBeginDate} to ${storyEndDate}`
+                text: `${story.displayBeginDate} to ${story.displayEndDate}`
             });
         }
 
-        //Find events related to this story (mentioned in story or from same period)
+        // Find events related to this story (mentioned in story or from same period)
         const relatedEvents = this.filteredTimelineData.events.filter(event => 
             (event.type === 'event' || event.type === 'characterEvent') && 
             this.isEventInStoryTimeframe(event, storyBeginDate, storyEndDate)
         );
         
-        //Also include characters mentioned in the story
+        // Also include characters mentioned in the story
         const storyCharacters = this.findStoryCharacters(story, this.filteredTimelineData);
         
         const storyTimelineData: TimelineData = {
@@ -410,20 +451,20 @@ export class TimelineView extends ItemView {
         };
 
         const processedEvents = this.processEventsWithDateRanges(storyTimelineData.events);
-        const eventsByDate = this.groupEventsByDate(processedEvents);
-        const sortedDates = this.getSortedDates(eventsByDate);
+        const eventsByYear = this.groupEventsByYear(processedEvents);
+        const sortedYears = this.getSortedYears(eventsByYear);
 
         const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
         const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
 
         let index = 0;
-        sortedDates.forEach(date => {
-            const events = eventsByDate[date];
+        sortedYears.forEach(year => {
+            const yearEvents = eventsByYear[year];
 
             const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
-            dateMarker.createEl('div', { cls: 'timeline-date', text: date });
+            dateMarker.createEl('div', { cls: 'timeline-date', text: year });
 
-            events.forEach((event) => {
+            yearEvents.forEach((event) => {
                 const eventEl = this.createEventElement(event, index++);
                 timelineLine.appendChild(eventEl);
             });
@@ -435,15 +476,27 @@ export class TimelineView extends ItemView {
         const eventBegin = event.beginDate || eventDate;
         const eventEnd = event.endDate || eventDate;
         
-        //Check if event range overlaps with story range
-        return (eventBegin && eventEnd && storyBegin && storyEnd &&
-                ((eventBegin >= storyBegin && eventBegin <= storyEnd) || 
-                 (eventEnd >= storyBegin && eventEnd <= storyEnd) || 
-                 (eventBegin <= storyBegin && eventEnd >= storyEnd)));
+        // Extract just the year if full dates are provided
+        const yearOnly = (dateStr: string) => {
+            if (!dateStr) return '';
+            if (/^\d{4}$/.test(dateStr)) return dateStr;
+            return dateStr.split('-')[0]; // Extract year from YYYY-MM-DD
+        };
+        
+        const storyBeginYear = yearOnly(storyBegin);
+        const storyEndYear = yearOnly(storyEnd);
+        const eventBeginYear = yearOnly(eventBegin);
+        const eventEndYear = yearOnly(eventEnd);
+        
+        // Check if event range overlaps with story range
+        return (eventBeginYear && eventEndYear && storyBeginYear && storyEndYear &&
+                ((eventBeginYear >= storyBeginYear && eventBeginYear <= storyEndYear) || 
+                 (eventEndYear >= storyBeginYear && eventEndYear <= storyEndYear) || 
+                 (eventBeginYear <= storyBeginYear && eventEndYear >= storyEndYear)));
     }
     
     private findStoryCharacters(story: TimelineEvent, timelineData: TimelineData): TimelineEvent[] {
-        //Find characters connected to this story
+        // Find characters connected to this story
         const characterIds = new Set<string>();
         
         timelineData.connections.forEach(conn => {
@@ -473,22 +526,22 @@ export class TimelineView extends ItemView {
         }
 
         // Add date if available
-        if (event.beginDate && event.endDate && event.beginDate !== event.endDate) {
+        if (event.displayBeginDate && event.displayEndDate && event.displayBeginDate !== event.displayEndDate) {
             eventHeader.createEl('span', { 
                 cls: 'event-date', 
-                text: `${event.beginDate} - ${event.endDate}` 
+                text: `${event.displayBeginDate} - ${event.displayEndDate}` 
             });
-        } else if (event.date && event.date !== '') {
-            eventHeader.createEl('span', { cls: 'event-date', text: event.date });
+        } else if (event.displayDate && event.displayDate !== '') {
+            eventHeader.createEl('span', { cls: 'event-date', text: event.displayDate });
         }
 
-        //Description
+        // Description
         if (event.description) {
             const desc = eventEl.createEl('div', { cls: 'event-description' });
             desc.innerHTML = this.truncateDescription(event.description, 150);
         }
 
-        //Actions buttons
+        // Actions buttons
         const actionBar = eventEl.createEl('div', { cls: 'event-actions' });
 
         if (event.type === 'character') {
@@ -543,41 +596,44 @@ export class TimelineView extends ItemView {
         }
     }
 
-    private groupEventsByDate(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
-        const eventsByDate: Record<string, TimelineEvent[]> = {};
-        if (!events) return eventsByDate;
+    private groupEventsByYear(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
+        const eventsByYear: Record<string, TimelineEvent[]> = {};
+        if (!events) return eventsByYear;
         
         events.forEach(event => {
-            //Use the date field or beginDate if available
-            const date = event.date || event.beginDate || '';
-            if (!date) return;
+            // Use the date field or beginDate if available
+            const dateStr = event.date || event.beginDate || '';
+            if (!dateStr) return;
             
-            if (!eventsByDate[date]) eventsByDate[date] = [];
-            eventsByDate[date].push(event);
+            // Extract just the year for grouping
+            let year: string;
+            
+            // If the date is already a year, use it directly
+            if (/^\d{4}$/.test(dateStr)) {
+                year = dateStr;
+            } else {
+                // Extract the year component from the sortable date format (YYYY-MM-DD)
+                const parts = dateStr.split('-');
+                year = parts[0];
+            }
+            
+            if (!eventsByYear[year]) eventsByYear[year] = [];
+            eventsByYear[year].push(event);
         });
-        return eventsByDate;
+        return eventsByYear;
     }
 
-    private groupEventsByType(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
-        const eventsByType: Record<string, TimelineEvent[]> = {};
-        events.forEach(event => {
-            if (!eventsByType[event.type]) eventsByType[event.type] = [];
-            eventsByType[event.type].push(event);
-        });
-        return eventsByType;
-    }
+    private getSortedYears(eventsByYear: Record<string, TimelineEvent[]>): string[] {
+        const years = Object.keys(eventsByYear);
 
-    private getSortedDates(eventsByDate: Record<string, TimelineEvent[]>): string[] {
-        const dates = Object.keys(eventsByDate);
-
-        dates.sort((a, b) => {
+        // Sort years numerically
+        years.sort((a, b) => {
             const yearA = parseInt(a);
             const yearB = parseInt(b);
-            if (!isNaN(yearA) && !isNaN(yearB)) return yearA - yearB;
-            return a.localeCompare(b);
+            return yearA - yearB;
         });
 
-        return dates;
+        return years;
     }
 
     private setDisplayMode(mode: 'chronological' | 'character' | 'story') {
@@ -588,9 +644,9 @@ export class TimelineView extends ItemView {
             button.classList.remove('active');
             if (button.textContent === 'Chronological' && mode === 'chronological') {
                 button.classList.add('active');
-            } else if (button.textContent === 'Character-Centric' && mode === 'character') {
+            } else if (button.textContent === 'Character' && mode === 'character') {
                 button.classList.add('active');
-            } else if (button.textContent === 'Story-Centric' && mode === 'story') {
+            } else if (button.textContent === 'Story' && mode === 'story') {
                 button.classList.add('active');
             }
         });
@@ -665,5 +721,3 @@ class SelectModal extends Modal {
         contentEl.empty();
     }
 }
-
-import { Modal, Notice, App } from 'obsidian';

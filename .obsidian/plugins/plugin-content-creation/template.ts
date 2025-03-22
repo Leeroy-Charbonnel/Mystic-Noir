@@ -38,7 +38,7 @@ export const templates = {
             Description: "textarea",
             Owner: "array:textarea",
         },
-        AdditionalNotes: "textarea"
+        AdditionalNotes: "textarea",
     },
 
     events: {
