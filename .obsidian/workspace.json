@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "9b93721f040aae93",
+        "id": "777250e5babad1a1",
         "type": "tabs",
         "children": [
           {
-            "id": "601c9ed9c625bf74",
+            "id": "9f8de75b9ff7c876",
             "type": "leaf",
             "state": {
               "type": "timeline-visualizer",
@@ -167,6 +167,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "plugin-timeline-visualiser:Open Timeline Visualizer": false,
       "obsidian-git:Open Git source control": false,
       "content-creation-plugin:Create Content": false,
       "graph:Open graph view": false,
@@ -174,17 +175,17 @@
       "canvas:Create new canvas": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "plugin-home-page:Refresh Home Stats": false,
-      "plugin-timeline-visualiser:Open Timeline Visualizer": false
+      "plugin-home-page:Refresh Home Stats": false
     }
   },
-  "active": "601c9ed9c625bf74",
+  "active": "9f8de75b9ff7c876",
   "lastOpenFiles": [
-    "test/death.md",
+    "eventtest/death.md",
+    "eventtest/revolution.md",
+    "eventtest",
     "test/test 3.md",
     "test/test 2.md",
     "test/test 1.md",
-    "test/revolution.md",
     "test/story.md",
     "test",
     "1. Characters/Lily Moore.md",
@@ -207,7 +208,6 @@
     "99. Notes/Future.md",
     "3. Locations/Dupont's Mansion.md",
     "Victor Monrose.md",
-    "3. Locations/Stardust Lounge.md",
     "5. Events",
     "Untitled 1.canvas",
     "99. Notes",

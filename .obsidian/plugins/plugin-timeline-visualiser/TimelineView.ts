@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
 import TimelineVisualizerPlugin, { TimelineEvent, TimelineConnection, TimelineData } from './main';
+import { Modal, Notice, App } from 'obsidian';
 
 export const VIEW_TYPE_TIMELINE = 'timeline-visualizer';
 
@@ -173,20 +174,48 @@ export class TimelineView extends ItemView {
         const sortedDates = this.getSortedDates(eventsByDate);
 
         const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
-        let index = 0;
+        
         sortedDates.forEach(date => {
-            const events = eventsByDate[date];
-
+            const events = eventsByDate[date].filter(event => event.type !== "character");
+            
+            if (events.length === 0) return;
+            
             const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
             dateMarker.createEl('div', { cls: 'timeline-date', text: date });
-
-            events.forEach((event) => {
-                if (event.type != "character") {
-                    const eventEl = this.createEventElement(event, index++);
-                    timelineLine.appendChild(eventEl);
-                };
+            
+            const dateEventsContainer = timelineLine.createEl('div', { cls: 'timeline-date-events' });
+            
+            // Create rows for concurrent events
+            const groupedEvents = this.groupConcurrentEvents(events);
+            
+            groupedEvents.forEach((eventGroup, groupIndex) => {
+                const eventRow = dateEventsContainer.createEl('div', { 
+                    cls: 'timeline-event-row'
+                });
+                
+                eventGroup.forEach((event, eventIndex) => {
+                    const eventEl = this.createEventElement(event, eventIndex, groupIndex);
+                    eventRow.appendChild(eventEl);
+                });
             });
         });
+    }
+
+    private groupConcurrentEvents(events: TimelineEvent[]): TimelineEvent[][] {
+        // Group events by exact begin date for concurrent display
+        const dateGroups: Record<string, TimelineEvent[]> = {};
+        
+        events.forEach(event => {
+            if (!event.beginDate) return;
+            
+            if (!dateGroups[event.beginDate]) {
+                dateGroups[event.beginDate] = [];
+            }
+            dateGroups[event.beginDate].push(event);
+        });
+        
+        // Convert to array of groups
+        return Object.values(dateGroups);
     }
 
     private renderCharacterTimeline() {
@@ -235,8 +264,6 @@ export class TimelineView extends ItemView {
             }
         });
 
-
-
         let characterEvents: TimelineData = {
             events: this.filteredTimelineData.events.filter(e =>
                 relatedEventIds.has(e.id)
@@ -250,34 +277,48 @@ export class TimelineView extends ItemView {
         const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
         const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
 
-        let index = 0;
         sortedDates.forEach(date => {
             const events = eventsByDate[date];
-
+            
+            if (events.length === 0) return;
+            
             const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
             dateMarker.createEl('div', { cls: 'timeline-date', text: date });
-
-            events.forEach((event) => {
-                const eventEl = this.createEventElement(event, index++);
-                timelineLine.appendChild(eventEl);
+            
+            const dateEventsContainer = timelineLine.createEl('div', { cls: 'timeline-date-events' });
+            
+            // Create rows for concurrent events
+            const groupedEvents = this.groupConcurrentEvents(events);
+            
+            groupedEvents.forEach((eventGroup, groupIndex) => {
+                const eventRow = dateEventsContainer.createEl('div', { 
+                    cls: 'timeline-event-row'
+                });
+                
+                eventGroup.forEach((event, eventIndex) => {
+                    const eventEl = this.createEventElement(event, eventIndex, groupIndex);
+                    eventRow.appendChild(eventEl);
+                });
             });
         });
     }
 
-    private createEventElement(event: TimelineEvent, index: number): HTMLElement {
+    private createEventElement(event: TimelineEvent, index: number, rowIndex: number): HTMLElement {
         const eventEl = document.createElement('div');
-        eventEl.className = `timeline-event timeline-event-${event.type} ${index % 2 == 0 ? 'timeline-event-odd' : 'timeline-event-even'}`;
+        
+        // Assign positioning class - alternating only between rows, not within the same row
+        eventEl.className = `timeline-event timeline-event-${event.type} ${rowIndex % 2 == 0 ? 'timeline-event-odd' : 'timeline-event-even'}`;
         eventEl.dataset.id = event.id;
 
         switch (event.type) {
             case 'story':
-                eventEl.style.backgroundColor = this.plugin.settings.storyColor;
+                eventEl.style.backgroundColor = this.plugin.settings.storyColor || '#3498db';
                 break;
             case 'event':
-                eventEl.style.backgroundColor = this.plugin.settings.eventColor;
+                eventEl.style.backgroundColor = this.plugin.settings.eventColor || '#2ecc71';
                 break;
             case 'characterEvent':
-                eventEl.style.backgroundColor = this.plugin.settings.characterEventColor;
+                eventEl.style.backgroundColor = this.plugin.settings.characterEventColor || '#e74c3c';
                 break;
         }
 
@@ -337,31 +378,39 @@ export class TimelineView extends ItemView {
 
     private groupEventsByDate(timelineData: TimelineData): Record<string, TimelineEvent[]> {
         const eventsByDate: Record<string, TimelineEvent[]> = {};
-        if (timelineData)
+        
+        if (timelineData) {
             timelineData.events.forEach(event => {
-                const year = new Date(event.beginDate).getFullYear();
-                if (!eventsByDate[year]) eventsByDate[year] = [];
-                eventsByDate[year].push(event);
+                if (!event.beginDate) return;
+                
+                // Use formatted date string for grouping
+                const dateKey = event.beginDate;
+                if (!eventsByDate[dateKey]) eventsByDate[dateKey] = [];
+                eventsByDate[dateKey].push(event);
             });
+        }
+        
         return eventsByDate;
-    }
-
-    private groupEventsByType(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
-        const eventsByType: Record<string, TimelineEvent[]> = {};
-        events.forEach(event => {
-            if (!eventsByType[event.type]) eventsByType[event.type] = [];
-            eventsByType[event.type].push(event);
-        });
-        return eventsByType;
     }
 
     private getSortedDates(eventsByDate: Record<string, TimelineEvent[]>): string[] {
         const dates = Object.keys(eventsByDate);
 
         dates.sort((a, b) => {
+            // First try to parse as full dates
+            const dateA = new Date(a);
+            const dateB = new Date(b);
+            
+            if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+                return dateA.getTime() - dateB.getTime();
+            }
+            
+            // If that fails, try to compare as years
             const yearA = parseInt(a);
             const yearB = parseInt(b);
             if (!isNaN(yearA) && !isNaN(yearB)) return yearA - yearB;
+            
+            // Fall back to string comparison
             return a.localeCompare(b);
         });
 
@@ -434,6 +483,3 @@ class CharacterSelectModal extends Modal {
         contentEl.empty();
     }
 }
-
-import { Modal, Notice, App } from 'obsidian';
-import { time } from 'console';
