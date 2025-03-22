@@ -11,8 +11,9 @@ export class TimelineView extends ItemView {
     private controlsEl: HTMLElement;
     private filterEl: HTMLElement;
     private timelineData: TimelineData | null = null;
-    private displayMode: 'chronological' | 'character' = 'chronological';
+    private displayMode: 'chronological' | 'character' | 'story' = 'chronological';
     private focusCharacter: string | null = null;
+    private focusStory: string | null = null;
     private filteredTimelineData: TimelineData | null = null;
     private activeFilters: Record<string, boolean> = {
         'story': true,
@@ -58,6 +59,13 @@ export class TimelineView extends ItemView {
         });
         characterButton.addEventListener('click', () => this.promptForCharacter());
 
+        //Stories
+        const storyButton = viewModeContainer.createEl('button', {
+            cls: 'timeline-view-button',
+            text: 'Story-Centric'
+        });
+        storyButton.addEventListener('click', () => this.promptForStory());
+
         //Refresh
         const refreshButton = this.controlsEl.createEl('button', {
             cls: 'timeline-refresh-button',
@@ -75,7 +83,6 @@ export class TimelineView extends ItemView {
         this.createFilterButton(filterButtonsContainer, 'story', 'Stories');
         this.createFilterButton(filterButtonsContainer, 'event', 'Events');
         this.createFilterButton(filterButtonsContainer, 'characterEvent', 'Characters Events');
-
 
         this.timelineEl = this.contentEl.createEl('div', { cls: 'timeline-content' });
         await this.refresh();
@@ -117,7 +124,6 @@ export class TimelineView extends ItemView {
             console.error("Timeline Visualizer error:", error);
         }
     }
-
 
     private applyFilters() {
         if (!this.timelineData) return;
@@ -161,6 +167,8 @@ export class TimelineView extends ItemView {
             this.renderChronologicalTimeline();
         } else if (this.displayMode === 'character') {
             this.renderCharacterTimeline();
+        } else if (this.displayMode === 'story') {
+            this.renderStoryTimeline();
         }
     }
 
@@ -169,23 +177,108 @@ export class TimelineView extends ItemView {
 
         const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
 
-        const eventsByDate = this.groupEventsByDate(this.filteredTimelineData);
+        const events = this.processEventsWithDateRanges(this.filteredTimelineData.events);
+        const eventsByDate = this.groupEventsByDate(events);
         const sortedDates = this.getSortedDates(eventsByDate);
 
         const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
         let index = 0;
+        
+        //Process range events and create visuals for them
+        const rangeEvents = events.filter(event => event.isRange && event.type !== 'character');
+        const dateRanges = new Map<string, {start: string, end: string, events: TimelineEvent[]}>();
+        
+        rangeEvents.forEach(event => {
+            if (event.beginDate && event.endDate) {
+                const key = `${event.id}`;
+                if (!dateRanges.has(key)) {
+                    dateRanges.set(key, {
+                        start: event.beginDate,
+                        end: event.endDate,
+                        events: [event]
+                    });
+                } else {
+                    dateRanges.get(key)?.events.push(event);
+                }
+            }
+        });
+
+        //Render date markers with events
         sortedDates.forEach(date => {
             const events = eventsByDate[date];
-
+            
             const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
             dateMarker.createEl('div', { cls: 'timeline-date', text: date });
-
-            events.forEach((event) => {
-                if (event.type != "character") {
+            
+            //Check if any range spans this date
+            const activeRanges = Array.from(dateRanges.values()).filter(range => 
+                this.isDateInRange(date, range.start, range.end)
+            );
+            
+            if (activeRanges.length > 0) {
+                const rangeIndicator = timelineLine.createEl('div', { 
+                    cls: 'timeline-range-indicator',
+                    attr: { 'data-date': date }
+                });
+                
+                activeRanges.forEach(range => {
+                    const rangeEl = rangeIndicator.createEl('div', { 
+                        cls: 'timeline-range',
+                        attr: { 
+                            'data-begin': range.start,
+                            'data-end': range.end
+                        }
+                    });
+                    
+                    range.events.forEach(event => {
+                        const rangeEventEl = rangeEl.createEl('div', { 
+                            cls: `timeline-range-event timeline-range-${event.type}`,
+                            text: event.title
+                        });
+                        rangeEventEl.style.backgroundColor = this.getEventColor(event.type);
+                        
+                        //Add click handler to open the file
+                        rangeEventEl.addEventListener('click', () => {
+                            this.openFile(event.file);
+                        });
+                    });
+                });
+            }
+            
+            //Render point events
+            events
+                .filter(event => event.type !== 'character' && !event.isRange)
+                .forEach((event) => {
                     const eventEl = this.createEventElement(event, index++);
                     timelineLine.appendChild(eventEl);
-                };
-            });
+                });
+        });
+    }
+    
+    private isDateInRange(date: string, startDate: string, endDate: string): boolean {
+        //Simple string comparison for dates in format YYYY or YYYY/MM or YYYY/MM/DD
+        return date >= startDate && date <= endDate;
+    }
+    
+    private processEventsWithDateRanges(events: TimelineEvent[]): TimelineEvent[] {
+        //Process events to determine which ones are ranges vs. points
+        return events.map(event => {
+            const processed = { ...event };
+            
+            //Extract begin and end dates from the event
+            processed.beginDate = event.date; //Default to the date field
+            processed.endDate = event.date;
+            
+            //If beginDate and endDate exist and are different, it's a range
+            if (event.beginDate && event.endDate && event.beginDate !== event.endDate) {
+                processed.beginDate = event.beginDate;
+                processed.endDate = event.endDate;
+                processed.isRange = true;
+            } else {
+                processed.isRange = false;
+            }
+            
+            return processed;
         });
     }
 
@@ -235,8 +328,6 @@ export class TimelineView extends ItemView {
             }
         });
 
-
-
         let characterEvents: TimelineData = {
             events: this.filteredTimelineData.events.filter(e =>
                 relatedEventIds.has(e.id)
@@ -244,7 +335,8 @@ export class TimelineView extends ItemView {
             connections: []
         }
 
-        const eventsByDate = this.groupEventsByDate(characterEvents);
+        const processedEvents = this.processEventsWithDateRanges(characterEvents.events);
+        const eventsByDate = this.groupEventsByDate(processedEvents);
         const sortedDates = this.getSortedDates(eventsByDate);
 
         const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
@@ -263,23 +355,114 @@ export class TimelineView extends ItemView {
             });
         });
     }
+    
+    private renderStoryTimeline() {
+        if (!this.focusStory) {
+            this.timelineEl.createEl('div', {
+                cls: 'timeline-empty',
+                text: 'No story selected.'
+            });
+            return;
+        }
+        if (!this.filteredTimelineData || !this.timelineData) {
+            this.timelineEl.createEl('div', {
+                cls: 'timeline-empty',
+                text: 'No timeline data.'
+            });
+            return;
+        }
+        
+        const story = this.timelineData.events.find(e => e.id === this.focusStory);
+        if (!story) {
+            this.timelineEl.createEl('div', {
+                cls: 'timeline-empty',
+                text: 'Selected story not found in timeline data.'
+            });
+            return;
+        }
+
+        const storyHeader = this.timelineEl.createEl('div', { cls: 'story-timeline-header' });
+        storyHeader.createEl('h3', { text: `Timeline for ${story.title}` });
+
+        //Find story date range
+        const storyBeginDate = story.beginDate || story.date;
+        const storyEndDate = story.endDate || story.date;
+        
+        if (storyBeginDate && storyEndDate) {
+            storyHeader.createEl('div', { 
+                cls: 'story-date-range',
+                text: `${storyBeginDate} to ${storyEndDate}`
+            });
+        }
+
+        //Find events related to this story (mentioned in story or from same period)
+        const relatedEvents = this.filteredTimelineData.events.filter(event => 
+            (event.type === 'event' || event.type === 'characterEvent') && 
+            this.isEventInStoryTimeframe(event, storyBeginDate, storyEndDate)
+        );
+        
+        //Also include characters mentioned in the story
+        const storyCharacters = this.findStoryCharacters(story, this.filteredTimelineData);
+        
+        const storyTimelineData: TimelineData = {
+            events: [...relatedEvents, ...storyCharacters],
+            connections: []
+        };
+
+        const processedEvents = this.processEventsWithDateRanges(storyTimelineData.events);
+        const eventsByDate = this.groupEventsByDate(processedEvents);
+        const sortedDates = this.getSortedDates(eventsByDate);
+
+        const timeline = this.timelineEl.createEl('div', { cls: 'timeline-chronological' });
+        const timelineLine = timeline.createEl('div', { cls: 'timeline-line' });
+
+        let index = 0;
+        sortedDates.forEach(date => {
+            const events = eventsByDate[date];
+
+            const dateMarker = timelineLine.createEl('div', { cls: 'timeline-date-marker' });
+            dateMarker.createEl('div', { cls: 'timeline-date', text: date });
+
+            events.forEach((event) => {
+                const eventEl = this.createEventElement(event, index++);
+                timelineLine.appendChild(eventEl);
+            });
+        });
+    }
+    
+    private isEventInStoryTimeframe(event: TimelineEvent, storyBegin: string, storyEnd: string): boolean {
+        const eventDate = event.date || '';
+        const eventBegin = event.beginDate || eventDate;
+        const eventEnd = event.endDate || eventDate;
+        
+        //Check if event range overlaps with story range
+        return (eventBegin && eventEnd && storyBegin && storyEnd &&
+                ((eventBegin >= storyBegin && eventBegin <= storyEnd) || 
+                 (eventEnd >= storyBegin && eventEnd <= storyEnd) || 
+                 (eventBegin <= storyBegin && eventEnd >= storyEnd)));
+    }
+    
+    private findStoryCharacters(story: TimelineEvent, timelineData: TimelineData): TimelineEvent[] {
+        //Find characters connected to this story
+        const characterIds = new Set<string>();
+        
+        timelineData.connections.forEach(conn => {
+            if (conn.from === story.id && conn.type === 'appears_in') {
+                characterIds.add(conn.to);
+            }
+        });
+        
+        return timelineData.events.filter(event => 
+            event.type === 'character' && characterIds.has(event.id)
+        );
+    }
 
     private createEventElement(event: TimelineEvent, index: number): HTMLElement {
         const eventEl = document.createElement('div');
         eventEl.className = `timeline-event timeline-event-${event.type} ${index % 2 == 0 ? 'timeline-event-odd' : 'timeline-event-even'}`;
         eventEl.dataset.id = event.id;
 
-        switch (event.type) {
-            case 'story':
-                eventEl.style.backgroundColor = this.plugin.settings.storyColor;
-                break;
-            case 'event':
-                eventEl.style.backgroundColor = this.plugin.settings.eventColor;
-                break;
-            case 'characterEvent':
-                eventEl.style.backgroundColor = this.plugin.settings.characterEventColor;
-                break;
-        }
+        eventEl.style.backgroundColor = this.getEventColor(event.type);
 
         const eventHeader = eventEl.createEl('div', { cls: 'event-header' });
         const titleSpan = eventHeader.createEl('span', { cls: 'event-title', text: event.title });
@@ -290,7 +473,12 @@ export class TimelineView extends ItemView {
         }
 
         // Add date if available
-        if (event.date && event.date !== '') {
+        if (event.beginDate && event.endDate && event.beginDate !== event.endDate) {
+            eventHeader.createEl('span', { 
+                cls: 'event-date', 
+                text: `${event.beginDate} - ${event.endDate}` 
+            });
+        } else if (event.date && event.date !== '') {
             eventHeader.createEl('span', { cls: 'event-date', text: event.date });
         }
 
@@ -303,17 +491,22 @@ export class TimelineView extends ItemView {
         //Actions buttons
         const actionBar = eventEl.createEl('div', { cls: 'event-actions' });
 
-        if (event.type === 'characterEvent') {
+        if (event.type === 'character') {
             const viewTimelineBtn = actionBar.createEl('button', { cls: 'event-action-button', text: 'View Timeline' });
             viewTimelineBtn.addEventListener('click', () => {
                 this.focusCharacter = event.id;
                 this.setDisplayMode('character');
             });
+        } else if (event.type === 'story') {
+            const viewStoryTimelineBtn = actionBar.createEl('button', { cls: 'event-action-button', text: 'View Timeline' });
+            viewStoryTimelineBtn.addEventListener('click', () => {
+                this.focusStory = event.id;
+                this.setDisplayMode('story');
+            });
         }
 
         const openFileBtn = actionBar.createEl('button', { cls: 'event-action-button', text: 'Open File' });
         openFileBtn.addEventListener('click', () => { this.openFile(event.file); });
-
 
         eventEl.createEl('span', {
             cls: 'event-type-badge',
@@ -321,6 +514,21 @@ export class TimelineView extends ItemView {
         });
 
         return eventEl;
+    }
+    
+    private getEventColor(type: string): string {
+        switch (type) {
+            case 'story':
+                return this.plugin.settings.storyColor || '#4A90E2';
+            case 'event':
+                return this.plugin.settings.eventColor || '#50C878';
+            case 'character':
+                return this.plugin.settings.characterColor || '#F5A623';
+            case 'characterEvent':
+                return this.plugin.settings.characterEventColor || '#D36582';
+            default:
+                return '#888888';
+        }
     }
 
     private truncateDescription(description: string, maxLength: number): string {
@@ -335,13 +543,18 @@ export class TimelineView extends ItemView {
         }
     }
 
-    private groupEventsByDate(timelineData: TimelineData): Record<string, TimelineEvent[]> {
+    private groupEventsByDate(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
         const eventsByDate: Record<string, TimelineEvent[]> = {};
-        if (timelineData)
-            timelineData.events.forEach(event => {
-                if (!eventsByDate[event.date]) eventsByDate[event.date] = [];
-                eventsByDate[event.date].push(event);
-            });
+        if (!events) return eventsByDate;
+        
+        events.forEach(event => {
+            //Use the date field or beginDate if available
+            const date = event.date || event.beginDate || '';
+            if (!date) return;
+            
+            if (!eventsByDate[date]) eventsByDate[date] = [];
+            eventsByDate[date].push(event);
+        });
         return eventsByDate;
     }
 
@@ -367,7 +580,7 @@ export class TimelineView extends ItemView {
         return dates;
     }
 
-    private setDisplayMode(mode: 'chronological' | 'character') {
+    private setDisplayMode(mode: 'chronological' | 'character' | 'story') {
         this.displayMode = mode;
 
         const buttons = this.controlsEl.querySelectorAll('.timeline-view-button');
@@ -376,6 +589,8 @@ export class TimelineView extends ItemView {
             if (button.textContent === 'Chronological' && mode === 'chronological') {
                 button.classList.add('active');
             } else if (button.textContent === 'Character-Centric' && mode === 'character') {
+                button.classList.add('active');
+            } else if (button.textContent === 'Story-Centric' && mode === 'story') {
                 button.classList.add('active');
             }
         });
@@ -390,25 +605,42 @@ export class TimelineView extends ItemView {
             new Notice('No characters found in timeline data.');
             return;
         }
-        const modal = new CharacterSelectModal(this.app, characters, (characterId) => {
-            if (characterId) {
-                this.focusCharacter = characterId;
+        const modal = new SelectModal(this.app, characters, 'character', (id) => {
+            if (id) {
+                this.focusCharacter = id;
                 this.setDisplayMode('character');
+            }
+        });
+        modal.open();
+    }
+    
+    private async promptForStory() {
+        if (!this.timelineData) return;
+        const stories = this.timelineData.events.filter(e => e.type === 'story');
+        if (stories.length === 0) {
+            new Notice('No stories found in timeline data.');
+            return;
+        }
+        const modal = new SelectModal(this.app, stories, 'story', (id) => {
+            if (id) {
+                this.focusStory = id;
+                this.setDisplayMode('story');
             }
         });
         modal.open();
     }
 }
 
+// Modal for item selection
+class SelectModal extends Modal {
+    private items: TimelineEvent[];
+    private type: string;
+    private onSelect: (id: string) => void;
 
-// Simple modal for character selection
-class CharacterSelectModal extends Modal {
-    private characters: TimelineEvent[];
-    private onSelect: (characterId: string) => void;
-
-    constructor(app: App, characters: TimelineEvent[], onSelect: (characterId: string) => void) {
+    constructor(app: App, items: TimelineEvent[], type: string, onSelect: (id: string) => void) {
         super(app);
-        this.characters = characters;
+        this.items = items;
+        this.type = type;
         this.onSelect = onSelect;
     }
 
@@ -416,13 +648,13 @@ class CharacterSelectModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl('h3', { text: 'Select a Character' });
-        const characterList = contentEl.createEl('div', { cls: 'character-select-list' });
-        this.characters.forEach(character => {
-            const characterItem = characterList.createEl('div', { cls: 'character-select-item' });
-            characterItem.createEl('span', { text: character.title });
-            characterItem.addEventListener('click', () => {
-                this.onSelect(character.id);
+        contentEl.createEl('h3', { text: `Select a ${this.type}` });
+        const itemList = contentEl.createEl('div', { cls: 'timeline-select-list' });
+        this.items.forEach(item => {
+            const itemElement = itemList.createEl('div', { cls: 'timeline-select-item' });
+            itemElement.createEl('span', { text: item.title });
+            itemElement.addEventListener('click', () => {
+                this.onSelect(item.id);
                 this.close();
             });
         });
@@ -435,4 +667,3 @@ class CharacterSelectModal extends Modal {
 }
 
 import { Modal, Notice, App } from 'obsidian';
-import { time } from 'console';

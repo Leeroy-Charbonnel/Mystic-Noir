@@ -1,6 +1,6 @@
-import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, WorkspaceLeaf, ItemView, ViewStateResult } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, WorkspaceLeaf, ItemView, ViewStateResult, TFolder } from 'obsidian';
 import { TimelineView, VIEW_TYPE_TIMELINE } from './TimelineView';
-import { cleanHtml, cleanLink } from 'utils';
+import { cleanHtml, cleanLink } from './utils';
 
 interface TimelineVisualizerSettings {
     storiesFolder: string;
@@ -17,11 +17,11 @@ const DEFAULT_SETTINGS: TimelineVisualizerSettings = {
     storiesFolder: '',
     eventsFolder: '',
     charactersFolder: '',
-    defaultColor: '',
-    characterColor: '',
-    storyColor: '',
-    eventColor: '',
-    characterEventColor: ''
+    defaultColor: '#888888',
+    characterColor: '#F5A623',
+    storyColor: '#4A90E2',
+    eventColor: '#50C878',
+    characterEventColor: '#D36582'
 }
 
 export default class TimelineVisualizerPlugin extends Plugin {
@@ -47,7 +47,6 @@ export default class TimelineVisualizerPlugin extends Plugin {
         this.addSettingTab(new TimelineVisualizerSettingTab(this.app, this));
     }
 
-
     private refreshTimelineView() {
         if (this.timelineView) {
             this.timelineView.refresh();
@@ -57,14 +56,14 @@ export default class TimelineVisualizerPlugin extends Plugin {
     async activateView() {
         const { workspace } = this.app;
 
-        //Check if the view already open
+        //Check if view already open
         const existingLeaves = workspace.getLeavesOfType(VIEW_TYPE_TIMELINE);
         if (existingLeaves.length > 0) {
             workspace.revealLeaf(existingLeaves[0]);
             return;
         }
 
-        //Create a new leaf otherwise
+        //Create new leaf otherwise
         const leaf = workspace.getLeaf(false);
         await leaf.setViewState({
             type: VIEW_TYPE_TIMELINE,
@@ -101,14 +100,18 @@ export default class TimelineVisualizerPlugin extends Plugin {
                 const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
                 if (frontmatter && frontmatter.data) {
                     const data = frontmatter.data;
-                    const date = data.template?.BasicInformation?.BeginDate?.value || '';
+                    //Get both beginDate and endDate
+                    const beginDate = data.template?.BasicInformation?.BeginDate?.value || '';
+                    const endDate = data.template?.BasicInformation?.EndDate?.value || '';
                     const name = data.template?.BasicInformation?.Name?.value || file.basename;
                     const synopsis = data.template?.BasicInformation?.Synopsis?.value || '';
 
                     events.push({
                         id: file.path,
                         title: cleanHtml(name),
-                        date: cleanHtml(date),
+                        date: cleanHtml(beginDate), //Use beginDate as primary date
+                        beginDate: cleanHtml(beginDate),
+                        endDate: cleanHtml(endDate),
                         type: 'story',
                         description: cleanHtml(synopsis),
                         file: file.path
@@ -139,19 +142,23 @@ export default class TimelineVisualizerPlugin extends Plugin {
         //EVENT
         for (const file of eventFiles) {
             try {
-                const fileContent = await this.app.vault.read(file);
                 const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 
                 if (frontmatter && frontmatter.data) {
                     const data = frontmatter.data;
-                    const date = data.template?.BasicInformation?.Date?.value || '';
+                    //Get begin and end dates
+                    const beginDate = data.template?.BasicInformation?.BeginDate?.value || '';
+                    const endDate = data.template?.BasicInformation?.EndDate?.value || '';
                     const name = data.template?.BasicInformation?.Name?.value || file.basename;
                     const description = data.template?.BasicInformation?.Description?.value || '';
+                    const locationRef = data.template?.BasicInformation?.Location?.value || '';
 
                     events.push({
                         id: file.path,
                         title: cleanHtml(name),
-                        date: cleanHtml(date),
+                        date: cleanHtml(beginDate), //Use beginDate as primary date
+                        beginDate: cleanHtml(beginDate),
+                        endDate: cleanHtml(endDate),
                         type: 'event',
                         description: cleanHtml(description),
                         file: file.path
@@ -191,6 +198,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
                             id: `${file.path}-birth`,
                             title: `Birth of ${name}`,
                             date: cleanHtml(data.template?.BasicInformation.BirthDate?.value) || '',
+                            beginDate: cleanHtml(data.template?.BasicInformation.BirthDate?.value) || '',
+                            endDate: cleanHtml(data.template?.BasicInformation.BirthDate?.value) || '',
                             type: 'characterEvent',
                             description: `Birth of ${name}`,
                             file: file.path,
@@ -212,6 +221,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
                             id: `${file.path}-death`,
                             title: `Death of ${name}`,
                             date: cleanHtml(data.template?.BasicInformation.DeathDate?.value) || '',
+                            beginDate: cleanHtml(data.template?.BasicInformation.DeathDate?.value) || '',
+                            endDate: cleanHtml(data.template?.BasicInformation.DeathDate?.value) || '',
                             type: 'characterEvent',
                             description: `Death of ${name}`,
                             file: file.path,
@@ -232,6 +243,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
                         id: file.path,
                         title: cleanHtml(name),
                         date: cleanHtml(data.template?.BasicInformation?.BirthDate?.value) || '',
+                        beginDate: cleanHtml(data.template?.BasicInformation?.BirthDate?.value) || '',
+                        endDate: cleanHtml(data.template?.BasicInformation?.DeathDate?.value) || '',
                         type: 'character',
                         description: cleanHtml(data.template?.BasicInformation?.Background?.value) || '',
                         file: file.path,
@@ -254,10 +267,13 @@ export interface TimelineEvent {
     id: string;
     title: string;
     date: string;
+    beginDate?: string;
+    endDate?: string;
     type: 'story' | 'event' | 'character' | 'characterEvent';
     description: string;
     file: string;
     status?: 'alive' | 'dead' | 'injured';
+    isRange?: boolean;
 }
 
 export interface TimelineConnection {
@@ -282,38 +298,63 @@ class TimelineVisualizerSettingTab extends PluginSettingTab {
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
+        
+        //Get all folders for dropdowns
+        const folders = this.getAllFolders();
 
         containerEl.createEl('h2', { text: 'Timeline Visualizer Settings' });
 
         new Setting(containerEl)
             .setName('Stories Folder')
             .setDesc('The folder containing your story files')
-            .addText(text => text
-                .setValue(this.plugin.settings.storiesFolder)
-                .onChange(async (value) => {
+            .addDropdown(dropdown => {
+                //Add empty option
+                dropdown.addOption('', '-- Select a folder --');
+                //Add all folders
+                folders.forEach(folder => dropdown.addOption(folder, folder));
+                //Set current value
+                dropdown.setValue(this.plugin.settings.storiesFolder);
+                //Handle change
+                dropdown.onChange(async (value) => {
                     this.plugin.settings.storiesFolder = value;
                     await this.plugin.saveSettings();
-                }));
+                });
+            });
 
         new Setting(containerEl)
             .setName('Events Folder')
             .setDesc('The folder containing your event files')
-            .addText(text => text
-                .setValue(this.plugin.settings.eventsFolder)
-                .onChange(async (value) => {
+            .addDropdown(dropdown => {
+                //Add empty option
+                dropdown.addOption('', '-- Select a folder --');
+                //Add all folders
+                folders.forEach(folder => dropdown.addOption(folder, folder));
+                //Set current value
+                dropdown.setValue(this.plugin.settings.eventsFolder);
+                //Handle change
+                dropdown.onChange(async (value) => {
                     this.plugin.settings.eventsFolder = value;
                     await this.plugin.saveSettings();
-                }));
+                });
+            });
 
         new Setting(containerEl)
             .setName('Characters Folder')
             .setDesc('The folder containing your character files')
-            .addText(text => text
-                .setValue(this.plugin.settings.charactersFolder)
-                .onChange(async (value) => {
+            .addDropdown(dropdown => {
+                //Add empty option
+                dropdown.addOption('', '-- Select a folder --');
+                //Add all folders
+                folders.forEach(folder => dropdown.addOption(folder, folder));
+                //Set current value
+                dropdown.setValue(this.plugin.settings.charactersFolder);
+                //Handle change
+                dropdown.onChange(async (value) => {
                     this.plugin.settings.charactersFolder = value;
                     await this.plugin.saveSettings();
-                }));
+                });
+            });
+            
         new Setting(containerEl)
             .setName('Character Color')
             .setDesc('Color for characters on the timeline')
@@ -353,5 +394,36 @@ class TimelineVisualizerSettingTab extends PluginSettingTab {
                     this.plugin.settings.characterEventColor = value;
                     await this.plugin.saveSettings();
                 }));
+    }
+    
+    //Get all folders for dropdown options
+    private getAllFolders(): string[] {
+        const folders: string[] = [];
+        //Add root folder
+        folders.push('/');
+        
+        //Recursively find all folders
+        const findFolders = (folder: TFolder) => {
+            //Skip hidden folders
+            if (folder.path.startsWith('.')) return;
+            
+            //Add current folder path
+            if (folder.path !== '/') {
+                folders.push(folder.path);
+            }
+            
+            //Process children folders
+            folder.children.forEach(child => {
+                if (child instanceof TFolder) {
+                    findFolders(child);
+                }
+            });
+        };
+        
+        //Start with root folder
+        findFolders(this.app.vault.getRoot());
+        
+        //Sort folders for better display
+        return folders.sort();
     }
 }
