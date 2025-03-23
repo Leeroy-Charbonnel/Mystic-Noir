@@ -266,46 +266,68 @@ export default class TimelineVisualizerPlugin extends Plugin {
             }
         }
 
-
+        // Get all dates from events, including character birth and death events
         let allDates = events.reduce((state, value) => {
-            if (value.beginDate)
+            if (value.beginDate) {
                 state.push(value.beginDate);
-            if (value.endDate)
+            }
+            if (value.endDate) {
                 state.push(value.endDate);
+            }
             return state;
-        }, ([] as Date[]))
+        }, ([] as Date[]));
 
-        sortAndRemoveDuplicateDates(allDates)
+        // Sort dates and remove duplicates
+        allDates = sortAndRemoveDuplicateDates(allDates);
 
-        //Create a function to check if two events overlap
+        // Find the latest date from all events to use as the end date for characters without death dates
+        const latestDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date();
+                
+        // Update character events without death dates to use the latest date
+        events.forEach(event => {
+            if (event.type === 'character' && !event.endDate) {
+                event.endDate = latestDate;
+            }
+        });
+
+        // Function to check if two events overlap
         function doEventsOverlap(event1: TimelineEvent, event2: TimelineEvent) {
-            return event1.beginDate <= event2.endDate && event2.beginDate <= event1.endDate;
+            // Now all events should have both beginDate and endDate defined
+            return event1.beginDate && event2.beginDate && 
+                   event1.beginDate <= event2.endDate && 
+                   event2.beginDate <= event1.endDate;
         }
 
-        //Create a data structure to hold column assignments for each event
+        // Create a data structure to hold column assignments for each event
         let eventColumns = new Map();
         let requiredColumns = 0;
 
-        //Sort events by begin date
-        const sortedEvents = [...events].sort((a, b) => a.beginDate - b.beginDate);
+        // Sort events by begin date
+        const sortedEvents = [...events].sort((a, b) => {
+            // Handle null beginDates (shouldn't happen but just in case)
+            if (!a.beginDate) return 1;
+            if (!b.beginDate) return -1;
+            return a.beginDate.getTime() - b.beginDate.getTime();
+        });
 
-        //Assign columns to events
+        // Assign columns to events
         sortedEvents.forEach(event => {
-            //Find the first available column for this event
+            // Skip events without a begin date
+            if (!event.beginDate) return;
+            
+            // Find the first available column for this event
             let column = 0;
             let columnFound = false;
 
             while (!columnFound) {
-                //Check if this column is already occupied by an event that overlaps with the current event
+                // Check if this column is already occupied by an event that overlaps with the current event
                 let isColumnAvailable = true;
 
-                //Check all events that have already been assigned to this column
+                // Check all events that have already been assigned to this column
                 for (const [eventId, colIndex] of eventColumns.entries()) {
                     if (colIndex === column) {
                         const otherEvent = events.find(e => e.id === eventId);
-
-                        //Check if the events overlap
-                        if (doEventsOverlap(event, otherEvent)) {
+                        if (otherEvent && doEventsOverlap(event, otherEvent)) {
                             isColumnAvailable = false;
                             break;
                         }
@@ -319,39 +341,42 @@ export default class TimelineVisualizerPlugin extends Plugin {
                 }
             }
 
-            //Assign the column to the event
+            // Assign the column to the event
             eventColumns.set(event.id, column);
 
-            //Update the required number of columns
+            // Update the required number of columns
             if (column + 1 > requiredColumns) {
                 requiredColumns = column + 1;
             }
         });
 
-        console.log(`Required number of columns: ${requiredColumns}`);
-
-        //EXPLICITLY ADD COLUMN, STARTROW, AND ENDROW PROPERTIES TO EACH EVENT
+        // Add grid properties to each event
         events.forEach(event => {
-            //Add column property to each event
-            event.column = eventColumns.get(event.id);
+            // Add column property to each event
+            event.column = eventColumns.get(event.id) || 0;
 
+            // Handle the case where beginDate is null
+            if (!event.beginDate) {
+                event.startRow = 0;
+                event.endRow = 0;
+                return;
+            }
 
-
+            // Find and add startRow property (index of begin date in allDates)
             const startRowIndex = allDates.findIndex(date => date.getTime() === event.beginDate.getTime());
             event.startRow = startRowIndex !== -1 ? startRowIndex : 0;
 
-            //Find and add endRow property (index of end date in allDates)
-            const endRowIndex = allDates.findIndex(date => date.getTime() === event.endDate.getTime());
+            // For all events (including characters without original death dates which now have latestDate)
+            const endRowIndex = event.endDate ? 
+                allDates.findIndex(date => date.getTime() === event.endDate.getTime()) : -1;
             event.endRow = endRowIndex !== -1 ? endRowIndex : allDates.length - 1;
 
-            console.log(`Adding grid properties to event "${event.title}": startRow=${event.startRow}, endRow=${event.endRow}, column=${event.column}`);
+            console.log(`Event "${event.title}": startRow=${event.startRow}, endRow=${event.endRow}, column=${event.column}`);
         });
 
-        //Add the grid to the timeline data
+        // Add the grid to the timeline data
         events.rowDates = allDates;
         events.columnCount = requiredColumns;
-
-        console.log(events);
 
         return {
             events: events,
@@ -385,6 +410,10 @@ export interface TimelineEvent {
     color?: string;
     children?: string[];
     parents?: string[];
+    // Grid properties
+    column?: number;
+    startRow?: number;
+    endRow?: number;
 }
 
 export interface TimelineConnection {
