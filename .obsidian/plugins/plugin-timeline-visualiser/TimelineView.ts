@@ -1,25 +1,51 @@
-import { ItemView, Notice, TFile, WorkspaceLeaf } from 'obsidian';
-import TimelineVisualizerPlugin, { TimelineData, TimelineEvent } from './main';
+import { ItemView, WorkspaceLeaf, TFile, Notice } from 'obsidian';
+import TimelineVisualizerPlugin, { TimelineEvent, TimelineData } from './main';
 
 export const VIEW_TYPE_TIMELINE = 'timeline-visualizer';
+
+export interface NodeProperties {
+    children?: HTMLElement[];
+    attributes?: Record<string,string>;
+    text?: string;
+    class?: string;
+    classes?: string[];
+    style?: Record<string,string>;
+}
+
+export function node<K extends keyof HTMLElementTagNameMap>(tag: K,properties?: NodeProperties): HTMLElementTagNameMap[K] {
+    const element=document.createElement(tag);
+    if(properties?.children)
+        for(const c of properties.children) element.appendChild(c);
+    if(properties?.class)
+        element.setAttribute('class',properties.class);
+    if(properties?.classes)
+        properties?.classes.forEach(c => { element.addClass(c); });
+    if(properties?.attributes)
+        for(const [k,v] of Object.entries(properties.attributes)) element.setAttribute(k,v);
+    if(properties?.text)
+        element.textContent=properties.text;
+    if(properties?.style)
+        for(const [k,v] of Object.entries(properties.style)) element.attributeStyleMap.set(k,v);
+    return element;
+}
 
 export class TimelineView extends ItemView {
     private plugin: TimelineVisualizerPlugin;
     private contentEl: HTMLElement;
     private timelineData: TimelineData | null = null;
-    private loadingIndicator: HTMLElement;
-    private viewMode: 'grid' | 'simple' = 'grid';
+    private filterControls: HTMLElement;
+    private filterTypes: {[key: string]: boolean} = {
+        story: true,
+        event: true,
+        character: true,
+        characterEvent: true
+    };
 
     constructor(leaf: WorkspaceLeaf, plugin: TimelineVisualizerPlugin) {
         super(leaf);
         this.plugin = plugin;
-        this.contentEl = this.containerEl.createDiv({ cls: 'timeline-visualizer-container' });
-        this.loadingIndicator = this.contentEl.createDiv({ cls: 'timeline-loading', text: 'Loading timeline...' });
-    }
-
-    async onOpen() {
-        this.renderHeader();
-        await this.loadTimelineData();
+        this.contentEl = node('div', { class: 'timeline-visualizer-container' });
+        this.containerEl.children[1].appendChild(this.contentEl);
     }
 
     getViewType(): string {
@@ -30,395 +56,374 @@ export class TimelineView extends ItemView {
         return 'Timeline Visualizer';
     }
 
-    async onClose() {
-        this.contentEl.empty();
+    async onOpen(): Promise<void> {
+        await this.refresh();
     }
 
-    private renderHeader() {
-        const headerEl = this.contentEl.createDiv({ cls: 'timeline-header' });
+    async refresh(): Promise<void> {
+        //Clear content
+        this.contentEl.empty();
         
-        const titleEl = headerEl.createEl('h2', { text: 'Timeline Visualizer' });
+        //Create header
+        const headerEl = node('div', { class: 'timeline-header' });
+        const title = node('h2', { text: 'Timeline Visualizer' });
+        headerEl.appendChild(title);
         
-        const controlsEl = headerEl.createDiv({ cls: 'timeline-controls' });
-        
-        //View mode controls
-        const viewModeEl = controlsEl.createDiv({ cls: 'timeline-view-mode' });
-        viewModeEl.createSpan({ text: 'View:' });
-        
-        const gridViewBtn = viewModeEl.createEl('button', { 
-            cls: `timeline-view-button ${this.viewMode === 'grid' ? 'active' : ''}`,
-            text: 'Grid' 
-        });
-        
-        const simpleViewBtn = viewModeEl.createEl('button', { 
-            cls: `timeline-view-button ${this.viewMode === 'simple' ? 'active' : ''}`,
-            text: 'Simple' 
-        });
-        
-        //Add events to buttons
-        gridViewBtn.addEventListener('click', () => {
-            this.viewMode = 'grid';
-            gridViewBtn.classList.add('active');
-            simpleViewBtn.classList.remove('active');
-            this.renderTimeline();
-        });
-        
-        simpleViewBtn.addEventListener('click', () => {
-            this.viewMode = 'simple';
-            simpleViewBtn.classList.add('active');
-            gridViewBtn.classList.remove('active');
-            this.renderTimeline();
-        });
-        
-        //Refresh button
-        const refreshBtn = controlsEl.createEl('button', {
-            cls: 'timeline-refresh-button',
+        //Create controls
+        const controlsEl = node('div', { class: 'timeline-controls' });
+        const refreshBtn = node('button', { 
+            class: 'timeline-refresh-button',
             text: 'Refresh'
         });
+        refreshBtn.addEventListener('click', () => this.refresh());
+        controlsEl.appendChild(refreshBtn);
+        headerEl.appendChild(controlsEl);
         
-        refreshBtn.addEventListener('click', () => {
-            this.refresh();
-        });
-    }
-
-    private renderFilters() {
-        //Remove existing filters
-        const existingFilters = this.contentEl.querySelector('.timeline-filters');
-        if (existingFilters) {
-            existingFilters.remove();
-        }
-
-        if (!this.timelineData || !this.timelineData.events || this.timelineData.events.length === 0) {
-            return;
-        }
-
-        const filtersEl = this.contentEl.createDiv({ cls: 'timeline-filters' });
-        const filterControlsEl = filtersEl.createDiv({ cls: 'filter-controls' });
-
-        //Type filters
-        const typeFiltersEl = filterControlsEl.createDiv({ cls: 'filter-section' });
-        typeFiltersEl.createSpan({ text: 'Type:' });
-
-        const allTypesBtn = typeFiltersEl.createEl('button', {
-            cls: 'filter-button is-active',
-            text: 'All'
-        });
-
-        const storyBtn = typeFiltersEl.createEl('button', {
-            cls: 'filter-button',
-            text: 'Stories'
-        });
-
-        const eventBtn = typeFiltersEl.createEl('button', {
-            cls: 'filter-button',
-            text: 'Events'
-        });
-
-        const characterBtn = typeFiltersEl.createEl('button', {
-            cls: 'filter-button',
-            text: 'Characters'
-        });
-
-        //Date range filter
-        const dateFiltersEl = filterControlsEl.createDiv({ cls: 'filter-section' });
-        dateFiltersEl.createSpan({ text: 'Date Range:' });
+        this.contentEl.appendChild(headerEl);
         
-        //TODO: Implement date range filter
-    }
-
-    async loadTimelineData() {
+        //Create filter controls
+        this.filterControls = node('div', { class: 'timeline-filters' });
+        this.contentEl.appendChild(this.filterControls);
+        this.createFilterControls();
+        
+        //Create timeline content container
+        const timelineContent = node('div', { class: 'timeline-content' });
+        this.contentEl.appendChild(timelineContent);
+        
+        //Show loading indicator
+        const loadingEl = node('div', { 
+            class: 'timeline-loading',
+            text: 'Loading timeline data...'
+        });
+        timelineContent.appendChild(loadingEl);
+        
         try {
-            this.loadingIndicator.style.display = 'flex';
+            //Get timeline data from plugin
             this.timelineData = await this.plugin.getTimelineData();
-            this.loadingIndicator.style.display = 'none';
             
-            this.renderFilters();
-            this.renderTimeline();
+            //Remove loading indicator
+            loadingEl.remove();
+            
+            if (!this.timelineData.events || this.timelineData.events.length === 0) {
+                const emptyEl = node('div', { 
+                    class: 'timeline-empty',
+                    text: 'No timeline data available. Please check folder settings and ensure your files have date information.'
+                });
+                timelineContent.appendChild(emptyEl);
+                return;
+            }
+            
+            //Render calendar view
+            this.renderCalendarView(timelineContent);
+            
         } catch (error) {
-            console.error('Error loading timeline data:', error);
-            this.loadingIndicator.style.display = 'none';
-            
-            const errorEl = this.contentEl.createDiv({ 
-                cls: 'timeline-error', 
-                text: `Error loading timeline data: ${error.message}` 
+            loadingEl.remove();
+            const errorEl = node('div', { 
+                class: 'timeline-error',
+                text: `Error loading timeline data: ${error.message}`
             });
+            timelineContent.appendChild(errorEl);
+            console.error('Timeline Visualizer error:', error);
         }
     }
 
-    private renderTimeline() {
-        //Remove existing timeline content
-        const existingContent = this.contentEl.querySelector('.timeline-content');
-        if (existingContent) {
-            existingContent.remove();
-        }
-
-        if (!this.timelineData || !this.timelineData.events || this.timelineData.events.length === 0) {
-            this.contentEl.createDiv({
-                cls: 'timeline-empty',
-                text: 'No timeline data available. Please check your folder settings and make sure you have content.'
+    private createFilterControls(): void {
+        this.filterControls.empty();
+        
+        const filterControlsEl = node('div', { class: 'filter-controls' });
+        this.filterControls.appendChild(filterControlsEl);
+        
+        const typeFilterEl = node('div', { class: 'filter-section' });
+        filterControlsEl.appendChild(typeFilterEl);
+        
+        const filterLabel = node('span', { 
+            class: 'filter-label',
+            text: 'Filter by type:' 
+        });
+        typeFilterEl.appendChild(filterLabel);
+        
+        const createFilterButton = (type: string, label: string) => {
+            const buttonClasses = ['filter-button', `filter-type-${type}`];
+            if(this.filterTypes[type]) buttonClasses.push('is-active');
+            
+            const button = node('button', {
+                classes: buttonClasses,
+                text: label
             });
-            return;
-        }
-
-        const timelineContentEl = this.contentEl.createDiv({ cls: 'timeline-content' });
-
-        if (this.viewMode === 'grid') {
-            this.renderGridTimeline(timelineContentEl);
-        } else {
-            this.renderSimpleTimeline(timelineContentEl);
-        }
+            
+            button.addEventListener('click', () => {
+                this.filterTypes[type] = !this.filterTypes[type];
+                this.refresh();
+            });
+            
+            typeFilterEl.appendChild(button);
+        };
+        
+        createFilterButton('story', 'Stories');
+        createFilterButton('event', 'Events');
+        createFilterButton('character', 'Characters');
+        createFilterButton('characterEvent', 'Character Events');
     }
 
-    private renderGridTimeline(containerEl: HTMLElement) {
-        if (!this.timelineData?.grid || !this.timelineData?.rowDates) {
-            containerEl.createDiv({
-                cls: 'timeline-empty',
-                text: 'Grid data not available. Please refresh the timeline.'
+    private renderCalendarView(container: HTMLElement): void {
+        if (!this.timelineData || !this.timelineData.events || this.timelineData.events.length === 0) return;
+        
+        //Add calendar title
+        const calendarTitle = node('div', {
+            class: 'calendar-title',
+            style: {
+                'font-size': '1.2em',
+                'font-weight': 'bold',
+                'margin-bottom': '15px',
+                'text-align': 'center'
+            },
+            text: 'Timeline Calendar View'
+        });
+        container.appendChild(calendarTitle);
+        
+        //Filter events based on current filters
+        const filteredEvents = this.timelineData.events.filter(event => this.filterTypes[event.type]);
+        
+        if (filteredEvents.length === 0) {
+            const emptyEl = node('div', { 
+                class: 'timeline-empty',
+                text: 'No events match the current filters.'
             });
+            container.appendChild(emptyEl);
             return;
         }
-
-        const { grid, rowDates, columnCount } = this.timelineData;
         
-        //Create grid container
-        const gridContainer = containerEl.createEl('div', { cls: 'timeline-grid' });
+        //Sort events by begin date
+        const sortedEvents = [...filteredEvents].sort((a, b) => {
+            if (!a.beginDate) return 1;
+            if (!b.beginDate) return -1;
+            return new Date(a.beginDate).getTime() - new Date(b.beginDate).getTime();
+        });
         
-        //Style the grid container
-        gridContainer.style.display = 'grid';
-        gridContainer.style.gridTemplateColumns = `repeat(${columnCount}, minmax(280px, 1fr))`;
-        gridContainer.style.gridAutoRows = 'minmax(100px, auto)';
-        gridContainer.style.gap = '10px';
-        gridContainer.style.position = 'relative';
-        gridContainer.style.padding = '10px';
-        gridContainer.style.paddingLeft = '140px';
+        //Process events to determine grid positioning
+        const processedEvents = this.processEventsForCalendar(sortedEvents);
         
-        //Add date labels column 
-        const dateLabelsContainer = gridContainer.createEl('div', { cls: 'timeline-date-labels' });
-        dateLabelsContainer.style.position = 'absolute';
-        dateLabelsContainer.style.left = '-140px';
-        dateLabelsContainer.style.top = '0';
-        dateLabelsContainer.style.bottom = '0';
-        dateLabelsContainer.style.width = '140px';
-        dateLabelsContainer.style.borderRight = '1px solid var(--background-modifier-border)';
+        //Create calendar grid
+        const calendarGrid = node('div', { 
+            class: 'calendar-grid',
+            style: {
+                'display': 'grid',
+                'grid-template-columns': `200px repeat(${processedEvents.columnCount}, 1fr)`,
+                'grid-template-rows': `repeat(${processedEvents.rowDates.length}, auto)`,
+                'gap': '8px',
+                'position': 'relative',
+                'min-height': '500px'
+            }
+        });
+        container.appendChild(calendarGrid);
         
-        //Add date labels
-        rowDates.forEach((dateStr, index) => {
-            const date = new Date(dateStr);
-            const dateLabel = dateLabelsContainer.createEl('div', { 
-                cls: 'timeline-date-label',
-                text: this.formatDate(date)
+        //Render date cells in first column
+        for (let i = 0; i < processedEvents.rowDates.length; i++) {
+            const dateCell = node('div', { 
+                class: 'calendar-date-cell',
+                style: {
+                    'grid-row': `${i + 1}`,
+                    'grid-column': '1',
+                    'background': 'var(--background-secondary)',
+                    'padding': '10px',
+                    'font-weight': 'bold',
+                    'border-right': '1px solid var(--background-modifier-border)',
+                    'border-bottom': '1px solid var(--background-modifier-border)',
+                    'display': 'flex',
+                    'align-items': 'center',
+                    'justify-content': 'center',
+                    'text-align': 'center'
+                }
             });
             
-            dateLabel.style.position = 'absolute';
-            dateLabel.style.top = `${index * 100}px`;
-            dateLabel.style.right = '10px';
-            dateLabel.style.padding = '4px 8px';
-            dateLabel.style.borderRadius = '4px';
-            dateLabel.style.backgroundColor = 'var(--background-primary-alt)';
-            dateLabel.style.fontSize = '12px';
-            dateLabel.style.zIndex = '1';
-        });
-        
-        //Add horizontal lines for each date
-        rowDates.forEach((_, index) => {
-            if (index === 0) return; //Skip first line
+            //Format date
+            const dateObj = new Date(processedEvents.rowDates[i]);
+            const formattedDate = `${dateObj.toLocaleDateString(undefined, { 
+                year: 'numeric', 
+                month: 'short',
+                day: 'numeric'
+            })}`;
             
-            const line = gridContainer.createEl('div');
-            line.style.position = 'absolute';
-            line.style.left = '0';
-            line.style.right = '0';
-            line.style.top = `${index * 100}px`;
-            line.style.height = '1px';
-            line.style.backgroundColor = 'var(--background-modifier-border)';
-            line.style.zIndex = '0';
-        });
+            dateCell.textContent = formattedDate;
+            calendarGrid.appendChild(dateCell);
+        }
         
-        //Add events to grid
-        let processedEvents = new Set();
-        
-        //Process the grid
-        grid.forEach((row, rowIndex) => {
-            row.forEach((event, colIndex) => {
-                if (!event || processedEvents.has(event.id)) {
-                    return;
+        //Render events
+        processedEvents.events.forEach(event => {
+            if (event.startRow === undefined || event.endRow === undefined || event.column === undefined) return;
+            
+            //Set event styling based on type
+            let bgColor = '#64748b'; //Default color
+            
+            if (event.type === 'story') {
+                bgColor = this.plugin.settings.storyColor || '#3b82f6';
+            } else if (event.type === 'event') {
+                bgColor = this.plugin.settings.eventColor || '#10b981';
+            } else if (event.type === 'characterEvent') {
+                bgColor = this.plugin.settings.characterEventColor || '#f59e0b';
+            } else if (event.type === 'character') {
+                bgColor = '#8b5cf6';
+            }
+            
+            const eventEl = node('div', { 
+                class: 'calendar-event',
+                style: {
+                    'grid-row': `${event.startRow + 1} / ${event.endRow + 1}`,
+                    'grid-column': `${event.column + 2}`, // +2 instead of +1 to account for date column
+                    'background-color': bgColor,
+                    'color': 'white',
+                    'padding': '10px',
+                    'border-radius': '4px',
+                    'box-shadow': '0 1px 3px rgba(0,0,0,0.12)',
+                    'cursor': 'pointer',
+                    'overflow': 'hidden',
+                    'z-index': '2'
+                }
+            });
+            
+            //Create event content
+            const eventHeader = node('div', { class: 'event-header' });
+            eventEl.appendChild(eventHeader);
+            
+            const eventTitle = node('div', { 
+                class: 'event-title',
+                text: event.title
+            });
+            eventHeader.appendChild(eventTitle);
+            
+            if (event.beginDate) {
+                const startDate = new Date(event.beginDate);
+                const endDate = event.endDate ? new Date(event.endDate) : null;
+                
+                let dateText = startDate.toLocaleDateString();
+                if (endDate && event.endDate !== event.beginDate) {
+                    dateText += ` - ${endDate.toLocaleDateString()}`;
                 }
                 
-                processedEvents.add(event.id);
-                
-                const eventEl = this.createEventElement(event);
-                gridContainer.appendChild(eventEl);
-                
-                //Set grid position
-                eventEl.style.gridColumnStart = `${event.column + 1}`;
-                eventEl.style.gridColumnEnd = `${event.column + 2}`;
-                eventEl.style.gridRowStart = `${event.startRow + 1}`;
-                eventEl.style.gridRowEnd = `${event.endRow + 2}`;
-            });
-        });
-    }
-
-    private renderSimpleTimeline(containerEl: HTMLElement) {
-        if (!this.timelineData || !this.timelineData.events) {
-            return;
-        }
-        
-        //Group events by year/month
-        const eventsByDate = this.groupEventsByDate(this.timelineData.events);
-        
-        const simpleTimelineEl = containerEl.createDiv({ cls: 'simple-timeline' });
-        
-        //Add central line
-        simpleTimelineEl.createDiv({ cls: 'center-line' });
-        
-        //Track if we should position events left or right
-        let isLeft = true;
-        
-        //Add each date section
-        Object.entries(eventsByDate).forEach(([dateKey, events]) => {
-            const [year, month] = dateKey.split('-').map(Number);
-            const date = new Date(year, month - 1);
+                const eventDate = node('div', { 
+                    class: 'event-date',
+                    text: dateText
+                });
+                eventHeader.appendChild(eventDate);
+            }
             
-            const dateSectionEl = simpleTimelineEl.createDiv({ 
-                cls: `date-section ${isLeft ? 'date-left' : 'date-right'}` 
+            if (event.description) {
+                const eventDescription = node('div', { 
+                    class: 'event-description',
+                    text: event.description
+                });
+                eventEl.appendChild(eventDescription);
+            }
+            
+            //Add type badge
+            const typeBadge = node('div', { 
+                class: 'event-type-badge',
+                text: event.type
+            });
+            eventEl.appendChild(typeBadge);
+            
+            //Handle click to open the file
+            eventEl.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openEventFile(event);
             });
             
-            //Add date label
-            dateSectionEl.createDiv({
-                cls: 'date-label',
-                text: this.formatDate(date)
-            });
-            
-            //Add events container
-            const eventsContainerEl = dateSectionEl.createDiv({ cls: 'date-events-container' });
-            
-            //Add each event
-            events.forEach(event => {
-                eventsContainerEl.appendChild(this.createEventElement(event));
-            });
-            
-            //Alternate left and right
-            isLeft = !isLeft;
+            calendarGrid.appendChild(eventEl);
         });
     }
 
-    private createEventElement(event: TimelineEvent): HTMLElement {
-        const eventEl = document.createElement('div');
-        eventEl.className = `timeline-event event-type-${event.type}`;
-        
-        //Set background color based on event type
-        if (event.type === 'story') {
-            eventEl.style.backgroundColor = this.plugin.settings.storyColor || '#3a6ea5';
-        } else if (event.type === 'event') {
-            eventEl.style.backgroundColor = this.plugin.settings.eventColor || '#6d4c41';
-        } else if (event.type === 'character' || event.type === 'characterEvent') {
-            eventEl.style.backgroundColor = this.plugin.settings.characterEventColor || '#388e3c';
+    private processEventsForCalendar(events: TimelineEvent[]): {events: TimelineEvent[], columnCount: number, rowDates: string[]} {
+        if (!events || events.length === 0) {
+            return { events: [], columnCount: 0, rowDates: [] };
         }
         
-        //Add event header with title and date
-        const headerEl = eventEl.createDiv({ cls: 'event-header' });
-        headerEl.createDiv({ cls: 'event-title', text: event.title });
+        //Collect all unique dates
+        const allDates = new Set<string>();
         
-        const dateText = this.getEventDateRangeText(event);
-        if (dateText) {
-            headerEl.createDiv({ cls: 'event-date', text: dateText });
-        }
-        
-        //Add description
-        if (event.description) {
-            eventEl.createDiv({ 
-                cls: 'event-description',
-                text: this.truncateText(event.description, 100)
-            });
-        }
-        
-        //Add type badge
-        eventEl.createDiv({
-            cls: 'event-type-badge',
-            text: event.type
+        events.forEach(event => {
+            if (event.beginDate) allDates.add(event.beginDate);
+            if (event.endDate) allDates.add(event.endDate);
         });
         
-        //Add actions buttons
-        const actionsEl = eventEl.createDiv({ cls: 'event-actions' });
+        //Sort dates chronologically
+        const rowDates = Array.from(allDates).sort((a, b) => 
+            new Date(a).getTime() - new Date(b).getTime()
+        );
         
-        const openBtn = actionsEl.createEl('button', {
-            cls: 'event-action-button',
-            text: 'Open'
+        //Create a map of dates to row indices
+        const dateToRowIndex = new Map<string, number>();
+        rowDates.forEach((date, index) => {
+            dateToRowIndex.set(date, index);
         });
         
-        openBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.openFile(event.file);
-        });
-        
-        //Make the whole event element clickable
-        eventEl.addEventListener('click', () => {
-            this.openFile(event.file);
-        });
-        
-        return eventEl;
-    }
-
-    private openFile(path: string) {
-        const file = this.app.vault.getAbstractFileByPath(path);
-        if (file instanceof TFile) {
-            this.app.workspace.getLeaf().openFile(file);
-        } else {
-            new Notice(`File not found: ${path}`);
-        }
-    }
-
-    private formatDate(date: Date): string {
-        const options: Intl.DateTimeFormatOptions = { 
-            year: 'numeric', 
-            month: 'short'
-        };
-        return date.toLocaleDateString(undefined, options);
-    }
-
-    private getEventDateRangeText(event: TimelineEvent): string {
-        if (!event.beginDate) return '';
-        
-        const beginDate = new Date(event.beginDate);
-        
-        if (!event.endDate || event.beginDate === event.endDate) {
-            return this.formatDate(beginDate);
-        }
-        
-        const endDate = new Date(event.endDate);
-        return `${this.formatDate(beginDate)} - ${this.formatDate(endDate)}`;
-    }
-
-    private truncateText(text: string, maxLength: number): string {
-        if (!text || text.length <= maxLength) return text;
-        return text.slice(0, maxLength) + '...';
-    }
-
-
-    private groupEventsByDate(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
-        const eventsByDate: Record<string, TimelineEvent[]> = {};
+        //Process events to assign columns
+        const columns: TimelineEvent[][] = [];
         
         events.forEach(event => {
             if (!event.beginDate) return;
             
-            const date = new Date(event.beginDate);
-            const yearMonth = `${date.getFullYear()}-${date.getMonth() + 1}`;
+            const startRow = dateToRowIndex.get(event.beginDate);
+            const endRow = event.endDate ? dateToRowIndex.get(event.endDate) : startRow;
             
-            if (!eventsByDate[yearMonth]) {
-                eventsByDate[yearMonth] = [];
+            if (startRow === undefined || endRow === undefined) return;
+            
+            //Find a suitable column
+            let columnIndex = 0;
+            let placed = false;
+            
+            while (!placed) {
+                if (!columns[columnIndex]) {
+                    columns[columnIndex] = [];
+                    placed = true;
+                } else {
+                    //Check if this column has space
+                    let hasOverlap = false;
+                    
+                    for (const existingEvent of columns[columnIndex]) {
+                        const existingStartRow = existingEvent.startRow;
+                        const existingEndRow = existingEvent.endRow;
+                        
+                        if (existingStartRow === undefined || existingEndRow === undefined) continue;
+                        
+                        //Check for overlap
+                        if (!(endRow < existingStartRow || startRow > existingEndRow)) {
+                            hasOverlap = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!hasOverlap) {
+                        placed = true;
+                    } else {
+                        columnIndex++;
+                    }
+                }
             }
             
-            eventsByDate[yearMonth].push(event);
+            //Assign position data to event
+            event.column = columnIndex;
+            event.startRow = startRow;
+            event.endRow = endRow;
+            
+            //Add to column
+            columns[columnIndex].push(event);
         });
         
-        //Sort dates
-        return Object.fromEntries(
-            Object.entries(eventsByDate).sort(([dateA], [dateB]) => {
-                return dateA.localeCompare(dateB);
-            })
-        );
+        return {
+            events: events,
+            columnCount: columns.length,
+            rowDates: rowDates
+        };
     }
 
-    async refresh() {
-        await this.loadTimelineData();
+    private openEventFile(event: TimelineEvent): void {
+        if (!event.file) return;
+        
+        const file = this.app.vault.getAbstractFileByPath(event.file);
+        if (file instanceof TFile) {
+            this.app.workspace.getLeaf().openFile(file);
+        } else {
+            new Notice(`Could not find file: ${event.file}`);
+        }
     }
 }

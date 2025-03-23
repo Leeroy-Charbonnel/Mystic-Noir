@@ -335,7 +335,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
             //Add column property to each event
             event.column = eventColumns.get(event.id);
 
-            //Find and add startRow property (index of begin date in allDates)
+
+
             const startRowIndex = allDates.findIndex(date => date.getTime() === event.beginDate.getTime());
             event.startRow = startRowIndex !== -1 ? startRowIndex : 0;
 
