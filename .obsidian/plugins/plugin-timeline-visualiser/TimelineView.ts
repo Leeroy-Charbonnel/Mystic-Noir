@@ -12,6 +12,10 @@ export class TimelineView extends ItemView {
     private activeStory: string | null = null;
     private storyDropdown: HTMLSelectElement | null = null;
 
+    private showDates = true;
+    private showDescriptions = true;
+
+
     constructor(leaf: WorkspaceLeaf, plugin: TimelineVisualizerPlugin) {
         super(leaf);
         this.plugin = plugin;
@@ -144,10 +148,44 @@ export class TimelineView extends ItemView {
             }
         });
 
+
+
+
+
+        const displaySection = node('div', { class: 'display-controls-section' });
+        const showDatesButton = node('button', {
+            class: this.showDates ? 'filter-button is-active' : 'filter-button',
+            text: 'Show Dates'
+        });
+        showDatesButton.addEventListener('click', () => {
+            this.showDates = !this.showDates;
+            showDatesButton.classList.toggle('is-active');
+            this.refresh();
+        });
+        const showDescriptionsButton = node('button', {
+            class: this.showDescriptions ? 'filter-button is-active' : 'filter-button',
+            text: 'Show Descriptions'
+        });
+        showDescriptionsButton.addEventListener('click', () => {
+            this.showDescriptions = !this.showDescriptions;
+            showDescriptionsButton.classList.toggle('is-active');
+            this.refresh();
+        });
+
+
+        displaySection.appendChild(showDatesButton);
+        displaySection.appendChild(showDescriptionsButton);
+
+
+
         viewOptionsEl.appendChild(standardViewButton);
+        viewOptionsEl.appendChild(displaySection);
         viewOptionsEl.appendChild(storyCentricButton);
 
         filtersEl.appendChild(viewOptionsEl);
+
+
+
 
         // Create story dropdown section
         const storySelectEl = node('div', { class: 'filter-section' });
@@ -370,8 +408,6 @@ export class TimelineView extends ItemView {
         // Add date rows
         rowDates.forEach((date, index) => {
             const rowIndex = index + 1; // +1 for header row
-            const monthName = date.toLocaleString('default', { month: 'long' });
-            const year = date.getFullYear();
 
             const dateCell = node('div', {
                 class: 'calendar-date-cell',
@@ -381,7 +417,6 @@ export class TimelineView extends ItemView {
                     day: 'numeric'
                 })}`
             });
-
 
             dateCell.style.gridRow = `${rowIndex}`;
             dateCell.style.gridColumn = '1';
@@ -440,7 +475,7 @@ export class TimelineView extends ItemView {
             observer.observe(titleEl);
 
             // Add date info if available
-            if (event.beginDate) {
+            if (this.showDates && event.beginDate) {
                 const dateEl = node('div', {
                     class: 'event-date',
                     children:
@@ -458,12 +493,13 @@ export class TimelineView extends ItemView {
 
             const eventBody = node('div', {
                 class: 'event-body',
-                children: event.beginDate === event.endDate ? [] : [
-                    node('p', {
-                        text: event.description.length > 30 ? `${event.description.substring(0, 100)
-                            }...` : event.description
-                    })
-                ]
+                children: !this.showDescriptions ? [] :
+                    event.beginDate === event.endDate ? [] : [
+                        node('p', {
+                            text: event.description.length > 30 ? `${event.description.substring(0, 100)
+                                }...` : event.description
+                        })
+                    ]
             })
 
             // Event type badge

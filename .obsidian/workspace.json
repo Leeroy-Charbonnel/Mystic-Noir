@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "da425f0b6cb0bea1",
+        "id": "2a5022d1f2f7faa4",
         "type": "tabs",
         "children": [
           {
-            "id": "6ee112a6f65b7f4c",
+            "id": "30e5474583dd3476",
             "type": "leaf",
             "state": {
               "type": "timeline-visualizer",
@@ -178,8 +178,12 @@
       "plugin-home-page:Refresh Home Stats": false
     }
   },
-  "active": "6ee112a6f65b7f4c",
+  "active": "30e5474583dd3476",
   "lastOpenFiles": [
+    "5. Events/Revolution.md",
+    "3. Locations/Stardust Lounge.md",
+    "1. Characters/Evelyn Dupont.md",
+    "Home.md",
     "4. Stories/5 The Price of Justice.md",
     "1. Characters/Lily Moore.md",
     "1. Characters/Alexander Dupont.md",
@@ -188,7 +192,6 @@
     "4. Stories/3 The Last Gamble.md",
     "4. Stories/2 Silenced Testimony.md",
     "1. Characters/Samuel Blackwood.md",
-    "1. Characters/Evelyn Dupont.md",
     "test/test 3.md",
     "1. Characters/The Shadow.md",
     "eventtest/death.md",
@@ -196,13 +199,11 @@
     "test/test 2.md",
     "test/test 1.md",
     "test/story.md",
-    "5. Events/Revolution.md",
     "eventtest",
     "test",
     "5. Events/Lilly's death.md",
     "4. Stories/1 Shadows of the Crescent City.md",
     "5. Events/Mr Dupont's death.md",
-    "Home.md",
     "3. Locations/Samuel's Office.md",
     "1. Characters/New (Characters).md",
     "99. Notes/Future.md",
