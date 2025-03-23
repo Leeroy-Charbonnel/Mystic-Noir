@@ -107,6 +107,7 @@ button.filter-button.is-active {
   border-radius: 5px;
   border: 1px solid var(--background-modifier-border);
   overflow-y: auto;
+  position: relative;
 }
 
 .timeline-loading, 
@@ -123,6 +124,19 @@ button.filter-button.is-active {
 
 .timeline-error {
   color: var(--text-error);
+}
+
+/* Timeline Grid Styles */
+.timeline-grid {
+  min-height: 600px;
+  position: relative;
+  margin-left: 20px;
+}
+
+.timeline-date-label {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 /* Simple Timeline Implementation */
@@ -219,17 +233,23 @@ button.filter-button.is-active {
 .timeline-event {
   position: relative;
   padding: 15px;
-  min-width: 200px;
-  max-width: 250px;
-  margin-bottom: 5px;
   border-radius: 5px;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid view specific event styles */
+.timeline-grid .timeline-event {
+  margin: 5px;
+  height: calc(100% - 10px);
 }
 
 .timeline-event:hover {
-  transform: scale(1.03);
+  transform: scale(1.02);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 2;
 }
@@ -257,6 +277,7 @@ button.filter-button.is-active {
   margin-bottom: 15px;
   opacity: 0.9;
   line-height: 1.4;
+  flex: 1;
 }
 
 .event-actions {
@@ -291,6 +312,23 @@ button.filter-button.is-active {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
   text-transform: capitalize;
+}
+
+/* Event type specific styles */
+.event-type-story {
+  background-color: #3a6ea5;
+  border-left: 4px solid #1a3c5a;
+}
+
+.event-type-event {
+  background-color: #6d4c41;
+  border-left: 4px solid #3e2723;
+}
+
+.event-type-character, 
+.event-type-characterEvent {
+  background-color: #388e3c;
+  border-left: 4px solid #1b5e20;
 }
 
 /* Character timeline header */
@@ -334,27 +372,6 @@ button.filter-button.is-active {
   color: white;
 }
 
-/* Character selection modal */
-.character-select-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 10px 0;
-}
-
-.character-select-item {
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.character-select-item:hover {
-  background-color: var(--background-modifier-hover);
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .timeline-header {
@@ -368,34 +385,16 @@ button.filter-button.is-active {
     align-items: flex-start;
   }
   
-  .center-line {
-    left: 20px;
+  .timeline-grid {
+    margin-left: 0;
+    padding-left: 0;
   }
   
-  .date-section {
-    margin-left: 20px;
-  }
-  
-  .date-label {
-    left: 0 !important;
-    right: auto !important;
-    transform: none !important;
-    margin-left: 30px;
-  }
-  
-  .date-events-container {
-    width: 85%;
-    margin-left: 30px !important;
-    margin-right: 0 !important;
-    flex-direction: column;
-  }
-  
-  .date-left .date-events-container::after,
-  .date-right .date-events-container::before {
+  .timeline-date-labels {
     display: none;
   }
   
-  .timeline-event {
-    max-width: 100%;
+  .timeline-content {
+    padding: 5px;
   }
 }

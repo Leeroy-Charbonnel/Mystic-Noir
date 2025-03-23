@@ -1,30 +1,25 @@
-import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
-import TimelineVisualizerPlugin, { TimelineEvent, TimelineConnection, TimelineData } from './main';
-import { Modal, Notice, App } from 'obsidian';
+import { ItemView, Notice, TFile, WorkspaceLeaf } from 'obsidian';
+import TimelineVisualizerPlugin, { TimelineData, TimelineEvent } from './main';
 
 export const VIEW_TYPE_TIMELINE = 'timeline-visualizer';
 
 export class TimelineView extends ItemView {
     private plugin: TimelineVisualizerPlugin;
     private contentEl: HTMLElement;
-    private timelineEl: HTMLElement;
-    private headerEl: HTMLElement;
-    private controlsEl: HTMLElement;
-    private filterEl: HTMLElement;
     private timelineData: TimelineData | null = null;
-    private displayMode: 'chronological' | 'character' = 'chronological';
-    private focusCharacter: string | null = null;
-    private filteredTimelineData: TimelineData | null = null;
-    private activeFilters: Record<string, boolean> = {
-        'story': true,
-        'event': true,
-        'character': true,
-        'characterEvent': true
-    };
+    private loadingIndicator: HTMLElement;
+    private viewMode: 'grid' | 'simple' = 'grid';
 
     constructor(leaf: WorkspaceLeaf, plugin: TimelineVisualizerPlugin) {
         super(leaf);
         this.plugin = plugin;
+        this.contentEl = this.containerEl.createDiv({ cls: 'timeline-visualizer-container' });
+        this.loadingIndicator = this.contentEl.createDiv({ cls: 'timeline-loading', text: 'Loading timeline...' });
+    }
+
+    async onOpen() {
+        this.renderHeader();
+        await this.loadTimelineData();
     }
 
     getViewType(): string {
@@ -35,472 +30,395 @@ export class TimelineView extends ItemView {
         return 'Timeline Visualizer';
     }
 
-    async onOpen() {
-        this.contentEl = this.containerEl.children[1] as HTMLElement;
+    async onClose() {
         this.contentEl.empty();
-        this.contentEl.addClass('timeline-visualizer-container');
+    }
 
-        this.headerEl = this.contentEl.createEl('div', { cls: 'timeline-header' });
-        this.controlsEl = this.headerEl.createEl('div', { cls: 'timeline-controls' });
-        const viewModeContainer = this.controlsEl.createEl('div', { cls: 'timeline-view-mode' });
-        viewModeContainer.createEl('span', { text: 'View Mode: ' });
-
-        //Chrono
-        const chronoButton = viewModeContainer.createEl('button', {
-            cls: 'timeline-view-button active',
-            text: 'Chronological'
+    private renderHeader() {
+        const headerEl = this.contentEl.createDiv({ cls: 'timeline-header' });
+        
+        const titleEl = headerEl.createEl('h2', { text: 'Timeline Visualizer' });
+        
+        const controlsEl = headerEl.createDiv({ cls: 'timeline-controls' });
+        
+        //View mode controls
+        const viewModeEl = controlsEl.createDiv({ cls: 'timeline-view-mode' });
+        viewModeEl.createSpan({ text: 'View:' });
+        
+        const gridViewBtn = viewModeEl.createEl('button', { 
+            cls: `timeline-view-button ${this.viewMode === 'grid' ? 'active' : ''}`,
+            text: 'Grid' 
         });
-        chronoButton.addEventListener('click', () => this.setDisplayMode('chronological'));
-
-        //Characters
-        const characterButton = viewModeContainer.createEl('button', {
-            cls: 'timeline-view-button',
-            text: 'Character-Centric'
+        
+        const simpleViewBtn = viewModeEl.createEl('button', { 
+            cls: `timeline-view-button ${this.viewMode === 'simple' ? 'active' : ''}`,
+            text: 'Simple' 
         });
-        characterButton.addEventListener('click', () => this.promptForCharacter());
-
-        //Refresh
-        const refreshButton = this.controlsEl.createEl('button', {
+        
+        //Add events to buttons
+        gridViewBtn.addEventListener('click', () => {
+            this.viewMode = 'grid';
+            gridViewBtn.classList.add('active');
+            simpleViewBtn.classList.remove('active');
+            this.renderTimeline();
+        });
+        
+        simpleViewBtn.addEventListener('click', () => {
+            this.viewMode = 'simple';
+            simpleViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            this.renderTimeline();
+        });
+        
+        //Refresh button
+        const refreshBtn = controlsEl.createEl('button', {
             cls: 'timeline-refresh-button',
-            text: 'Refresh Timeline'
+            text: 'Refresh'
         });
-        refreshButton.addEventListener('click', () => this.refresh());
-
-        //Filters 
-        this.filterEl = this.contentEl.createEl('div', { cls: 'timeline-filters' });
-        const filterControls = this.filterEl.createEl('div', { cls: 'filter-controls' });
-
-        const typeFilterContainer = filterControls.createEl('div', { cls: 'filter-section' });
-        const filterButtonsContainer = typeFilterContainer.createEl('div', { cls: 'filter-buttons' });
-
-        this.createFilterButton(filterButtonsContainer, 'story', 'Stories');
-        this.createFilterButton(filterButtonsContainer, 'event', 'Events');
-        this.createFilterButton(filterButtonsContainer, 'characterEvent', 'Characters Events');
-
-        this.timelineEl = this.contentEl.createEl('div', { cls: 'timeline-content' });
-        await this.refresh();
+        
+        refreshBtn.addEventListener('click', () => {
+            this.refresh();
+        });
     }
 
-    private createFilterButton(container: HTMLElement, type: string, label: string): HTMLElement {
-        const button = container.createEl('button', {
-            cls: `filter-button ${this.activeFilters[type] ? 'is-active' : ''}`,
-            text: label,
-            attr: {
-                'data-filter-type': type
-            }
+    private renderFilters() {
+        //Remove existing filters
+        const existingFilters = this.contentEl.querySelector('.timeline-filters');
+        if (existingFilters) {
+            existingFilters.remove();
+        }
+
+        if (!this.timelineData || !this.timelineData.events || this.timelineData.events.length === 0) {
+            return;
+        }
+
+        const filtersEl = this.contentEl.createDiv({ cls: 'timeline-filters' });
+        const filterControlsEl = filtersEl.createDiv({ cls: 'filter-controls' });
+
+        //Type filters
+        const typeFiltersEl = filterControlsEl.createDiv({ cls: 'filter-section' });
+        typeFiltersEl.createSpan({ text: 'Type:' });
+
+        const allTypesBtn = typeFiltersEl.createEl('button', {
+            cls: 'filter-button is-active',
+            text: 'All'
         });
-        button.addEventListener('click', () => {
-            this.activeFilters[type] = !this.activeFilters[type];
-            if (this.activeFilters[type])
-                button.addClass('is-active');
-            else
-                button.removeClass('is-active');
-            this.applyFilters();
+
+        const storyBtn = typeFiltersEl.createEl('button', {
+            cls: 'filter-button',
+            text: 'Stories'
         });
-        return button;
+
+        const eventBtn = typeFiltersEl.createEl('button', {
+            cls: 'filter-button',
+            text: 'Events'
+        });
+
+        const characterBtn = typeFiltersEl.createEl('button', {
+            cls: 'filter-button',
+            text: 'Characters'
+        });
+
+        //Date range filter
+        const dateFiltersEl = filterControlsEl.createDiv({ cls: 'filter-section' });
+        dateFiltersEl.createSpan({ text: 'Date Range:' });
+        
+        //TODO: Implement date range filter
     }
 
-    async refresh() {
-        this.timelineEl.empty();
-
+    async loadTimelineData() {
         try {
+            this.loadingIndicator.style.display = 'flex';
             this.timelineData = await this.plugin.getTimelineData();
-            this.filteredTimelineData = this.timelineData;
-            this.applyFilters();
+            this.loadingIndicator.style.display = 'none';
+            
+            this.renderFilters();
             this.renderTimeline();
         } catch (error) {
-            this.timelineEl.empty();
-            this.timelineEl.createEl('div', {
-                cls: 'timeline-error',
-                text: `Error loading timeline data: ${error.message}`
+            console.error('Error loading timeline data:', error);
+            this.loadingIndicator.style.display = 'none';
+            
+            const errorEl = this.contentEl.createDiv({ 
+                cls: 'timeline-error', 
+                text: `Error loading timeline data: ${error.message}` 
             });
-            console.error("Timeline Visualizer error:", error);
         }
-    }
-
-    private applyFilters() {
-        if (!this.timelineData) return;
-
-        //Get active filters
-        const activeTypes = Object.entries(this.activeFilters)
-            .filter(([_, isActive]) => isActive)
-            .map(([type]) => type);
-
-        //Filter
-        const filteredEvents = this.timelineData.events.filter(event =>
-            activeTypes.includes(event.type)
-        );
-
-        //Filter connections
-        const filteredEventIds = new Set(filteredEvents.map(e => e.id));
-        const filteredConnections = this.timelineData.connections.filter(conn =>
-            filteredEventIds.has(conn.from) && filteredEventIds.has(conn.to)
-        );
-
-        this.filteredTimelineData = {
-            events: filteredEvents,
-            connections: filteredConnections
-        };
-
-        this.renderTimeline();
     }
 
     private renderTimeline() {
-        this.timelineEl.empty();
+        //Remove existing timeline content
+        const existingContent = this.contentEl.querySelector('.timeline-content');
+        if (existingContent) {
+            existingContent.remove();
+        }
 
-        if (!this.filteredTimelineData || this.filteredTimelineData.events.length === 0) {
-            this.timelineEl.createEl('div', {
+        if (!this.timelineData || !this.timelineData.events || this.timelineData.events.length === 0) {
+            this.contentEl.createDiv({
                 cls: 'timeline-empty',
-                text: 'No timeline events found. Add dates to your stories and events to see them here.'
+                text: 'No timeline data available. Please check your folder settings and make sure you have content.'
             });
             return;
         }
 
-        if (this.displayMode === 'chronological') {
-            this.renderChronologicalTimeline();
-        } else if (this.displayMode === 'character') {
-            this.renderCharacterTimeline();
+        const timelineContentEl = this.contentEl.createDiv({ cls: 'timeline-content' });
+
+        if (this.viewMode === 'grid') {
+            this.renderGridTimeline(timelineContentEl);
+        } else {
+            this.renderSimpleTimeline(timelineContentEl);
         }
     }
 
-    private renderChronologicalTimeline() {
-        if (!this.filteredTimelineData) return;
+    private renderGridTimeline(containerEl: HTMLElement) {
+        if (!this.timelineData?.grid || !this.timelineData?.rowDates) {
+            containerEl.createDiv({
+                cls: 'timeline-empty',
+                text: 'Grid data not available. Please refresh the timeline.'
+            });
+            return;
+        }
 
-        // Group events by date
-        const eventsByDate = this.groupEventsByDate(this.filteredTimelineData);
-        const sortedDates = this.getSortedDates(eventsByDate);
+        const { grid, rowDates, columnCount } = this.timelineData;
         
-        // Create a simple timeline container
-        const timelineContainer = this.timelineEl.createDiv({ cls: "simple-timeline" });
+        //Create grid container
+        const gridContainer = containerEl.createEl('div', { cls: 'timeline-grid' });
         
-        // Add a center line
-        const centerLine = document.createElement('div');
-        centerLine.className = 'center-line';
-        timelineContainer.appendChild(centerLine);
+        //Style the grid container
+        gridContainer.style.display = 'grid';
+        gridContainer.style.gridTemplateColumns = `repeat(${columnCount}, minmax(280px, 1fr))`;
+        gridContainer.style.gridAutoRows = 'minmax(100px, auto)';
+        gridContainer.style.gap = '10px';
+        gridContainer.style.position = 'relative';
+        gridContainer.style.padding = '10px';
+        gridContainer.style.paddingLeft = '140px';
         
-        // Track which side to place events (left/right alternating)
-        let side = 'left';
+        //Add date labels column 
+        const dateLabelsContainer = gridContainer.createEl('div', { cls: 'timeline-date-labels' });
+        dateLabelsContainer.style.position = 'absolute';
+        dateLabelsContainer.style.left = '-140px';
+        dateLabelsContainer.style.top = '0';
+        dateLabelsContainer.style.bottom = '0';
+        dateLabelsContainer.style.width = '140px';
+        dateLabelsContainer.style.borderRight = '1px solid var(--background-modifier-border)';
         
-        // Add each date with its events
-        sortedDates.forEach(date => {
-            const events = eventsByDate[date].filter(e => e.type !== 'character');
-            if (events.length === 0) return;
+        //Add date labels
+        rowDates.forEach((dateStr, index) => {
+            const date = new Date(dateStr);
+            const dateLabel = dateLabelsContainer.createEl('div', { 
+                cls: 'timeline-date-label',
+                text: this.formatDate(date)
+            });
             
-            // Create a date section
-            const dateSection = document.createElement('div');
-            dateSection.className = `date-section date-${side}`;
-            timelineContainer.appendChild(dateSection);
+            dateLabel.style.position = 'absolute';
+            dateLabel.style.top = `${index * 100}px`;
+            dateLabel.style.right = '10px';
+            dateLabel.style.padding = '4px 8px';
+            dateLabel.style.borderRadius = '4px';
+            dateLabel.style.backgroundColor = 'var(--background-primary-alt)';
+            dateLabel.style.fontSize = '12px';
+            dateLabel.style.zIndex = '1';
+        });
+        
+        //Add horizontal lines for each date
+        rowDates.forEach((_, index) => {
+            if (index === 0) return; //Skip first line
             
-            // Add date label
-            const dateLabel = document.createElement('div');
-            dateLabel.className = 'date-label';
-            dateLabel.textContent = date;
-            dateSection.appendChild(dateLabel);
+            const line = gridContainer.createEl('div');
+            line.style.position = 'absolute';
+            line.style.left = '0';
+            line.style.right = '0';
+            line.style.top = `${index * 100}px`;
+            line.style.height = '1px';
+            line.style.backgroundColor = 'var(--background-modifier-border)';
+            line.style.zIndex = '0';
+        });
+        
+        //Add events to grid
+        let processedEvents = new Set();
+        
+        //Process the grid
+        grid.forEach((row, rowIndex) => {
+            row.forEach((event, colIndex) => {
+                if (!event || processedEvents.has(event.id)) {
+                    return;
+                }
+                
+                processedEvents.add(event.id);
+                
+                const eventEl = this.createEventElement(event);
+                gridContainer.appendChild(eventEl);
+                
+                //Set grid position
+                eventEl.style.gridColumnStart = `${event.column + 1}`;
+                eventEl.style.gridColumnEnd = `${event.column + 2}`;
+                eventEl.style.gridRowStart = `${event.startRow + 1}`;
+                eventEl.style.gridRowEnd = `${event.endRow + 2}`;
+            });
+        });
+    }
+
+    private renderSimpleTimeline(containerEl: HTMLElement) {
+        if (!this.timelineData || !this.timelineData.events) {
+            return;
+        }
+        
+        //Group events by year/month
+        const eventsByDate = this.groupEventsByDate(this.timelineData.events);
+        
+        const simpleTimelineEl = containerEl.createDiv({ cls: 'simple-timeline' });
+        
+        //Add central line
+        simpleTimelineEl.createDiv({ cls: 'center-line' });
+        
+        //Track if we should position events left or right
+        let isLeft = true;
+        
+        //Add each date section
+        Object.entries(eventsByDate).forEach(([dateKey, events]) => {
+            const [year, month] = dateKey.split('-').map(Number);
+            const date = new Date(year, month - 1);
             
-            // Create container for all events on this date
-            const eventsContainer = document.createElement('div');
-            eventsContainer.className = 'date-events-container';
-            dateSection.appendChild(eventsContainer);
+            const dateSectionEl = simpleTimelineEl.createDiv({ 
+                cls: `date-section ${isLeft ? 'date-left' : 'date-right'}` 
+            });
             
-            // Add each event
+            //Add date label
+            dateSectionEl.createDiv({
+                cls: 'date-label',
+                text: this.formatDate(date)
+            });
+            
+            //Add events container
+            const eventsContainerEl = dateSectionEl.createDiv({ cls: 'date-events-container' });
+            
+            //Add each event
             events.forEach(event => {
-                const eventDiv = this.createSimpleEventElement(event);
-                eventsContainer.appendChild(eventDiv);
+                eventsContainerEl.appendChild(this.createEventElement(event));
             });
             
-            // Switch sides for next date
-            side = side === 'left' ? 'right' : 'left';
-        });
-    }
-    
-    private renderCharacterTimeline() {
-        if (!this.focusCharacter || !this.filteredTimelineData || !this.timelineData) {
-            this.timelineEl.createEl('div', {
-                cls: 'timeline-empty',
-                text: 'No character selected or no data available.'
-            });
-            return;
-        }
-        
-        const character = this.timelineData.events.find(e => e.id === this.focusCharacter);
-        if (!character) {
-            this.timelineEl.createEl('div', {
-                cls: 'timeline-empty',
-                text: 'Selected character not found in timeline data.'
-            });
-            return;
-        }
-
-        // Add character header
-        const characterHeader = this.timelineEl.createEl('div', { cls: 'character-timeline-header' });
-        characterHeader.createEl('h3', { text: `Timeline for ${character.title}` });
-        
-        if (character.status && character.status !== 'alive') {
-            characterHeader.appendChild(document.createTextNode(' '));
-            characterHeader.createEl('span', {
-                cls: `status-badge ${character.status}`,
-                text: character.status
-            });
-        }
-
-        // Get related events
-        const relatedEventIds = new Set<string>();
-        this.filteredTimelineData.connections.forEach(conn => {
-            if (conn.from === this.focusCharacter) {
-                relatedEventIds.add(conn.to);
-            }
-            if (conn.to === this.focusCharacter) {
-                relatedEventIds.add(conn.from);
-            }
-        });
-
-        const characterEvents = {
-            events: this.filteredTimelineData.events.filter(e => relatedEventIds.has(e.id)),
-            connections: []
-        };
-
-        // Group events by date
-        const eventsByDate = this.groupEventsByDate(characterEvents);
-        const sortedDates = this.getSortedDates(eventsByDate);
-        
-        // Create timeline container
-        const timelineContainer = this.timelineEl.createDiv({ cls: "simple-timeline" });
-        
-        // Add center line
-        const centerLine = document.createElement('div');
-        centerLine.className = 'center-line';
-        timelineContainer.appendChild(centerLine);
-        
-        // Track which side to place events (left/right alternating)
-        let side = 'left';
-        
-        // Add each date with its events
-        sortedDates.forEach(date => {
-            const events = eventsByDate[date];
-            if (events.length === 0) return;
-            
-            // Create a date section
-            const dateSection = document.createElement('div');
-            dateSection.className = `date-section date-${side}`;
-            timelineContainer.appendChild(dateSection);
-            
-            // Add date label
-            const dateLabel = document.createElement('div');
-            dateLabel.className = 'date-label';
-            dateLabel.textContent = date;
-            dateSection.appendChild(dateLabel);
-            
-            // Create container for all events on this date
-            const eventsContainer = document.createElement('div');
-            eventsContainer.className = 'date-events-container';
-            dateSection.appendChild(eventsContainer);
-            
-            // Add each event
-            events.forEach(event => {
-                const eventDiv = this.createSimpleEventElement(event);
-                eventsContainer.appendChild(eventDiv);
-            });
-            
-            // Switch sides for next date
-            side = side === 'left' ? 'right' : 'left';
+            //Alternate left and right
+            isLeft = !isLeft;
         });
     }
 
-    private createSimpleEventElement(event: TimelineEvent): HTMLElement {
-        const eventDiv = document.createElement('div');
-        eventDiv.className = `timeline-event timeline-event-${event.type}`;
-        eventDiv.dataset.id = event.id;
+    private createEventElement(event: TimelineEvent): HTMLElement {
+        const eventEl = document.createElement('div');
+        eventEl.className = `timeline-event event-type-${event.type}`;
         
-        // Set background color based on event type
-        switch (event.type) {
-            case 'story':
-                eventDiv.style.backgroundColor = this.plugin.settings.storyColor || '#3498db';
-                break;
-            case 'event':
-                eventDiv.style.backgroundColor = this.plugin.settings.eventColor || '#2ecc71';
-                break;
-            case 'characterEvent':
-                eventDiv.style.backgroundColor = this.plugin.settings.characterEventColor || '#e74c3c';
-                break;
+        //Set background color based on event type
+        if (event.type === 'story') {
+            eventEl.style.backgroundColor = this.plugin.settings.storyColor || '#3a6ea5';
+        } else if (event.type === 'event') {
+            eventEl.style.backgroundColor = this.plugin.settings.eventColor || '#6d4c41';
+        } else if (event.type === 'character' || event.type === 'characterEvent') {
+            eventEl.style.backgroundColor = this.plugin.settings.characterEventColor || '#388e3c';
         }
         
-        // Event header with title and date
-        const header = document.createElement('div');
-        header.className = 'event-header';
+        //Add event header with title and date
+        const headerEl = eventEl.createDiv({ cls: 'event-header' });
+        headerEl.createDiv({ cls: 'event-title', text: event.title });
         
-        const title = document.createElement('div');
-        title.className = 'event-title';
-        title.textContent = event.title;
-        header.appendChild(title);
-        
-        if (event.beginDate) {
-            const date = document.createElement('div');
-            date.className = 'event-date';
-            date.textContent = event.beginDate;
-            header.appendChild(date);
+        const dateText = this.getEventDateRangeText(event);
+        if (dateText) {
+            headerEl.createDiv({ cls: 'event-date', text: dateText });
         }
         
-        eventDiv.appendChild(header);
-        
-        // Event description
+        //Add description
         if (event.description) {
-            const desc = document.createElement('div');
-            desc.className = 'event-description';
-            desc.innerHTML = this.truncateDescription(event.description, 150);
-            eventDiv.appendChild(desc);
-        }
-        
-        // Event type badge
-        const badge = document.createElement('div');
-        badge.className = 'event-type-badge';
-        badge.textContent = event.type;
-        eventDiv.appendChild(badge);
-        
-        // Action buttons
-        const actions = document.createElement('div');
-        actions.className = 'event-actions';
-        
-        // Add character timeline button for character events
-        if (event.type === 'characterEvent') {
-            const viewTimelineBtn = document.createElement('button');
-            viewTimelineBtn.className = 'event-action-button';
-            viewTimelineBtn.textContent = 'View Timeline';
-            viewTimelineBtn.addEventListener('click', () => {
-                this.focusCharacter = event.id;
-                this.setDisplayMode('character');
+            eventEl.createDiv({ 
+                cls: 'event-description',
+                text: this.truncateText(event.description, 100)
             });
-            actions.appendChild(viewTimelineBtn);
         }
         
-        // Add open file button
-        const openFileBtn = document.createElement('button');
-        openFileBtn.className = 'event-action-button';
-        openFileBtn.textContent = 'Open File';
-        openFileBtn.addEventListener('click', () => {
+        //Add type badge
+        eventEl.createDiv({
+            cls: 'event-type-badge',
+            text: event.type
+        });
+        
+        //Add actions buttons
+        const actionsEl = eventEl.createDiv({ cls: 'event-actions' });
+        
+        const openBtn = actionsEl.createEl('button', {
+            cls: 'event-action-button',
+            text: 'Open'
+        });
+        
+        openBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             this.openFile(event.file);
         });
-        actions.appendChild(openFileBtn);
         
-        eventDiv.appendChild(actions);
+        //Make the whole event element clickable
+        eventEl.addEventListener('click', () => {
+            this.openFile(event.file);
+        });
         
-        return eventDiv;
-    }
-
-    private truncateDescription(description: string, maxLength: number): string {
-        if (description.length <= maxLength) return description;
-        return description.slice(0, maxLength) + '...';
+        return eventEl;
     }
 
     private openFile(path: string) {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (file instanceof TFile) {
             this.app.workspace.getLeaf().openFile(file);
+        } else {
+            new Notice(`File not found: ${path}`);
         }
     }
 
-    private groupEventsByDate(timelineData: TimelineData): Record<string, TimelineEvent[]> {
+    private formatDate(date: Date): string {
+        const options: Intl.DateTimeFormatOptions = { 
+            year: 'numeric', 
+            month: 'short'
+        };
+        return date.toLocaleDateString(undefined, options);
+    }
+
+    private getEventDateRangeText(event: TimelineEvent): string {
+        if (!event.beginDate) return '';
+        
+        const beginDate = new Date(event.beginDate);
+        
+        if (!event.endDate || event.beginDate === event.endDate) {
+            return this.formatDate(beginDate);
+        }
+        
+        const endDate = new Date(event.endDate);
+        return `${this.formatDate(beginDate)} - ${this.formatDate(endDate)}`;
+    }
+
+    private truncateText(text: string, maxLength: number): string {
+        if (!text || text.length <= maxLength) return text;
+        return text.slice(0, maxLength) + '...';
+    }
+
+
+    private groupEventsByDate(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
         const eventsByDate: Record<string, TimelineEvent[]> = {};
         
-        if (timelineData) {
-            timelineData.events.forEach(event => {
-                if (!event.beginDate) return;
-                
-                // Use formatted date string for grouping
-                const dateKey = event.beginDate;
-                if (!eventsByDate[dateKey]) eventsByDate[dateKey] = [];
-                eventsByDate[dateKey].push(event);
-            });
-        }
+        events.forEach(event => {
+            if (!event.beginDate) return;
+            
+            const date = new Date(event.beginDate);
+            const yearMonth = `${date.getFullYear()}-${date.getMonth() + 1}`;
+            
+            if (!eventsByDate[yearMonth]) {
+                eventsByDate[yearMonth] = [];
+            }
+            
+            eventsByDate[yearMonth].push(event);
+        });
         
-        return eventsByDate;
+        //Sort dates
+        return Object.fromEntries(
+            Object.entries(eventsByDate).sort(([dateA], [dateB]) => {
+                return dateA.localeCompare(dateB);
+            })
+        );
     }
 
-    private getSortedDates(eventsByDate: Record<string, TimelineEvent[]>): string[] {
-        const dates = Object.keys(eventsByDate);
-
-        dates.sort((a, b) => {
-            // First try to parse as full dates
-            const dateA = new Date(a);
-            const dateB = new Date(b);
-            
-            if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
-                return dateA.getTime() - dateB.getTime();
-            }
-            
-            // If that fails, try to compare as years
-            const yearA = parseInt(a);
-            const yearB = parseInt(b);
-            if (!isNaN(yearA) && !isNaN(yearB)) return yearA - yearB;
-            
-            // Fall back to string comparison
-            return a.localeCompare(b);
-        });
-
-        return dates;
-    }
-
-    private setDisplayMode(mode: 'chronological' | 'character') {
-        this.displayMode = mode;
-
-        const buttons = this.controlsEl.querySelectorAll('.timeline-view-button');
-        buttons.forEach(button => {
-            button.classList.remove('active');
-            if (button.textContent === 'Chronological' && mode === 'chronological') {
-                button.classList.add('active');
-            } else if (button.textContent === 'Character-Centric' && mode === 'character') {
-                button.classList.add('active');
-            }
-        });
-
-        this.renderTimeline();
-    }
-
-    private async promptForCharacter() {
-        if (!this.timelineData) return;
-        const characters = this.timelineData.events.filter(e => e.type === 'character');
-        if (characters.length === 0) {
-            new Notice('No characters found in timeline data.');
-            return;
-        }
-        const modal = new CharacterSelectModal(this.app, characters, (characterId) => {
-            if (characterId) {
-                this.focusCharacter = characterId;
-                this.setDisplayMode('character');
-            }
-        });
-        modal.open();
-    }
-}
-
-// Simple modal for character selection
-class CharacterSelectModal extends Modal {
-    private characters: TimelineEvent[];
-    private onSelect: (characterId: string) => void;
-
-    constructor(app: App, characters: TimelineEvent[], onSelect: (characterId: string) => void) {
-        super(app);
-        this.characters = characters;
-        this.onSelect = onSelect;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.empty();
-
-        contentEl.createEl('h3', { text: 'Select a Character' });
-        const characterList = contentEl.createEl('div', { cls: 'character-select-list' });
-        this.characters.forEach(character => {
-            const characterItem = characterList.createEl('div', { cls: 'character-select-item' });
-            characterItem.createEl('span', { text: character.title });
-            characterItem.addEventListener('click', () => {
-                this.onSelect(character.id);
-                this.close();
-            });
-        });
-    }
-
-    onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
+    async refresh() {
+        await this.loadTimelineData();
     }
 }

@@ -207,7 +207,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
                     const parsedBirthDate = parseDateString(cleanHtml(birthDateValue), false);
                     const parsedDeathDate = parseDateString(cleanHtml(deathDateValue), true);
 
-                    if (parsedBirthDate != '') {
+                    if (parsedBirthDate) {
                         events.push({
                             type: 'characterEvent',
                             id: `${file.path}-birth`,
@@ -228,7 +228,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
                     if (data.template?.State?.Dead?.value === true) {
                         status = "dead";
 
-                        if (parsedDeathDate != '') {
+                        if (parsedDeathDate) {
                             events.push({
                                 type: 'characterEvent',
                                 id: `${file.path}-death`,
@@ -255,7 +255,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
                         id: file.path,
                         title: cleanHtml(name),
                         beginDate: parsedBirthDate,
-                        endDate: parsedDeathDate != '' ? parsedDeathDate : null,
+                        endDate: parsedDeathDate ? parsedDeathDate : null,
                         description: cleanHtml(data.template?.BasicInformation?.Background?.value) || '',
                         file: file.path,
                         status: status as TimelineEvent['status']
@@ -266,6 +266,92 @@ export default class TimelineVisualizerPlugin extends Plugin {
             }
         }
 
+
+        let allDates = events.reduce((state, value) => {
+            if (value.beginDate)
+                state.push(value.beginDate);
+            if (value.endDate)
+                state.push(value.endDate);
+            return state;
+        }, ([] as Date[]))
+
+        sortAndRemoveDuplicateDates(allDates)
+
+        //Create a function to check if two events overlap
+        function doEventsOverlap(event1: TimelineEvent, event2: TimelineEvent) {
+            return event1.beginDate <= event2.endDate && event2.beginDate <= event1.endDate;
+        }
+
+        //Create a data structure to hold column assignments for each event
+        let eventColumns = new Map();
+        let requiredColumns = 0;
+
+        //Sort events by begin date
+        const sortedEvents = [...events].sort((a, b) => a.beginDate - b.beginDate);
+
+        //Assign columns to events
+        sortedEvents.forEach(event => {
+            //Find the first available column for this event
+            let column = 0;
+            let columnFound = false;
+
+            while (!columnFound) {
+                //Check if this column is already occupied by an event that overlaps with the current event
+                let isColumnAvailable = true;
+
+                //Check all events that have already been assigned to this column
+                for (const [eventId, colIndex] of eventColumns.entries()) {
+                    if (colIndex === column) {
+                        const otherEvent = events.find(e => e.id === eventId);
+
+                        //Check if the events overlap
+                        if (doEventsOverlap(event, otherEvent)) {
+                            isColumnAvailable = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isColumnAvailable) {
+                    columnFound = true;
+                } else {
+                    column++;
+                }
+            }
+
+            //Assign the column to the event
+            eventColumns.set(event.id, column);
+
+            //Update the required number of columns
+            if (column + 1 > requiredColumns) {
+                requiredColumns = column + 1;
+            }
+        });
+
+        console.log(`Required number of columns: ${requiredColumns}`);
+
+        //EXPLICITLY ADD COLUMN, STARTROW, AND ENDROW PROPERTIES TO EACH EVENT
+        events.forEach(event => {
+            //Add column property to each event
+            event.column = eventColumns.get(event.id);
+
+            //Find and add startRow property (index of begin date in allDates)
+            const startRowIndex = allDates.findIndex(date => date.getTime() === event.beginDate.getTime());
+            event.startRow = startRowIndex !== -1 ? startRowIndex : 0;
+
+            //Find and add endRow property (index of end date in allDates)
+            const endRowIndex = allDates.findIndex(date => date.getTime() === event.endDate.getTime());
+            event.endRow = endRowIndex !== -1 ? endRowIndex : allDates.length - 1;
+
+            console.log(`Adding grid properties to event "${event.title}": startRow=${event.startRow}, endRow=${event.endRow}, column=${event.column}`);
+        });
+
+        //Add the grid to the timeline data
+        events.rowDates = allDates;
+        events.columnCount = requiredColumns;
+
+        console.log(events);
+
         return {
             events: events,
             connections: connections
@@ -273,11 +359,24 @@ export default class TimelineVisualizerPlugin extends Plugin {
     }
 }
 
+
+function sortAndRemoveDuplicateDates(dateArray: Date[]): Date[] {
+    const sortedDates = dateArray.sort((a: Date, b: Date) => a - b);
+
+    const uniqueDatesMap = new Map();
+    sortedDates.forEach(date => {
+        const timeValue = date.getTime();
+        uniqueDatesMap.set(timeValue, date);
+    });
+
+    return Array.from(uniqueDatesMap.values());
+}
+
 export interface TimelineEvent {
     id: string;
     title: string;
-    beginDate?: string;
-    endDate?: string | null;
+    beginDate?: Date | null;
+    endDate?: Date | null;
     description: string;
     file: string;
     type: 'story' | 'event' | 'character' | 'characterEvent';
