@@ -1,6 +1,6 @@
 import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, WorkspaceLeaf, ItemView, ViewStateResult, TFolder, Notice } from 'obsidian';
 import { TimelineView, VIEW_TYPE_TIMELINE } from './TimelineView';
-import { cleanHtml, cleanLink, extractLinks, parseDateString } from './utils';
+import { cleanHtml, cleanLink, extractLinks, parseDateString, sortAndRemoveDuplicateDates } from './utils';
 
 interface TimelineVisualizerSettings {
     storiesFolder: string;
@@ -9,15 +9,17 @@ interface TimelineVisualizerSettings {
     storyColor: string;
     eventColor: string;
     characterEventColor: string;
+    characterColor: string;
 }
 
 const DEFAULT_SETTINGS: TimelineVisualizerSettings = {
     storiesFolder: '',
     eventsFolder: '',
     charactersFolder: '',
-    storyColor: '#3a6ea5',  // Default color for stories
-    eventColor: '#6d4c41',  // Default color for events
-    characterEventColor: '#388e3c'  // Default color for character events
+    storyColor: '',
+    eventColor: '',
+    characterEventColor: '',
+    characterColor: '',
 }
 
 export default class TimelineVisualizerPlugin extends Plugin {
@@ -171,7 +173,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
             }
         }
 
-        // EVENTS
+        //EVENTS
         for (const file of eventFiles) {
             try {
                 const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
@@ -201,7 +203,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
             }
         }
 
-        // CHARACTERS
+        //CHARACTERS
         for (const file of characterFiles) {
             try {
                 const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
@@ -275,157 +277,43 @@ export default class TimelineVisualizerPlugin extends Plugin {
             }
         }
 
-        // Get all dates from events, including character birth and death events
         let allDates = events.reduce((state, value) => {
-            if (value.beginDate) {
-                state.push(value.beginDate);
-            }
-            if (value.endDate) {
-                state.push(value.endDate);
-            }
+            if (value.beginDate) state.push(value.beginDate);
+            if (value.endDate) state.push(value.endDate);
             return state;
         }, ([] as Date[]));
-
-        // Sort dates and remove duplicates
         allDates = sortAndRemoveDuplicateDates(allDates);
 
-        // Find the latest date from all events to use as the end date for characters without death dates
+
         const latestDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date();
-                
-        // Update character events without death dates to use the latest date
-        events.forEach(event => {
-            if (event.type === 'character' && !event.endDate) {
-                event.endDate = latestDate;
-            }
-        });
-
-        // Function to check if two events overlap
-        function doEventsOverlap(event1: TimelineEvent, event2: TimelineEvent) {
-            // Now all events should have both beginDate and endDate defined
-            return event1.beginDate && event2.beginDate && 
-                   event1.beginDate <= event2.endDate && 
-                   event2.beginDate <= event1.endDate;
-        }
-
-        // Create a data structure to hold column assignments for each event
-        let eventColumns = new Map();
-        let requiredColumns = 0;
-
-        // Sort events by begin date
-        const sortedEvents = [...events].sort((a, b) => {
-            // Handle null beginDates (shouldn't happen but just in case)
-            if (!a.beginDate) return 1;
-            if (!b.beginDate) return -1;
-            return a.beginDate.getTime() - b.beginDate.getTime();
-        });
-
-        // Assign columns to events
-        sortedEvents.forEach(event => {
-            // Skip events without a begin date
-            if (!event.beginDate) return;
-            
-            // Find the first available column for this event
-            let column = 0;
-            let columnFound = false;
-
-            while (!columnFound) {
-                // Check if this column is already occupied by an event that overlaps with the current event
-                let isColumnAvailable = true;
-
-                // Check all events that have already been assigned to this column
-                for (const [eventId, colIndex] of eventColumns.entries()) {
-                    if (colIndex === column) {
-                        const otherEvent = events.find(e => e.id === eventId);
-                        if (otherEvent && doEventsOverlap(event, otherEvent)) {
-                            isColumnAvailable = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (isColumnAvailable) {
-                    columnFound = true;
-                } else {
-                    column++;
-                }
-            }
-
-            // Assign the column to the event
-            eventColumns.set(event.id, column);
-
-            // Update the required number of columns
-            if (column + 1 > requiredColumns) {
-                requiredColumns = column + 1;
-            }
-        });
-
-        // Add grid properties to each event
-        events.forEach(event => {
-            // Add column property to each event
-            event.column = eventColumns.get(event.id) || 0;
-
-            // Handle the case where beginDate is null
-            if (!event.beginDate) {
-                event.startRow = 0;
-                event.endRow = 0;
-                return;
-            }
-
-            // Find and add startRow property (index of begin date in allDates)
-            const startRowIndex = allDates.findIndex(date => date.getTime() === event.beginDate.getTime());
-            event.startRow = startRowIndex !== -1 ? startRowIndex : 0;
-
-            // For all events (including characters without original death dates which now have latestDate)
-            const endRowIndex = event.endDate ? 
-                allDates.findIndex(date => date.getTime() === event.endDate.getTime()) : -1;
-            event.endRow = endRowIndex !== -1 ? endRowIndex : allDates.length - 1;
-
-        });
-
-        console.log({
-            events: events,
-            connections: connections,
-            rowDates: allDates,
-            columnCount: requiredColumns
-        });
+        events.forEach(event => { if (!event.endDate) event.endDate = latestDate; });
 
         // Add the grid to the timeline data
         const timelineData: TimelineData = {
             events: events,
             connections: connections,
-            rowDates: allDates,
-            columnCount: requiredColumns
         };
 
         return timelineData;
     }
 }
 
-function sortAndRemoveDuplicateDates(dateArray: Date[]): Date[] {
-    const sortedDates = dateArray.sort((a: Date, b: Date) => a.getTime() - b.getTime());
-
-    const uniqueDatesMap = new Map();
-    sortedDates.forEach(date => {
-        const timeValue = date.getTime();
-        uniqueDatesMap.set(timeValue, date);
-    });
-
-    return Array.from(uniqueDatesMap.values());
-}
-
 export interface TimelineEvent {
     id: string;
     title: string;
-    beginDate?: Date | null;
-    endDate?: Date | null;
-    description: string;
     file: string;
-    type: 'story' | 'event' | 'character' | 'characterEvent';
-    status?: 'alive' | 'dead' | 'injured';
+    description: string;
     color?: string;
-    children?: string[];
-    parents?: string[];
-    // Grid properties
+    type: 'story' | 'event' | 'character' | 'characterEvent';
+
+    //Dates
+    beginDate: Date | null;
+    endDate: Date | null;
+
+    //If Character
+    status?: 'alive' | 'dead' | 'injured';
+
+    //Grid properties
     column?: number;
     startRow?: number;
     endRow?: number;
@@ -525,6 +413,16 @@ class TimelineVisualizerSettingTab extends PluginSettingTab {
                 .setValue(this.plugin.settings.characterEventColor)
                 .onChange(async (value) => {
                     this.plugin.settings.characterEventColor = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Character  Color')
+            .setDesc('Color for characters on the timeline')
+            .addColorPicker(color => color
+                .setValue(this.plugin.settings.characterColor)
+                .onChange(async (value) => {
+                    this.plugin.settings.characterColor = value;
                     await this.plugin.saveSettings();
                 }));
     }

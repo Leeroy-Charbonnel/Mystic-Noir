@@ -44,7 +44,7 @@ export function parseDateString(dateString: string, roundUp: boolean): Date | nu
             const day = parseInt(parts[0], 10);
             const month = parseInt(parts[1], 10);
             const year = parseInt(parts[2], 10);
-            
+
             return new Date(year, month - 1, day); //(months are 0-indexed)
         }
     }
@@ -69,34 +69,47 @@ export function extractLinks(text: string): string[] {
 
 export interface NodeProperties {
     children?: HTMLElement[];
-    attributes?: Record<string,string>;
+    attributes?: Record<string, string>;
     text?: string;
     class?: string;
     classes?: string[];
-    style?: Record<string,string>;
+    style?: Record<string, string>;
 }
 
 
-export function node<K extends keyof HTMLElementTagNameMap>(tag: K,properties?: NodeProperties): HTMLElementTagNameMap[K] {
-    const element=document.createElement(tag);
+export function node<K extends keyof HTMLElementTagNameMap>(tag: K, properties?: NodeProperties): HTMLElementTagNameMap[K] {
+    const element = document.createElement(tag);
 
-    if(properties?.children)
-        for(const c of properties.children) element.appendChild(c);
+    if (properties?.children)
+        for (const c of properties.children) element.appendChild(c);
 
-    if(properties?.class)
-        element.setAttribute('class',properties.class);
+    if (properties?.class)
+        element.setAttribute('class', properties.class);
 
-    if(properties?.classes)
+    if (properties?.classes)
         properties?.classes.forEach(c => { element.addClass(c); });
 
-    if(properties?.attributes)
-        for(const [k,v] of Object.entries(properties.attributes)) element.setAttribute(k,v);
+    if (properties?.attributes)
+        for (const [k, v] of Object.entries(properties.attributes)) element.setAttribute(k, v);
 
-    if(properties?.text)
-        element.textContent=properties.text;
+    if (properties?.text)
+        element.textContent = properties.text;
 
-    if(properties?.style)
-        for(const [k,v] of Object.entries(properties.style)) element.attributeStyleMap.set(k,v);
+    if (properties?.style)
+        for (const [k, v] of Object.entries(properties.style)) element.attributeStyleMap.set(k, v);
 
     return element;
+}
+
+
+export function sortAndRemoveDuplicateDates(dateArray: Date[]): Date[] {
+    const sortedDates = dateArray.sort((a: Date, b: Date) => a.getTime() - b.getTime());
+
+    const uniqueDatesMap = new Map();
+    sortedDates.forEach(date => {
+        const timeValue = date.getTime();
+        uniqueDatesMap.set(timeValue, date);
+    });
+
+    return Array.from(uniqueDatesMap.values());
 }

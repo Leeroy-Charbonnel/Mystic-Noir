@@ -167,6 +167,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "plugin-timeline-visualiser:Open Timeline Visualizer": false,
       "obsidian-git:Open Git source control": false,
       "content-creation-plugin:Create Content": false,
       "graph:Open graph view": false,
@@ -174,18 +175,19 @@
       "canvas:Create new canvas": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "plugin-home-page:Refresh Home Stats": false,
-      "plugin-timeline-visualiser:Open Timeline Visualizer": false
+      "plugin-home-page:Refresh Home Stats": false
     }
   },
-  "active": "b607e2787be68599",
+  "active": "6ee112a6f65b7f4c",
   "lastOpenFiles": [
-    "test/test 3.md",
-    "1. Characters/Mr Dupont.md",
+    "1. Characters/Samuel Blackwood.md",
     "1. Characters/Evelyn Dupont.md",
+    "1. Characters/Alexander Dupont.md",
+    "4. Stories/4 The Missing Melody.md",
+    "4. Stories/3 The Last Gamble.md",
+    "test/test 3.md",
     "1. Characters/The Shadow.md",
     "1. Characters/Lily Moore.md",
-    "1. Characters/Samuel Blackwood.md",
     "eventtest/death.md",
     "eventtest/revolution.md",
     "test/test 2.md",
@@ -194,13 +196,11 @@
     "5. Events/Revolution.md",
     "eventtest",
     "test",
-    "4. Stories/4 The Missing Melody.md",
     "5. Events/Lilly's death.md",
     "4. Stories/5 The Price of Justice.md",
     "4. Stories/1 Shadows of the Crescent City.md",
     "4. Stories/2 Silenced Testimony.md",
     "5. Events/Mr Dupont's death.md",
-    "4. Stories/3 The Last Gamble.md",
     "0. Chronology.canvas",
     "Home.md",
     "3. Locations/Samuel's Office.md",
