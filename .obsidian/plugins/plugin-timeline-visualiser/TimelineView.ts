@@ -1,26 +1,21 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice } from 'obsidian';
-import TimelineVisualizerPlugin, { TimelineEvent, TimelineData } from './main';
-import { node, sortAndRemoveDuplicateDates } from 'utils';
+import { ItemView, WorkspaceLeaf, TFile, setIcon } from 'obsidian';
+import TimelineVisualizerPlugin, { TimelineData, TimelineEvent } from './main';
+import { node } from './utils';
 
 export const VIEW_TYPE_TIMELINE = 'timeline-visualizer';
 
 export class TimelineView extends ItemView {
     private plugin: TimelineVisualizerPlugin;
     public contentEl: HTMLElement;
-    private timelineData: TimelineData | null = null;
-    private filterControls: HTMLElement;
-    private filterTypes: { [key: string]: boolean } = {
-        story: true,
-        event: true,
-        character: true,
-        characterEvent: true
-    };
+    private calendarEl: HTMLElement;
+    private activeFilters: Set<string> = new Set(['story', 'event', 'character', 'characterEvent']);
+    private activeStory: string | null = null;
+    private storyDropdown: HTMLSelectElement | null = null;
 
     constructor(leaf: WorkspaceLeaf, plugin: TimelineVisualizerPlugin) {
         super(leaf);
         this.plugin = plugin;
         this.contentEl = node('div', { class: 'timeline-visualizer-container' });
-        this.containerEl.children[1].appendChild(this.contentEl);
     }
 
     getViewType(): string {
@@ -32,313 +27,468 @@ export class TimelineView extends ItemView {
     }
 
     async onOpen(): Promise<void> {
-        await this.refresh();
+        const container = this.containerEl.children[1];
+        container.empty();
+        container.appendChild(this.contentEl);
+        this.renderTimeline();
     }
 
-    async refresh(): Promise<void> {
+    async onClose(): Promise<void> {
+        this.contentEl.empty();
+    }
+
+    refresh(): void {
+        this.renderTimeline();
+    }
+
+    private async renderTimeline(): Promise<void> {
         this.contentEl.empty();
 
-        //Create header
+        // Create header with filters and view options
         const headerEl = node('div', { class: 'timeline-header' });
-        const title = node('h2', { text: 'Timeline Visualizer' });
-        headerEl.appendChild(title);
 
-        //Create controls
-        const controlsEl = node('div', { class: 'timeline-controls' });
-        const refreshBtn = node('button', {
-            class: 'timeline-refresh-button',
-            text: 'Refresh'
-        });
-        refreshBtn.addEventListener('click', () => this.refresh());
-        controlsEl.appendChild(refreshBtn);
-        headerEl.appendChild(controlsEl);
+        // Title
+        headerEl.appendChild(node('h3', { text: 'Timeline Visualizer' }));
+
+        // Create refresh button
+        const refreshButton = node('button', { class: 'timeline-refresh-button', text: 'Refresh' });
+        refreshButton.addEventListener('click', () => this.refresh());
+        headerEl.appendChild(refreshButton);
 
         this.contentEl.appendChild(headerEl);
 
-        //Create filter controls
-        this.filterControls = node('div', { class: 'timeline-filters' });
-        this.contentEl.appendChild(this.filterControls);
-        this.createFilterControls();
+        // Create filters section
+        const filtersEl = node('div', { class: 'timeline-filters' });
 
-        //Create timeline content container
-        const timelineContent = node('div', { class: 'timeline-content' });
-        this.contentEl.appendChild(timelineContent);
+        // Event type filters
+        const eventTypeFilterEl = node('div', { class: 'filter-section' });
+        eventTypeFilterEl.appendChild(node('span', { text: 'Show: ' }));
 
-        //Show loading indicator
-        const loadingEl = node('div', {
-            class: 'timeline-loading',
-            text: 'Loading timeline data...'
-        });
-        timelineContent.appendChild(loadingEl);
-
-        try {
-            //Get timeline data from plugin
-            this.timelineData = await this.plugin.getTimelineData();
-            //Remove loading indicator
-            loadingEl.remove();
-
-            if (!this.timelineData.events || this.timelineData.events.length === 0) {
-                const emptyEl = node('div', {
-                    class: 'timeline-empty',
-                    text: 'No timeline data available.'
-                });
-                timelineContent.appendChild(emptyEl);
-                return;
-            }
-            this.renderCalendarView(timelineContent);
-        } catch (error) {
-            loadingEl.remove();
-            const errorEl = node('div', {
-                class: 'timeline-error',
-                text: `Error loading timeline data: ${error.message}`
-            });
-            timelineContent.appendChild(errorEl);
-            console.error('Timeline Visualizer error:', error);
-        }
-    }
-
-    private createFilterControls(): void {
-        this.filterControls.empty();
-
-        const filterControlsEl = node('div', { class: 'filter-controls' });
-        this.filterControls.appendChild(filterControlsEl);
-
-        const typeFilterEl = node('div', { class: 'filter-section' });
-        filterControlsEl.appendChild(typeFilterEl);
-
-        const filterLabel = node('span', {
-            class: 'filter-label',
-            text: 'Filter by type:'
-        });
-        typeFilterEl.appendChild(filterLabel);
-
+        // Create filter buttons
         const createFilterButton = (type: string, label: string) => {
-            const buttonClasses = ['filter-button', `filter-type-${type}`];
-            if (this.filterTypes[type]) buttonClasses.push('is-active');
-
             const button = node('button', {
-                classes: buttonClasses,
+                class: `filter-button ${this.activeFilters.has(type) ? 'is-active' : ''}`,
                 text: label
             });
 
             button.addEventListener('click', () => {
-                this.filterTypes[type] = !this.filterTypes[type];
-                this.refresh();
+                if (this.activeFilters.has(type)) {
+                    this.activeFilters.delete(type);
+                    button.classList.remove('is-active');
+                } else {
+                    this.activeFilters.add(type);
+                    button.classList.add('is-active');
+                }
+                this.renderCalendar();
             });
 
-            typeFilterEl.appendChild(button);
+            return button;
         };
 
-        createFilterButton('story', 'Stories');
-        createFilterButton('event', 'Events');
-        createFilterButton('character', 'Characters');
-        createFilterButton('characterEvent', 'Character Events');
+        // Add filter buttons
+        eventTypeFilterEl.appendChild(createFilterButton('story', 'Stories'));
+        eventTypeFilterEl.appendChild(createFilterButton('event', 'Events'));
+        eventTypeFilterEl.appendChild(createFilterButton('character', 'Characters'));
+        eventTypeFilterEl.appendChild(createFilterButton('characterEvent', 'Character Events'));
+
+        filtersEl.appendChild(eventTypeFilterEl);
+
+        // Create view options section
+        const viewOptionsEl = node('div', { class: 'filter-section' });
+        viewOptionsEl.appendChild(node('span', { text: 'View: ' }));
+
+        // Standard view button
+        const standardViewButton = node('button', {
+            class: 'filter-button ' + (this.activeStory === null ? 'is-active' : ''),
+            text: 'All Events'
+        });
+        standardViewButton.addEventListener('click', () => {
+            this.activeStory = null;
+            if (this.storyDropdown) this.storyDropdown.value = '';
+            this.renderCalendar();
+
+            // Update button states
+            standardViewButton.classList.add('is-active');
+            storyCentricButton.classList.remove('is-active');
+        });
+
+        // Story-centric view button
+        const storyCentricButton = node('button', {
+            class: 'filter-button ' + (this.activeStory !== null ? 'is-active' : ''),
+            text: 'Story-Centric'
+        });
+        storyCentricButton.addEventListener('click', () => {
+            if (!this.storyDropdown) return;
+
+            if (this.storyDropdown.value) {
+                this.activeStory = this.storyDropdown.value;
+                this.renderCalendar();
+
+                // Update button states
+                standardViewButton.classList.remove('is-active');
+                storyCentricButton.classList.add('is-active');
+            } else {
+                // Show notification if no story is selected
+                const storyDropdownContainer = this.storyDropdown.parentElement;
+                const notification = document.createElement('span');
+                notification.textContent = 'Please select a story first';
+                notification.style.color = 'var(--text-error)';
+                notification.style.marginLeft = '10px';
+                notification.style.fontSize = '12px';
+
+                storyDropdownContainer?.appendChild(notification);
+
+                setTimeout(() => {
+                    storyDropdownContainer?.removeChild(notification);
+                }, 3000);
+            }
+        });
+
+        viewOptionsEl.appendChild(standardViewButton);
+        viewOptionsEl.appendChild(storyCentricButton);
+
+        filtersEl.appendChild(viewOptionsEl);
+
+        // Create story dropdown section
+        const storySelectEl = node('div', { class: 'filter-section' });
+        storySelectEl.appendChild(node('span', { text: 'Story: ' }));
+
+        // Create story dropdown
+        this.storyDropdown = document.createElement('select');
+        this.storyDropdown.className = 'story-select-dropdown';
+
+        // Add placeholder option
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.text = '-- Select a story --';
+        placeholderOption.selected = true;
+        this.storyDropdown.appendChild(placeholderOption);
+
+        // Fetch timeline data to populate story options
+        const timelineData = await this.plugin.getTimelineData();
+
+        // Add story options to dropdown
+        const storyEvents = timelineData.events.filter(event => event.type === 'story');
+        storyEvents.forEach(story => {
+            const option = document.createElement('option');
+            option.value = story.id;
+            option.text = story.title;
+            if (this.activeStory === story.id) {
+                option.selected = true;
+            }
+            if (this.storyDropdown)
+                this.storyDropdown.appendChild(option);
+        });
+
+        this.storyDropdown.addEventListener('change', () => {
+            this.activeStory = this.storyDropdown?.value || null;
+            if (this.activeStory) {
+                standardViewButton.classList.remove('is-active');
+                storyCentricButton.classList.add('is-active');
+            } else {
+                standardViewButton.classList.add('is-active');
+                storyCentricButton.classList.remove('is-active');
+            }
+            this.renderCalendar();
+        });
+
+        storySelectEl.appendChild(this.storyDropdown);
+        filtersEl.appendChild(storySelectEl);
+
+        this.contentEl.appendChild(filtersEl);
+
+        // Calendar container
+        this.calendarEl = node('div', { class: 'timeline-content' });
+        this.contentEl.appendChild(this.calendarEl);
+
+        await this.renderCalendar();
     }
 
-    private renderCalendarView(container: HTMLElement): void {
-        if (!this.timelineData || !this.timelineData.events || this.timelineData.events.length === 0) return;
+    private async renderCalendar(): Promise<void> {
+        this.calendarEl.empty();
 
-        //Add calendar title
-        const calendarTitle = node('div', {
-            class: 'calendar-title',
-            text: 'Timeline Calendar View'
-        });
-        container.appendChild(calendarTitle);
+        this.calendarEl.appendChild(node('div', {
+            class: 'timeline-loading',
+            text: 'Loading timeline data...'
+        }));
 
-        const filteredEvents = this.timelineData.events.filter(event => this.filterTypes[event.type]);
+        try {
+            let timelineData = await this.plugin.getTimelineData();
 
-        if (filteredEvents.length === 0) {
-            const emptyEl = node('div', {
+            // Apply filters
+            if (this.activeFilters.size > 0) {
+                timelineData.events = timelineData.events.filter(event =>
+                    this.activeFilters.has(event.type)
+                );
+            }
+
+            // Apply story-centric filter if active
+            if (this.activeStory) {
+                // Get all connections for the selected story
+                const storyConnections = timelineData.connections.filter(
+                    conn => conn.from === this.activeStory || conn.to === this.activeStory
+                );
+
+                // Extract all event IDs related to this story
+                const relatedEventIds = new Set<string>();
+                relatedEventIds.add(this.activeStory); // Add the story itself
+
+                storyConnections.forEach(conn => {
+                    relatedEventIds.add(conn.from);
+                    relatedEventIds.add(conn.to);
+                });
+
+                // Filter events to only those related to the story
+                timelineData.events = timelineData.events.filter(event =>
+                    relatedEventIds.has(event.id) ||
+                    // Also include character events if they are related to a character in the story
+                    (event.type === 'characterEvent' && relatedEventIds.has(event.file))
+                );
+            }
+
+            this.calendarEl.empty();
+
+            if (timelineData.events.length === 0) {
+                this.calendarEl.appendChild(node('div', {
+                    class: 'timeline-empty',
+                    text: 'No events found with the current filters.'
+                }));
+                return;
+            }
+
+            this.renderCalendarGrid(timelineData);
+        } catch (error) {
+            console.error('Error rendering timeline:', error);
+            this.calendarEl.empty();
+            this.calendarEl.appendChild(node('div', {
+                class: 'timeline-error',
+                text: 'Error loading timeline data. Check the console for details.'
+            }));
+        }
+    }
+
+    private renderCalendarGrid(timelineData: TimelineData): void {
+        // Remove events without dates
+        const events = timelineData.events.filter(
+            event => event.beginDate !== null
+        );
+
+        if (events.length === 0) {
+            this.calendarEl.appendChild(node('div', {
                 class: 'timeline-empty',
-                text: 'No events match the current filters.'
-            });
-            container.appendChild(emptyEl);
+                text: 'No events with valid dates found.'
+            }));
             return;
         }
 
-        //Sort events by begin date
-        const sortedEvents = [...filteredEvents].sort((a, b) => {
-            if (!a.beginDate) return 1;
-            if (!b.beginDate) return -1;
-            return new Date(a.beginDate).getTime() - new Date(b.beginDate).getTime();
+        // Sort events by begin date
+        events.sort((a, b) => {
+            if (!a.beginDate || !b.beginDate) return 0;
+            return a.beginDate.getTime() - b.beginDate.getTime();
         });
 
-        const processedEvents = this.processEventsForCalendar(sortedEvents);
+        // Get all unique dates for rows
+        let allDates: Date[] = [];
+        events.forEach(event => {
+            if (event.beginDate) allDates.push(event.beginDate);
+            if (event.endDate) allDates.push(event.endDate);
+        });
 
-        const calendarGrid = node('div', {
-            class: 'calendar-grid',
-            style: {
-                'grid-template-columns': `auto repeat(${processedEvents.columnCount}, 1fr)`,
-                'grid-template-rows': `repeat(${processedEvents.rowDates.length}, min-content)`,
+        // Remove duplicates and sort
+        const uniqueDatesMap = new Map<number, Date>();
+        allDates.forEach(date => {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const key = year * 100 + month;
+            if (!uniqueDatesMap.has(key)) {
+                uniqueDatesMap.set(key, new Date(year, month, 1));
             }
         });
-        container.appendChild(calendarGrid);
 
-        //Render date cells in first column
-        for (let i = 0; i < processedEvents.rowDates.length; i++) {
+        const rowDates = Array.from(uniqueDatesMap.values())
+            .sort((a, b) => a.getTime() - b.getTime());
+
+        // Assign grid positions to events
+        const columns: TimelineEvent[][] = [];
+
+        events.forEach(event => {
+            // Find first available column
+            let columnIndex = 0;
+            let placed = false;
+
+            while (!placed) {
+                if (!columns[columnIndex]) {
+                    columns[columnIndex] = [];
+                }
+
+                // Check if current event can be placed in this column
+                const canPlace = !columns[columnIndex].some(existingEvent =>
+                    this.eventsOverlap(event, existingEvent)
+                );
+
+                if (canPlace) {
+                    columns[columnIndex].push(event);
+                    event.column = columnIndex + 1; // +1 because date cells are in column 1
+                    placed = true;
+                } else {
+                    columnIndex++;
+                }
+            }
+        });
+
+        const columnCount = columns.length + 1; // +1 for date column
+
+        // Assign row positions to events based on their dates
+        events.forEach(event => {
+            if (!event.beginDate) return;
+
+            // Find start row
+            const startRowIndex = rowDates.findIndex(date =>
+                date.getFullYear() === event.beginDate!.getFullYear() &&
+                date.getMonth() === event.beginDate!.getMonth()
+            );
+
+            // Find end row
+            let endRowIndex = startRowIndex;
+            if (event.endDate) {
+                endRowIndex = rowDates.findIndex(date =>
+                    date.getFullYear() === event.endDate!.getFullYear() &&
+                    date.getMonth() === event.endDate!.getMonth()
+                );
+            }
+
+            // Assign grid positions
+            event.startRow = startRowIndex + 1; // +1 for header row
+            event.endRow = endRowIndex + 1; // +1 for header row
+        });
+
+        // Create grid container
+        const gridContainer = node('div', { class: 'calendar-grid' });
+        gridContainer.style.gridTemplateColumns = `min-content repeat(${columnCount - 1}, 1fr)`;
+        gridContainer.style.gridTemplateRows = `repeat(${rowDates.length + 1}, auto)`;
+
+        // Add date rows
+        rowDates.forEach((date, index) => {
+            const rowIndex = index + 1; // +1 for header row
+            const monthName = date.toLocaleString('default', { month: 'long' });
+            const year = date.getFullYear();
+
             const dateCell = node('div', {
                 class: 'calendar-date-cell',
-                style: { 'grid-row': `${i + 1}` }
+                text: `${date.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                })}`
             });
 
-            //Format date
-            const dateObj = new Date(processedEvents.rowDates[i]);
-            const formattedDate = `${dateObj.toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            })}`;
 
-            dateCell.textContent = formattedDate;
-            calendarGrid.appendChild(dateCell);
-        }
+            dateCell.style.gridRow = `${rowIndex}`;
+            dateCell.style.gridColumn = '1';
 
-        processedEvents.events.forEach(event => {
-            if (event.startRow === undefined || event.endRow === undefined || event.column === undefined) return;
+            gridContainer.appendChild(dateCell);
+        });
 
-            let bgColor = '';
+        // Render events on the grid
+        events.forEach(event => {
+            if (!event.startRow || !event.endRow || !event.column) return;
 
-            if (event.type === 'story') bgColor = this.plugin.settings.storyColor;
-            else if (event.type === 'event') bgColor = this.plugin.settings.eventColor;
-            else if (event.type === 'characterEvent') bgColor = this.plugin.settings.characterEventColor;
-            else if (event.type === 'character') bgColor = this.plugin.settings.characterColor;
+            // Create event element
+            const eventEl = node('div', { class: 'calendar-event' });
+            eventEl.style.gridColumnStart = `${event.column + 1}`; // +1 for date column
+            eventEl.style.gridRowStart = `${event.startRow}`;
+            eventEl.style.gridRowEnd = `${event.endRow + 1}`;
 
-            const eventEl = node('div', {
-                class: 'calendar-event',
-                style: {
-                    'grid-row': `${event.startRow + 1} / ${event.endRow + 1}`,
-                    'grid-column': `${event.column + 2}`, // +2 instead of +1 to account for date column
-                    'background-color': bgColor,
+            // Set color based on event type
+            let bgColor = '#607D8B'; // Default color
+
+            switch (event.type) {
+                case 'story':
+                    bgColor = this.plugin.settings.storyColor || '#2196F3';
+                    break;
+                case 'event':
+                    bgColor = this.plugin.settings.eventColor || '#FF9800';
+                    break;
+                case 'character':
+                    bgColor = this.plugin.settings.characterColor || '#4CAF50';
+                    break;
+                case 'characterEvent':
+                    bgColor = this.plugin.settings.characterEventColor || '#9C27B0';
+                    break;
+            }
+
+            eventEl.style.backgroundColor = bgColor;
+
+
+            // Title
+            const titleEl = node('div', { class: 'event-title', text: event.title });
+            eventEl.appendChild(titleEl);
+
+            // Make header clickable to open file
+            titleEl.addEventListener('click', () => {
+                const file = this.app.vault.getAbstractFileByPath(event.file);
+                if (file && file instanceof TFile) {
+                    this.app.workspace.getLeaf().openFile(file);
                 }
             });
 
-            //Create event content
-            const eventHeader = node('div',
-                {
-                    class: 'event-header',
-                    children: [
-                        node('div', {
-                            class: 'event-title',
-                            text: event.title
-                        }),
-                        node('nav', {
-                            class: 'event-date',
-                            children:
-                                event.beginDate === event.endDate ?
-                                    [node('li', { text: event.beginDate!.toLocaleDateString() })]
-                                    :
-                                    [node('li', { text: event.beginDate!.toLocaleDateString() }),
-                                    node('li', { text: event.endDate!.toLocaleDateString() })]
-                        })
-                    ]
-                });
 
+            const observer = new IntersectionObserver(
+                ([e]) => e.target.classList.toggle('isSticky', e.intersectionRatio < 1),
+                { threshold: [1] }
+            );
+            observer.observe(titleEl);
+
+            // Add date info if available
+            if (event.beginDate) {
+                const dateEl = node('div', {
+                    class: 'event-date',
+                    children:
+                        event.beginDate === event.endDate ?
+                            [node('li', { text: event.beginDate!.toLocaleDateString() })]
+                            :
+                            [node('li', { text: event.beginDate!.toLocaleDateString() }),
+                            node('li', { text: event.endDate!.toLocaleDateString() })]
+                });
+                eventEl.appendChild(dateEl);
+            }
+
+
+            // Event body
 
             const eventBody = node('div', {
                 class: 'event-body',
                 children: event.beginDate === event.endDate ? [] : [
-                    node('p', { text: event.description.length  > 30 ? `${event.description.substring(0, 100)}...` : event.description })
+                    node('p', {
+                        text: event.description.length > 30 ? `${event.description.substring(0, 100)
+                            }...` : event.description
+                    })
                 ]
             })
 
-            const typeBadge = node('div', {
+            // Event type badge
+            const badgeEl = node('span', {
                 class: 'event-type-badge',
-                text: event.type
+                text: event.type === 'characterEvent' ? 'char event' : event.type
             });
+            eventBody.appendChild(badgeEl);
 
-
-            eventEl.appendChild(eventHeader);
             eventEl.appendChild(eventBody);
-            eventEl.appendChild(typeBadge);
-
-            calendarGrid.appendChild(eventEl);
+            gridContainer.appendChild(eventEl);
         });
+
+        this.calendarEl.appendChild(gridContainer);
     }
 
-    private processEventsForCalendar(events: TimelineEvent[]): { events: TimelineEvent[], columnCount: number, rowDates: Date[] } {
+    private eventsOverlap(eventA: TimelineEvent, eventB: TimelineEvent): boolean {
+        if (!eventA.beginDate || !eventB.beginDate) return false;
 
-        let rowDates = sortAndRemoveDuplicateDates(events.reduce((state, value) => {
-            if (value.beginDate) {
-                state.push(value.beginDate);
-            }
-            if (value.endDate) {
-                state.push(value.endDate);
-            }
-            return state;
-        }, ([] as Date[])));
+        const aStart = eventA.beginDate.getTime();
+        const aEnd = eventA.endDate ? eventA.endDate.getTime() : aStart;
 
-        function doEventsOverlap(event1: TimelineEvent, event2: TimelineEvent) {
-            return event1.beginDate! <= event2.endDate! && event2.beginDate! <= event1.endDate!;
-        }
+        const bStart = eventB.beginDate.getTime();
+        const bEnd = eventB.endDate ? eventB.endDate.getTime() : bStart;
 
-        let eventColumns = new Map();
-        let requiredColumns = 0;
-
-        const sortedEvents = [...events].sort((a, b) => {
-            return a.beginDate!.getTime() - b.beginDate!.getTime();
-        });
-
-
-        sortedEvents.forEach(event => {
-            //Find the first available column for this event
-            let column = 0;
-            let columnFound = false;
-
-            while (!columnFound) {
-                let isColumnAvailable = true;
-
-                //Check all events that have already been assigned to this column
-                for (const [eventId, colIndex] of eventColumns.entries()) {
-                    if (colIndex === column) {
-                        const otherEvent = events.find(e => e.id === eventId);
-                        if (otherEvent && doEventsOverlap(event, otherEvent)) {
-                            isColumnAvailable = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (isColumnAvailable) {
-                    columnFound = true;
-                } else {
-                    column++;
-                }
-            }
-
-            eventColumns.set(event.id, column);
-
-            if (column + 1 > requiredColumns) {
-                requiredColumns = column + 1;
-            }
-        });
-
-        //Add grid properties to each event
-        events.forEach(event => {
-            event.column = eventColumns.get(event.id) || 0;
-            event.startRow = 0;
-            event.endRow = 0;
-
-            const startRowIndex = rowDates.findIndex(date => date.getTime() === event.beginDate!.getTime());
-            event.startRow = startRowIndex !== -1 ? startRowIndex : 0;
-
-            const endRowIndex = rowDates.findIndex(date => date.getTime() === event.endDate!.getTime());
-            event.endRow = (endRowIndex !== -1 ? endRowIndex : rowDates.length) + 1;
-        });
-        return {
-            events: events,
-            columnCount: requiredColumns,
-            rowDates: rowDates
-        }
-    }
-
-    private openEventFile(event: TimelineEvent): void {
-        if (!event.file) return;
-
-        const file = this.app.vault.getAbstractFileByPath(event.file);
-        if (file instanceof TFile) {
-            this.app.workspace.getLeaf().openFile(file);
-        } else {
-            new Notice(`Could not find file: ${event.file}`);
-        }
+        return aStart <= bEnd && bStart <= aEnd;
     }
 }

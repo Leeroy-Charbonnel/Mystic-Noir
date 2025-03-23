@@ -18,10 +18,6 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-
-
-
-
 .filter-button.is-active {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
@@ -36,8 +32,6 @@
   cursor: pointer;
 }
 
-
-
 /* Filter styles */
 .timeline-filters {
   margin-bottom: 15px;
@@ -46,21 +40,34 @@
   border-radius: 5px;
 }
 
-
-
 .filter-section {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 8px;
 }
 
 .filter-button {
   background-color: var(--background-secondary);
-  border: none;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
+.filter-button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.story-select-dropdown {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+}
 
 /* Timeline content area */
 .timeline-content {
@@ -89,22 +96,35 @@
   color: var(--text-error);
 }
 
-
-
-
-
-
 .event-header {
   margin-bottom: 10px;
+  cursor: pointer;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.sticky-header {
+  /* position: sticky; */
+  /* top: 0; */
+  z-index: 1;
+  /* padding: 5px 0; */
+  /* position: sticky; */
+  /* top: 0; */
+}
+
+.event-header:hover {
+  opacity: 0.9;
 }
 
 .event-title {
   font-weight: bold;
   font-size: 13px;
-  margin-right: 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: sticky;
+  top: 0;
 }
 
 .event-date {
@@ -118,7 +138,6 @@
   opacity: 0.9;
   max-height: 80%;
   overflow: hidden;
-
 }
 
 .event-type-badge {
@@ -134,7 +153,7 @@
 }
 
 
-/* Calender */
+/* Calendar */
 .calendar-title {
   font-size: 1.2em;
   font-weight: bold;
@@ -157,10 +176,10 @@
   border-right: 1px solid var(--background-modifier-border);
   border-bottom: 1px solid var(--background-modifier-border);
   display: flex;
+  text-wrap: nowrap;
   align-items: center;
   justify-content: center;
   text-align: center;
-
 }
 
 .calendar-event {
@@ -168,11 +187,11 @@
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
+  max-width: 170px;
   z-index: 2;
   position: relative;
   display: grid;
-  grid-template-rows: min-content auto;
+  grid-template-rows: min-content min-content auto;
   grid-template-columns: 100%;
 }
 
@@ -184,12 +203,18 @@
 }
 
 .event-body p {
-    max-height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
 }
-
-
 
 .event-date {
-    text-align: right;
-    font-size: 10px;
+  text-align: right;
+  font-size: 10px;
 }
+
+
+
+.isSticky {
+  color: red;
+} 
