@@ -371,7 +371,6 @@ export default class TimelineVisualizerPlugin extends Plugin {
                 allDates.findIndex(date => date.getTime() === event.endDate.getTime()) : -1;
             event.endRow = endRowIndex !== -1 ? endRowIndex : allDates.length - 1;
 
-            console.log(`Event "${event.title}": startRow=${event.startRow}, endRow=${event.endRow}, column=${event.column}`);
         });
 
         // Add the grid to the timeline data
