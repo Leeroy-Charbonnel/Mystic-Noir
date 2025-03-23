@@ -15,9 +15,9 @@ const DEFAULT_SETTINGS: TimelineVisualizerSettings = {
     storiesFolder: '',
     eventsFolder: '',
     charactersFolder: '',
-    storyColor: '',
-    eventColor: '',
-    characterEventColor: ''
+    storyColor: '#3a6ea5',  // Default color for stories
+    eventColor: '#6d4c41',  // Default color for events
+    characterEventColor: '#388e3c'  // Default color for character events
 }
 
 export default class TimelineVisualizerPlugin extends Plugin {
@@ -44,6 +44,15 @@ export default class TimelineVisualizerPlugin extends Plugin {
             id: 'open-timeline-visualizer',
             name: 'Open Timeline Visualizer',
             callback: () => this.activateView(),
+        });
+
+        // Add command for story-centric view
+        this.addCommand({
+            id: 'open-story-centric-view',
+            name: 'Open Story-Centric Timeline View',
+            callback: async () => {
+                await this.activateView();
+            }
         });
 
         this.addSettingTab(new TimelineVisualizerSettingTab(this.app, this));
@@ -373,20 +382,27 @@ export default class TimelineVisualizerPlugin extends Plugin {
 
         });
 
-        // Add the grid to the timeline data
-        events.rowDates = allDates;
-        events.columnCount = requiredColumns;
-
-        return {
+        console.log({
             events: events,
-            connections: connections
+            connections: connections,
+            rowDates: allDates,
+            columnCount: requiredColumns
+        });
+
+        // Add the grid to the timeline data
+        const timelineData: TimelineData = {
+            events: events,
+            connections: connections,
+            rowDates: allDates,
+            columnCount: requiredColumns
         };
+
+        return timelineData;
     }
 }
 
-
 function sortAndRemoveDuplicateDates(dateArray: Date[]): Date[] {
-    const sortedDates = dateArray.sort((a: Date, b: Date) => a - b);
+    const sortedDates = dateArray.sort((a: Date, b: Date) => a.getTime() - b.getTime());
 
     const uniqueDatesMap = new Map();
     sortedDates.forEach(date => {
@@ -424,6 +440,8 @@ export interface TimelineConnection {
 export interface TimelineData {
     events: TimelineEvent[];
     connections: TimelineConnection[];
+    rowDates?: Date[];
+    columnCount?: number;
 }
 
 class TimelineVisualizerSettingTab extends PluginSettingTab {

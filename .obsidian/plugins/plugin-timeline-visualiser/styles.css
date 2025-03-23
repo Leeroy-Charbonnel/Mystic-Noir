@@ -380,52 +380,82 @@ button.filter-button.is-active {
 }
 
 /* Story-centric view styles */
-.timeline-story-centric {
+.story-selector-button {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 10px;
+}
+
+.story-selector-button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* Story selector modal */
+.story-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.story-selector-container {
+  background-color: var(--background-primary);
+  border-radius: 5px;
+  padding: 20px;
+  width: 400px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.story-selector-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.story-selector-header h3 {
+  margin: 0;
+}
+
+.story-selector-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.story-list {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 8px;
 }
 
-.story-timeline-section {
-  margin-bottom: 40px;
-}
-
-.story-timeline-header {
-  padding: 10px 15px;
+.story-item {
+  padding: 10px;
+  border-radius: 4px;
   background-color: var(--background-secondary);
-  border-radius: 5px;
-  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.story-timeline-header h3 {
-  margin: 0 0 10px 0;
-  color: var(--text-normal);
-}
-
-.story-date-range {
-  color: var(--text-muted);
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-.story-description {
-  color: var(--text-normal);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.story-specific-timeline {
-  max-width: 100%;
-  margin-top: 20px;
-}
-
-.no-related-events {
-  padding: 15px;
-  background-color: var(--background-secondary);
-  border-radius: 5px;
-  color: var(--text-muted);
-  font-style: italic;
-  margin-bottom: 10px;
+.story-item:hover {
+  background-color: var(--background-modifier-hover);
 }
 
 /* Responsive adjustments */
