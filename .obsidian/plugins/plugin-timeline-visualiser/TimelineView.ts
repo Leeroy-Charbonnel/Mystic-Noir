@@ -402,7 +402,6 @@ export class TimelineView extends ItemView {
                 text: `${date.toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'short',
-                    day: 'numeric'
                 })}`
             });
 
@@ -457,28 +456,33 @@ export class TimelineView extends ItemView {
 
             //Add date
             if (this.showDates && event.beginDate) {
-                const dateEl = node('div', {
-                    class: 'event-date',
-                    children:
-                        event.beginDate === event.endDate ?
-                            [node('li', { text: event.beginDate!.toLocaleDateString() })]
-                            :
-                            [node('li', { text: event.beginDate!.toLocaleDateString() }),
-                            node('li', { text: event.endDate!.toLocaleDateString() })]
-                });
+                const elapsedTime = this.getElapsedTimeString(event.beginDate, event.endDate!);
+
+                const dateEl = node('div', { class: 'event-date' });
+
+
+                if (elapsedTime) dateEl.appendChild(node('li', { class: 'elapsed-time', text: elapsedTime }));
+                dateEl.appendChild(node('li', { class: 'date', text: event.beginDate!.toLocaleDateString() }));
+
+
+                if (event.endDate && event.beginDate.getTime() != event.endDate.getTime()) {
+                    if (elapsedTime) dateEl.appendChild(node('br', { class: 'elapsed-time' }));
+                    dateEl.appendChild(node('li', { class: 'date', text: event.endDate!.toLocaleDateString() }));
+                }
+
                 eventEl.appendChild(dateEl);
             }
 
 
             //Add description
             if (this.showDescriptions && event.description) {
-                const eventBody = node('div', {
+                const eventDescription = node('div', {
                     class: 'event-description',
-                    text: event.description
+                    text: event.description,
                 });
-                eventEl.appendChild(eventBody);
+                eventDescription.style.webkitLineClamp = ((event.endRow - event.startRow) + 1).toString();
+                eventEl.appendChild(eventDescription);
             }
-
             //Add badge
             if (this.showTags) {
                 const badgeEl = node('span', {
@@ -529,6 +533,20 @@ export class TimelineView extends ItemView {
         });
 
         this.calendarEl.appendChild(gridContainer);
+    }
+
+
+    private getElapsedTimeString(startDate: Date, endDate: Date): string {
+        const diffMs = endDate.getTime() - startDate.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return 'Same day';
+        if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
+
+        const diffMonths = Math.floor(diffDays / 30);
+        if (diffMonths <= 12) return `${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
+        const diffYears = Math.floor(diffDays / 365);
+        return `${diffYears} year${diffYears === 1 ? '' : 's'}`;
     }
 
     private eventsOverlap(eventA: TimelineEvent, eventB: TimelineEvent): boolean {

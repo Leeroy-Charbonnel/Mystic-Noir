@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "6b8e377c074e6024",
+        "id": "65497714858654c8",
         "type": "tabs",
         "children": [
           {
-            "id": "f05d52d5e5acefa2",
+            "id": "807f98f047afbe16",
             "type": "leaf",
             "state": {
-              "type": "timeline-visualizer",
+              "type": "empty",
               "state": {},
               "icon": "lucide-file",
-              "title": "Timeline Visualizer"
+              "title": "New tab"
             }
           }
         ]
@@ -177,7 +177,7 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "f05d52d5e5acefa2",
+  "active": "807f98f047afbe16",
   "lastOpenFiles": [
     "1. Characters/Samuel Blackwood.md",
     "1. Characters/Evelyn Dupont.md",
