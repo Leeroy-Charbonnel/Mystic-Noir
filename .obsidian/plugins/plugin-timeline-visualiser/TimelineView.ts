@@ -488,13 +488,42 @@ export class TimelineView extends ItemView {
                 eventEl.appendChild(badgeEl);
             }
 
+
+
+            //Story button
+            eventEl.dataset.type = event.type;
+
+            if (event.type === 'story' && this.activeStory !== event.id) {
+                const storyCentricBtn = node('button', {
+                    class: 'story-centric-button',
+                    text: 'Focus'
+                });
+
+                storyCentricBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    this.activeStory = event.id;
+                    this.refresh();
+
+                    if (this.storyDropdown)
+                        this.storyDropdown.value = event.id;
+                });
+                eventEl.appendChild(storyCentricBtn);
+
+            }
+
+
+
+
             gridContainer.appendChild(eventEl);
         });
 
 
+
+
         this.calendarEl.addEventListener('scroll', () => {
             titleArray.forEach(titleEl => {
-                const isScrolled = titleEl.offsetTop > 10;
+                const isScrolled = titleEl.offsetTop > 12;
                 titleEl.classList.toggle('isSticky', isScrolled);
             });
         });
@@ -514,3 +543,29 @@ export class TimelineView extends ItemView {
         return aStart <= bEnd && bStart <= aEnd;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
