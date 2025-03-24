@@ -2,8 +2,8 @@
   "content-creator-plugin",
   "graph-tags-filter",
   "content-creation-plugin",
-  "obsidian-git",
   "graph-home-page",
   "plugin-home-page",
-  "plugin-timeline-visualiser"
+  "plugin-timeline-visualiser",
+  "obsidian-git"
 ]

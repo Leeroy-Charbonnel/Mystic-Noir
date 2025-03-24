@@ -193,6 +193,8 @@
   display: grid;
   grid-template-rows: min-content min-content auto;
   grid-template-columns: 100%;
+  background: var(--background-transparent-color);
+  border: 1px solid var(--border-color);
 }
 
 .event-body {
