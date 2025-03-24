@@ -474,7 +474,7 @@ export class TimelineView extends ItemView {
             if (this.showDescriptions && event.description) {
                 const eventBody = node('div', {
                     class: 'event-description',
-                    text: event.description.length > 30 ? `${event.description.substring(0, 100)}...` : event.description
+                    text: event.description
                 });
                 eventEl.appendChild(eventBody);
             }
