@@ -8,13 +8,13 @@
         "type": "tabs",
         "children": [
           {
-            "id": "ed201e3e517d025f",
+            "id": "92b0cd9b79872ef4",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "content-creator-view",
               "state": {},
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Content Creator"
             }
           }
         ]
@@ -177,10 +177,10 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "ed201e3e517d025f",
+  "active": "92b0cd9b79872ef4",
   "lastOpenFiles": [
-    "test character.md",
     "1. Characters/Samuel Blackwood.md",
+    "test character.md",
     "1. Characters/The Shadow.md",
     "1. Characters/New (Characters).md",
     "1. Characters/Lily Moore.md",
