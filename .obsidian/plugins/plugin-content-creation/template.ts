@@ -1,237 +1,303 @@
 export const templates = {
     characters: {
         BasicInformation: {
-            FullName: {
-                type: "text",
-                required: true,
-                placeholder: "Character's full name"
-            },
-            BirthDate: {
-                type: "date",
-                required: true,
-                placeholder: "dd/mm/yyyy"
-            },
-            DeathDate: {
-                type: "date",
-                required: true,
-                placeholder: "dd/mm/yyyy",
-            },
-            Occupation: {
-                type: "text",
-                placeholder: "Character's occupation or role"
-            },
-            Background: {
-                type: "textarea",
-                placeholder: "Character's background story"
+            type: "group",
+            label: "Basic Information",
+            fields: {
+                FullName: {
+                    type: "text",
+                    required: true,
+                    placeholder: "Character's full name"
+                },
+                BirthDate: {
+                    type: "date",
+                    required: true,
+                    placeholder: "dd/mm/yyyy"
+                },
+                DeathDate: {
+                    type: "date",
+                    required: true,
+                    placeholder: "dd/mm/yyyy",
+                },
+                Occupation: {
+                    type: "text",
+                    placeholder: "Character's occupation or role"
+                },
+                Background: {
+                    type: "textarea",
+                    placeholder: "Character's background story"
+                }
             }
+
         },
         Appearance: {
-            Description: {
-                type: "textarea",
-                placeholder: "Description of the character"
-            },
-            Accessories: {
-                type: "array:text",
-                placeholder: "Add an accessory"
-            },
+            type: "group",
+            label: "Appearance",
+            fields: {
+                Description: {
+                    type: "textarea",
+                    placeholder: "Description of the character"
+                },
+                Accessories: {
+                    type: "array:text",
+                    placeholder: "Add an accessory"
+                }
+            }
         },
         State: {
-            CurrentStatus: {
-                type: "badges",
-                options: ["Dead", "Injured", "Missing", "Imprisoned", "Exiled", "Unknown"]
+            type: "group",
+            label: "State",
+            fields: {
+                CurrentStatus: {
+                    type: "badges",
+                    options: ["Dead", "Injured", "Missing", "Imprisoned", "Unknown"]
+                }
             }
         },
         Personality: {
-            GeneralTraits: {
-                type: "textarea",
-                placeholder: "Overall personality description"
-            },
-            Strengths: {
-                type: "array:text",
-                placeholder: "Add a strength"
-            },
-            Weaknesses: {
-                type: "array:text",
-                placeholder: "Add a weakness"
+            type: "group",
+            label: "Personality",
+            fields: {
+                GeneralTraits: {
+                    type: "textarea",
+                    placeholder: "Overall personality description"
+                },
+                Strengths: {
+                    type: "array:text",
+                    placeholder: "Add a strength"
+                },
+                Weaknesses: {
+                    type: "array:text",
+                    placeholder: "Add a weakness"
+                }
             }
         },
         Relationships: {
-            Family: {
-                type: "array:text",
-                placeholder: "Add a family relationship"
-            },
-            FriendsAndAllies: {
-                type: "array:text",
-                placeholder: "Add a friend or ally"
-            },
-            EnemiesAndRivals: {
-                type: "array:text",
-                placeholder: "Add an enemy or rival"
-            },
-            RomanticInterests: {
-                type: "array:text",
-                placeholder: "Add a romantic interest"
-            },
+            type: "group",
+            label: "Relationships",
+            fields: {
+                Family: {
+                    type: "array:text",
+                    placeholder: "Add a family relationship"
+                },
+                FriendsAndAllies: {
+                    type: "array:text",
+                    placeholder: "Add a friend or ally"
+                },
+                EnemiesAndRivals: {
+                    type: "array:text",
+                    placeholder: "Add an enemy or rival"
+                },
+                RomanticInterests: {
+                    type: "array:text",
+                    placeholder: "Add a romantic interest"
+                }
+            }
         },
         Other: {
-            AdditionalNotes: {
-                type: "textarea",
-                placeholder: "Any other notes about this character"
+            type: "group",
+            label: "Other",
+            fields: {
+                AdditionalNotes: {
+                    type: "textarea",
+                    placeholder: "Any other notes about this character"
+                }
             }
         }
     },
 
     items: {
         BasicInformation: {
-            Name: {
-                type: "text",
-                required: true,
-                placeholder: "Item name"
-            },
-            Description: {
-                type: "textarea",
-                placeholder: "Item description"
-            },
-            Owner: {
-                type: "array:textarea",
-                placeholder: "Add an owner with details"
-            },
-            ItemPhoto: {
-                type: "image",
-                placeholder: "Visual representation of the item"
+            type: "group",
+            label: "Basic Information",
+            fields: {
+                Name: {
+                    type: "text",
+                    required: true,
+                    placeholder: "Item name"
+                },
+                Description: {
+                    type: "textarea",
+                    placeholder: "Item description"
+                },
+                Owner: {
+                    type: "array:textarea",
+                    placeholder: "Add an owner with details"
+                },
+                ItemPhoto: {
+                    type: "image",
+                    placeholder: "Visual representation of the item"
+                }
             }
         },
         Other: {
-            AdditionalNotes: {
-                type: "textarea",
-                placeholder: "Any other notes about this item"
+            type: "group",
+            label: "Other",
+            fields: {
+                AdditionalNotes: {
+                    type: "textarea",
+                    placeholder: "Any other notes about this item"
+                }
             }
         }
     },
 
     events: {
         BasicInformation: {
-            Name: {
-                type: "text",
-                required: true,
-                placeholder: "Event name"
-            },
-            BeginDate: {
-                type: "date",
-                placeholder: "When the event began"
-            },
-            EndDate: {
-                type: "date",
-                placeholder: "When the event ended"
-            },
-            Location: {
-                type: "text",
-                placeholder: "Where the event occurred"
-            },
-            Description: {
-                type: "textarea",
-                placeholder: "Event description"
+            type: "group",
+            label: "Basic Information",
+            fields: {
+                Name: {
+                    type: "text",
+                    required: true,
+                    placeholder: "Event name"
+                },
+                BeginDate: {
+                    type: "date",
+                    placeholder: "When the event began"
+                },
+                EndDate: {
+                    type: "date",
+                    placeholder: "When the event ended"
+                },
+                Location: {
+                    type: "text",
+                    placeholder: "Where the event occurred"
+                },
+                Description: {
+                    type: "textarea",
+                    placeholder: "Event description"
+                }
             }
         },
-        AssociatedCharacters: {
-            type: "array:text",
-            placeholder: "Add a character associated with this event"
+        Participants: {
+            type: "group",
+            label: "Participants",
+            fields: {
+                AssociatedCharacters: {
+                    type: "array:text",
+                    placeholder: "Add a character associated with this event"
+                }
+            }
         },
         Other: {
-            AdditionalNotes: {
-                type: "textarea",
-                placeholder: "Any other notes about this event"
+            type: "group",
+            label: "Other",
+            fields: {
+                AdditionalNotes: {
+                    type: "textarea",
+                    placeholder: "Any other notes about this event"
+                }
             }
         }
     },
 
     locations: {
         BasicInformation: {
-            Name: {
-                type: "text",
-                required: true,
-                placeholder: "Location name"
-            },
-            MapImage: {
-                type: "image",
-                placeholder: "Map or image of the location"
+            type: "group",
+            label: "Basic Information",
+            fields: {
+                Name: {
+                    type: "text",
+                    required: true,
+                    placeholder: "Location name"
+                },
+                MapImage: {
+                    type: "image",
+                    placeholder: "Map or image of the location"
+                }
             }
         },
         Appearance: {
-            Atmosphere: {
-                type: "textarea",
-                placeholder: "Atmosphere description"
-            },
-            Description: {
-                type: "textarea",
-                placeholder: "Visual description of the location"
+            type: "group",
+            label: "Appearance",
+            fields: {
+                Atmosphere: {
+                    type: "textarea",
+                    placeholder: "Atmosphere description"
+                },
+                Description: {
+                    type: "textarea",
+                    placeholder: "Visual description of the location"
+                }
             }
         },
-
         Other: {
-            AdditionalNotes: {
-                type: "textarea",
-                placeholder: "Any other notes about this location"
+            type: "group",
+            label: "Other",
+            fields: {
+                AdditionalNotes: {
+                    type: "textarea",
+                    placeholder: "Any other notes about this location"
+                }
             }
         }
     },
 
     stories: {
         BasicInformation: {
-            Name: {
-                type: "text",
-                required: true,
-                placeholder: "Story title"
-            },
-            BeginDate: {
-                type: "date",
-                placeholder: "When the story begins"
-            },
-            EndDate: {
-                type: "date",
-                placeholder: "When the story ends"
-            },
-            Synopsis: {
-                type: "textarea",
-                placeholder: "Brief summary of the story"
+            type: "group",
+            label: "Basic Information",
+            fields: {
+                Name: {
+                    type: "text",
+                    required: true,
+                    placeholder: "Story title"
+                },
+                BeginDate: {
+                    type: "date",
+                    placeholder: "When the story begins"
+                },
+                EndDate: {
+                    type: "date",
+                    placeholder: "When the story ends"
+                },
+                Synopsis: {
+                    type: "textarea",
+                    placeholder: "Brief summary of the story"
+                }
             }
         },
         StoryDetails: {
-            StoryDetails: {
-                type: "array:textarea",
-                placeholder: "Add a story detail"
+            type: "group",
+            label: "Story Details",
+            fields: {
+                StoryDetails: {
+                    type: "array:textarea",
+                    placeholder: "Add a story detail"
+                }
             }
         },
         Associated: {
-            Characters: {
+            type: "group",
+            label: "Associated Elements",
+            fields: {
                 Characters: {
                     type: "array:text",
                     placeholder: "Add a character"
                 },
-            },
-            Locations: {
                 Locations: {
                     type: "array:text",
                     placeholder: "Add a location"
                 },
-            },
-            Events: {
                 Events: {
                     type: "array:text",
                     placeholder: "Add an event"
                 },
-            },
-            Items: {
                 Items: {
                     type: "array:text",
                     placeholder: "Add an item"
-                },
+                }
             }
         },
         Other: {
-            AdditionalNotes: {
-                type: "textarea",
-                placeholder: "Any other notes about this story"
+            type: "group",
+            label: "Other",
+            fields: {
+                AdditionalNotes: {
+                    type: "textarea",
+                    placeholder: "Any other notes about this story"
+                }
             }
         }
     },
