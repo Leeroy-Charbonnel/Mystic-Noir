@@ -51,6 +51,7 @@ export function isObject(value: any): boolean {
 }
 
 export function convertTemplateFormat(template: any) {
+    console.log(template);
     const convertValue=(value: any): any => {
         if(typeof value==='object'&&value!==null) {
             const newObj: any={};

@@ -1,13 +1,14 @@
 import { App, ButtonComponent, ToggleComponent, Notice, TextComponent, TFile } from 'obsidian';
 import ContentCreatorPlugin from './main';
-import { node, formatDisplayName, isObject, FormTemplate, hasValueAndType } from './utils';
+import { node, formatDisplayName, isObject, FormTemplate, hasValueAndType, isGroupType } from './utils';
 
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import SuggestComponent from './SuggestComponent';
-import { MultiValueField } from 'MultiValueField';
+import { MultiValueField } from './MultiValueField';
+import { DropdownComponent, BadgesComponent, ImageComponent, DateComponent } from './components';
 
 export class DynamicFormView {
     private app: App;
@@ -33,15 +34,15 @@ export class DynamicFormView {
     }
 
     render() {
-        // Clear the container
+        //Clear the container
         this.container.empty();
         this.container.addClass('content-creator-view');
 
-        // Create the scroll container
+        //Create the scroll container
         this.formContainer = node('div', { class: 'form-scroll-container' });
         this.container.appendChild(this.formContainer);
 
-        // Create content name input field
+        //Create content name input field
         const contentNameInput = node('input', {
             classes: ['content-name'],
             attributes: { 'type': 'text', 'value': this.data.name, 'placeholder': 'Enter a name' }
@@ -51,10 +52,10 @@ export class DynamicFormView {
         contentNameInput.addEventListener('input', (e) => this.updateContentName((e.target as HTMLInputElement).value));
         this.formContainer.appendChild(contentNameInput);
 
-        // Build the form structure
+        //Build the form structure
         this.generateForm(this.formContainer, this.data.template, "template", 0);
 
-        // Add action buttons
+        //Add action buttons
         const buttonContainer = node('div', { class: 'button-container' });
         this.container.appendChild(buttonContainer);
 
@@ -69,23 +70,24 @@ export class DynamicFormView {
     }
 
     private generateForm(container: HTMLElement, data: any, path: string = '', deep: number) {
-        Object.entries(data).forEach(([key, field]: [string, { value: any, type: string }]) => {
+        Object.entries(data).forEach(([key, field]: [string, any]) => {
             const currentPath = path ? `${path}.${key}` : key;
             const fieldName = formatDisplayName(key);
 
-            // Handle nested sections
-            if (!hasValueAndType(field)) {
+            //Handle nested sections with group type
+            if (isGroupType(field)) {
                 const headerContainer = node('div', { class: `header-container` });
                 const sectionContainer = node('div', { class: `section-container` });
-                headerContainer.appendChild(node('div', { class: `header-${deep}`, text: fieldName }));
+                headerContainer.appendChild(node('div', { class: `header-${deep}`, text: field.label || fieldName }));
                 headerContainer.appendChild(node('div', { class: `header-separator-${deep} header-separator` }));
 
                 container.appendChild(headerContainer);
                 container.appendChild(sectionContainer);
 
-                this.generateForm(sectionContainer, field, currentPath, deep + 1);
-            } else {
-                // Handle field types
+                //Generate fields inside this group
+                this.generateForm(sectionContainer, field.fields, currentPath + ".fields", deep + 1);
+            } else if (hasValueAndType(field)) {
+                //Handle field types
                 const fieldContainer = node('div', { class: 'dynamic-form-field-container' });
 
                 if (field.type.startsWith("array")) {
@@ -98,7 +100,7 @@ export class DynamicFormView {
                         .render();
                     this.multiValueFieldsMap.set(currentPath, multiField);
                 } else if (field.type === "boolean") {
-                    // Create toggle/checkbox for boolean values
+                    //Create toggle/checkbox for boolean values
                     const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
                     fieldContainer.appendChild(fieldLabel);
                     const toggleContainer = node('div', { class: 'toggle-container' });
@@ -109,8 +111,56 @@ export class DynamicFormView {
                         .onChange((value) => {
                             this.updateData(currentPath, value);
                         });
+                } else if (field.type === "dropdown") {
+                    //Create dropdown field
+                    const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
+                    fieldContainer.appendChild(fieldLabel);
+                    const dropdownContainer = node('div', { class: 'dropdown-container' });
+                    fieldContainer.appendChild(dropdownContainer);
+
+                    new DropdownComponent(this.app, dropdownContainer)
+                        .setOptions(field.options || [])
+                        .setAllowCustom(field.allowCustom || false)
+                        .setValue(field.value || '')
+                        .onChange((value) => { this.updateData(currentPath, value); })
+                        .render();
+                } else if (field.type === "badges") {
+                    //Create badges field
+                    const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
+                    fieldContainer.appendChild(fieldLabel);
+                    const badgesContainer = node('div', { class: 'badges-container-wrapper' });
+                    fieldContainer.appendChild(badgesContainer);
+
+                    new BadgesComponent(this.app, badgesContainer)
+                        .setOptions(field.options || [])
+                        .setValues(field.value || [])
+                        .onChange((values) => { this.updateData(currentPath, values); })
+                        .render();
+                } else if (field.type === "image") {
+                    //Create image field
+                    const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
+                    fieldContainer.appendChild(fieldLabel);
+                    const imageContainer = node('div', { class: 'image-container' });
+                    fieldContainer.appendChild(imageContainer);
+
+                    new ImageComponent(this.app, imageContainer)
+                        .setValue(field.value || '')
+                        .onChange((value) => { this.updateData(currentPath, value); })
+                        .render();
+                } else if (field.type === "date") {
+                    //Create date field
+                    const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
+                    fieldContainer.appendChild(fieldLabel);
+                    const dateContainer = node('div', { class: 'date-container' });
+                    fieldContainer.appendChild(dateContainer);
+
+                    new DateComponent(this.app, dateContainer)
+                        .setValue(field.value || '')
+                        .setPlaceholder(field.placeholder || '')
+                        .onChange((value) => { this.updateData(currentPath, value); })
+                        .render();
                 } else {
-                    // Create rich text editor for text/textarea
+                    //Create rich text editor for text/textarea
                     const fieldLabel = node('div', { class: 'editor-label', text: fieldName });
                     fieldContainer.appendChild(fieldLabel);
                     fieldContainer.addClass(field.type);
@@ -162,7 +212,7 @@ export class DynamicFormView {
             leaf.openFile(file as TFile, { state: { mode: 'preview' } });
 
         } else {
-            // Close the view
+            //Close the view
             const leaf = this.app.workspace.getLeaf(false);
             leaf.setViewState({ type: 'empty' });
         }
@@ -200,7 +250,7 @@ class RichTextEditor {
             }
         });
 
-        // Create formatting buttons
+        //Create formatting buttons
         const boldButton = node('button', { class: 'editor-button', text: 'B', attributes: { 'title': 'Bold', 'type': 'button' } });
         boldButton.addEventListener('click', () => { editor.chain().focus().toggleBold().run(); });
 
@@ -210,7 +260,7 @@ class RichTextEditor {
         const strikeButton = node('button', { class: 'editor-button', text: 'S', attributes: { 'title': 'Strikethrough', 'type': 'button', 'style': 'text-decoration:line-through' } });
         strikeButton.addEventListener('click', () => { editor.chain().focus().toggleStrike().run(); });
 
-        // Color picker with hidden input
+        //Color picker with hidden input
         const colorContainer = node('div', { class: 'editor-color-container' });
         const colorButton = node('button', { class: 'editor-button', text: 'A', attributes: { 'title': 'Text Color', 'type': 'button' } });
         const colorInput = node('input', { class: 'editor-color-input', attributes: { type: 'color', title: 'Pick Text Color', value: getComputedStyle(document.body).getPropertyValue('--text-normal') } });
@@ -238,9 +288,9 @@ class RichTextEditor {
         let bulletListButton: HTMLButtonElement;
         let numberedListButton: HTMLButtonElement;
 
-        // Add extra formatting options for textarea fields
+        //Add extra formatting options for textarea fields
         if (inputType == "textarea") {
-            // Heading dropdown
+            //Heading dropdown
             const headingDropdown = document.createElement('select');
             headingDropdown.className = 'editor-heading-select';
             headingDropdown.title = 'Heading Level';
@@ -263,7 +313,7 @@ class RichTextEditor {
                 }
             });
 
-            // Update dropdown when editor selection changes
+            //Update dropdown when editor selection changes
             editor.on('transaction', () => {
                 if (editor.isActive('heading')) {
                     const currentLevel = editor.getAttributes('heading').level;
@@ -273,7 +323,7 @@ class RichTextEditor {
                 }
             });
 
-            // List formatting buttons
+            //List formatting buttons
             bulletListButton = node('button', { class: 'editor-button', text: '•', attributes: { 'title': 'Bullet List', 'type': 'button' } });
             bulletListButton.addEventListener('click', () => {
                 editor.chain().focus().toggleBulletList().run();
@@ -291,7 +341,7 @@ class RichTextEditor {
             toolbar.appendChild(numberedListButton);
         }
 
-        // Update button states based on current formatting
+        //Update button states based on current formatting
         editor.on('transaction', () => {
             boldButton.classList.toggle('is-active', editor.isActive('bold'));
             italicButton.classList.toggle('is-active', editor.isActive('italic'));
@@ -311,10 +361,10 @@ class RichTextEditor {
             }
         });
 
-        // Show toolbar on focus
+        //Show toolbar on focus
         editor.on('focus', () => { toolbar.classList.remove('editor-toolbar-hidden'); });
 
-        // Hide toolbar on blur (except when clicking toolbar itself)
+        //Hide toolbar on blur (except when clicking toolbar itself)
         editor.on('blur', () => {
             setTimeout(() => {
                 if (!editorContainer.contains(document.activeElement)) {

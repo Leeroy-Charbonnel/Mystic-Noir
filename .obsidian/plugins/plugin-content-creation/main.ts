@@ -333,26 +333,27 @@ export default class ContentCreatorPlugin extends Plugin {
     private formatContentData(data: any, depth: number, path: string = ''): HTMLElement {
         const contentContainer = node('div', { class: 'content-container' });
 
-        Object.entries(data).forEach(([key, field]: [string, { value: any, type: string }]) => {
+        Object.entries(data).forEach(([key, field]: [string, any]) => {
             const currentPath = path ? `${path}.${key}` : key;
             const displayName = formatDisplayName(key);
 
-            if (!hasValueAndType(field)) {
-                const sectionHeader = node(('h' + depth as "h1" | "h2" | "h3"), { class: 'section-header', text: displayName });
+            //Handle group type
+            if (field.type === "group") {
+                const sectionHeader = node(('h' + depth as "h1" | "h2" | "h3"), { class: 'section-header', text: field.label || displayName });
                 const sectionContent = node('div', { class: 'section-content' });
-                sectionContent.appendChild(this.formatContentData(field, depth + 1, currentPath));
+                sectionContent.appendChild(this.formatContentData(field.fields, depth + 1, currentPath + ".fields"));
 
                 const section = node('div', { class: `section level-${depth}`, children: [sectionHeader, sectionContent] });
                 contentContainer.appendChild(section);
                 contentContainer.appendChild(node('div', { class: 'section-separator' }));
-            }
-            else {
+            } else if (hasValueAndType(field)) {
                 if (field.value == null || field.value == undefined) return;
 
                 const fieldContainer = node('div', { class: `field-container` });
                 fieldContainer.appendChild(node('div', { class: 'field-label', text: `${displayName} : ` }));
 
                 let fieldValueElement: HTMLElement | null = null;
+
                 if (field.type.startsWith("array")) {
                     const fieldType = field.type.split(':')[1];
                     let values = field.value || [];
@@ -360,14 +361,14 @@ export default class ContentCreatorPlugin extends Plugin {
 
                     fieldContainer.classList.add(`field-type-${values.length <= 1 ? fieldType : field.type}`);
 
-                    // Text areas
+                    //Text areas
                     if (fieldType === "textarea") {
                         if (values.length <= 1) {
                             fieldValueElement = this.getTextAreaField(values[0] || "");
                         } else {
                             fieldValueElement = this.getTextAreaArray(values);
                         }
-                        // Text
+                        //Text
                     } else {
                         if (values.length <= 1) {
                             fieldValueElement = this.getTextField(values[0] || "");
@@ -378,7 +379,6 @@ export default class ContentCreatorPlugin extends Plugin {
                 } else if (field.type === "textarea") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     fieldValueElement = this.getTextAreaField(field.value);
-
                 } else if (field.type === "boolean") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     const checkboxContainer = node('div', { class: 'field-value' });
@@ -389,13 +389,52 @@ export default class ContentCreatorPlugin extends Plugin {
                         }
                     }) as HTMLInputElement;
 
-
                     if (field.value) {
                         checkbox.setAttr("checked", "checked");
                     }
 
                     checkboxContainer.appendChild(checkbox);
                     fieldValueElement = checkboxContainer;
+                } else if (field.type === "dropdown") {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    const dropdownDisplay = node('div', { class: 'field-value dropdown-value' });
+                    dropdownDisplay.textContent = field.value || '';
+                    fieldValueElement = dropdownDisplay;
+                } else if (field.type === "badges") {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    const badgesContainer = node('div', { class: 'field-value badges-value' });
+
+                    (field.value || []).forEach((badge: string) => {
+                        const badgeElement = node('span', {
+                            class: 'badge-item',
+                            text: badge
+                        });
+                        badgesContainer.appendChild(badgeElement);
+                    });
+
+                    fieldValueElement = badgesContainer;
+                } else if (field.type === "image") {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    const imageContainer = node('div', { class: 'field-value image-value' });
+
+                    if (field.value) {
+                        const img = node('img', {
+                            attributes: {
+                                src: field.value,
+                                alt: displayName
+                            }
+                        });
+                        imageContainer.appendChild(img);
+                    } else {
+                        imageContainer.textContent = 'No image';
+                    }
+
+                    fieldValueElement = imageContainer;
+                } else if (field.type === "date") {
+                    fieldContainer.classList.add(`field-type-${field.type}`);
+                    const dateValue = node('div', { class: 'field-value date-value' });
+                    dateValue.textContent = field.value || '';
+                    fieldValueElement = dateValue;
                 } else if (String(field.value).trim()) {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     fieldValueElement = this.getTextField(field.value);
@@ -407,6 +446,7 @@ export default class ContentCreatorPlugin extends Plugin {
                 }
             }
         });
+
         return contentContainer;
     }
 

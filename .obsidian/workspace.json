@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "aa2b8aedee3cfaf4",
+        "id": "519821402cc993de",
         "type": "tabs",
         "children": [
           {
-            "id": "01c0b4cc3733a9d0",
+            "id": "0d55262861d3ad7b",
             "type": "leaf",
             "state": {
-              "type": "content-creator-view",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "1. Characters/New (Characters).md",
+                "mode": "preview",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Content Creator"
+              "title": "New (Characters)"
             }
           }
         ]
@@ -173,12 +177,14 @@
       "canvas:Create new canvas": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "content-creation-plugin:Create Content": false,
-      "obsidian-git:Open Git source control": false
+      "obsidian-git:Open Git source control": false,
+      "content-creation-plugin:Create Content": false
     }
   },
-  "active": "01c0b4cc3733a9d0",
+  "active": "0d55262861d3ad7b",
   "lastOpenFiles": [
+    "1. Characters/New (Characters).md",
+    "1. Characters/test.md",
     "1. Characters/Samuel Blackwood.md",
     "Home.md",
     "0. Chronology.canvas",

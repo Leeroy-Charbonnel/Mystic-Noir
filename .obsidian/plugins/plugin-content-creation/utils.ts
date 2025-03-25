@@ -53,11 +53,62 @@ export function isObject(value: any): boolean {
 export function convertTemplateFormat(template: any) {
     const convertValue=(value: any): any => {
         if(typeof value==='object'&&value!==null) {
-            const newObj: any={};
-            for(const [key,val] of Object.entries(value)) {
-                newObj[key]=convertValue(val);
+            // For objects with type property
+            if(value.type) {
+                //Handle group type specifically
+                if(value.type==="group") {
+                    const newObj: any={
+                        type: value.type,
+                        label: value.label || '',
+                        fields: {}
+                    };
+                    
+                    //Convert each field in the group
+                    for(const [fieldKey,field] of Object.entries(value.fields || {})) {
+                        newObj.fields[fieldKey]=convertValue(field);
+                    }
+                    
+                    return newObj;
+                } else {
+                    //Handle field types
+                    const newObj: any={
+                        type: value.type,
+                        value: null
+                    };
+                    
+                    //Set default values based on field type
+                    if(value.type==="boolean") {
+                        newObj.value=value.default || false;
+                    } else if(value.type==="dropdown") {
+                        newObj.options=value.options || [];
+                        newObj.allowCustom=value.allowCustom || false;
+                    } else if(value.type==="badges") {
+                        newObj.options=value.options || [];
+                        newObj.value=[];
+                    } else if(value.type.startsWith("array")) {
+                        newObj.value=[];
+                    }
+                    
+                    //Copy any other properties
+                    for(const [propKey,propVal] of Object.entries(value)) {
+                        if(propKey!=="type"&&propKey!=="value") {
+                            newObj[propKey]=propVal;
+                        }
+                    }
+                    
+                    return newObj;
+                }
+            } 
+            // For objects without type property (potentially container objects like content types or groups)
+            else {
+                const newObj: any={};
+                
+                for(const [key,val] of Object.entries(value)) {
+                    newObj[key]=convertValue(val);
+                }
+                
+                return newObj;
             }
-            return newObj;
         } else {
             return {
                 value: value=="boolean"? false:null,
@@ -91,6 +142,13 @@ export function hasValueAndType(obj: any): boolean {
         &&typeof obj==='object'
         &&'value' in obj
         &&'type' in obj;
+}
+
+export function isGroupType(obj: any): boolean {
+    return obj!==null
+        &&typeof obj==='object'
+        &&obj.type==="group"
+        &&'fields' in obj;
 }
 
 

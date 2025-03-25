@@ -287,3 +287,151 @@ button:not(.clickable-icon) {
     margin: 10px 0px 0px auto;
     padding-left: 5px;
 }
+
+
+/* Dropdown styles */
+.dropdown-container {
+    margin: 5px 0;
+}
+
+.dropdown-select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.dropdown-custom-input {
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.dropdown-value {
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+}
+
+/* Badges styles */
+.badges-container-wrapper {
+    margin: 5px 0;
+}
+
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 5px 0;
+}
+
+.badge-option-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    padding: 4px 10px;
+}
+
+.badge-option-container input[type="checkbox"] {
+    margin: 0;
+}
+
+.badges-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.badge-item {
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    padding: 4px 10px;
+    display: inline-block;
+    font-size: 12px;
+}
+
+/* Image field styles */
+.image-input-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.image-path-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.image-browse-button {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    background-color: var(--interactive-normal);
+    color: var(--text-normal);
+    cursor: pointer;
+}
+
+.image-preview-container {
+    margin-top: 10px;
+    border: 1px dashed var(--background-modifier-border);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.image-preview {
+    display: flex;
+    justify-content: center;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+}
+
+.image-value img {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+}
+
+/* Date field styles */
+.date-container {
+    margin: 5px 0;
+}
+
+.date-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.date-value {
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+}
