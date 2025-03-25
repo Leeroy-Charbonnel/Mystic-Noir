@@ -1,242 +1,297 @@
 .timeline-visualizer-container {
-  padding: 10px 20px;
-  height: 100%;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+    padding: 10px 20px;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--background-modifier-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* Controls Container - New addition to group controls */
 .timeline-controls-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
 .timeline-refresh-button {
-  background-color: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  align-self: flex-end;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-end;
 }
 
 .timeline-refresh-button:hover {
-  background-color: var(--interactive-accent-hover);
+    background-color: var(--interactive-accent-hover);
 }
 
-.timeline-filters {
-  padding: 10px;
-  background-color: var(--background-secondary);
-  border-radius: 5px;
+.timeline-controls {
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    grid-template-rows: 1fr;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
-.filter-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+.control-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
 }
 
 .filter-label {
-  font-weight: bold;
-  font-size: 12px;
-  white-space: nowrap;
+    font-weight: bold;
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .filter-button {
-  background-color: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
+
+.control-button.is-active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
 
 .filter-button.is-active {
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
+    background-color: var(--background-darker-color);
+    border: 1px solid var(--background-color);
 }
 
-.story-select-dropdown {
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--background-modifier-border);
-  background-color: var(--background-primary);
-  color: var(--text-normal);
+.view-section select {
+    padding: 4px 8px;
+    background-color: var(--background-primary);
+    padding: 0px 10px !important;
+    height: 30px;
 }
 
 .timeline-content {
-  flex-grow: 1;
-  background-color: var(--background-primary);
-  border-radius: 5px;
-  border: 1px solid var(--background-modifier-border);
-  overflow-y: auto;
-  position: relative;
+    flex-grow: 1;
+    background-color: var(--background-primary);
+    border-radius: 5px;
+    border: 1px solid var(--background-modifier-border);
+    overflow-y: auto;
+    position: relative;
 }
 
 .timeline-loading,
 .timeline-empty,
 .timeline-error {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: var(--text-muted);
-  font-size: 16px;
-  text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: var(--text-muted);
+    font-size: 16px;
+    text-align: center;
 }
 
 .timeline-error {
-  color: var(--text-error);
+    color: var(--text-error);
 }
 
 .event-title {
-  font-weight: bold;
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: sticky;
-  top: 0;
-  padding: 3px 3px;
-  z-index: 2;
-  transition: 0.3s;
-  background: var(--background-darker-color);
-  transform: translateY(-1px);
+    font-weight: bold;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: sticky;
+    top: 0;
+    padding: 3px 3px;
+    z-index: 2;
+    transition: 0.3s;
+    background: var(--background-darker-color);
+    transform: translateY(-1px);
 }
 
 .event-date {
-  opacity: 0.8;
-  list-style: none;
-  text-align: right;
-  font-size: 10px;
+    opacity: 0.8;
+    list-style: none;
+    text-align: right;
+    font-size: 10px;
 }
 
 .event-description {
-  font-size: 14px;
-  opacity: 0.9;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+    font-size: 14px;
+    opacity: 0.9;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
 }
 
 
 .event-type-badge {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  text-transform: capitalize;
-  margin-top: auto;
-  margin-left: auto;
-  align-self: flex-end;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-transform: capitalize;
+    margin-top: auto;
+    margin-left: auto;
+    align-self: flex-end;
 }
 
 .calendar-grid {
-  display: grid;
-  gap: 8px;
-  position: relative;
-  min-height: 500px;
-  margin: 10px;
+    display: grid;
+    gap: 8px;
+    position: relative;
+    min-height: 500px;
+    margin: 10px;
 }
 
 .calendar-date-cell {
-  grid-column: 1;
-  background: var(--background-secondary);
-  padding: 10px;
-  font-weight: bold;
-  border-right: 1px solid var(--background-modifier-border);
-  border-bottom: 1px solid var(--background-modifier-border);
-  display: flex;
-  text-wrap: nowrap;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  transition: all 0.2s ease;
+    grid-column: 1;
+    background: var(--background-secondary);
+    padding: 10px;
+    font-weight: bold;
+    border-right: 1px solid var(--background-modifier-border);
+    border-bottom: 1px solid var(--background-modifier-border);
+    display: flex;
+    text-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.2s ease;
 }
 
 .calendar-event {
-  position: relative;
-  background: var(--background-darker-color);
-  box-shadow: 0 0 0 1px var(--border-color), 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 12px;
-  border-radius: 6px;
-  z-index: 2;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    background: var(--background-darker-color);
+    box-shadow: 0 0 0 1px var(--border-color), 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 12px;
+    border-radius: 6px;
+    z-index: 2;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .calendar-event[data-type="story"] .story-centric-button {
-  display: block;
+    display: block;
 }
 
 .calendar-event>*:not(:last-child) {
-  margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .isSticky {
-  border-bottom: 1px solid var(--background-color);
+    border-bottom: 1px solid var(--background-color);
 }
 
 .event-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
 }
 
 .story-centric-button {
-  margin-top: 8px;
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 0 black !important;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
-  width: 100%;
-  font-weight: 500;
+    margin-top: 8px;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 0 black !important;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    width: 100%;
+    font-weight: 500;
 }
 
 .story-centric-button:hover {
-  transform: translateY(-1px);
-  background-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-1px);
+    background-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .event-date .elapsed-time {
-  display: none;
+    display: none;
 }
 
 .event-date .date {
-  display: list-item;
+    display: list-item;
 }
 
 .event-date:hover .date {
-  display: none;
+    display: none;
 }
 
 .event-date:hover .elapsed-time {
-  display: list-item;
+    display: list-item;
 }
+
+.view-section {
+    grid-column: 1;
+}
+
+.filter-section {
+    grid-column: 3;
+    /* display: flex; */
+    /* flex-direction: column; */
+    justify-content: end;
+}
+
+.display-section {
+    grid-column: 2;
+}
+
+.display-section {
+    border-right: 1px solid grey;
+    border-left: 1px solid grey;
+    padding: 0px 5px;
+    margin: 0px 5px;
+    justify-content: center;
+}
+
+.view-section *,
+.display-section * {
+    /* margin: 0px 6px; */
+    /* padding: 10px; */
+}
+
+.view-section button {
+    --background-darker-color: var(--color-accent);
+}
+
+
+.timeline-controls>* {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.control-button,
+.filter-button {
+    padding: 0 10px;
+    margin: 0px 3px;
+}
+
+.display-section>* {}
