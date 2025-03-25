@@ -11,10 +11,20 @@
             "id": "aac857f86fe37b0e",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "content-creator-view",
               "state": {},
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Content Creator"
+            }
+          },
+          {
+            "id": "bf243e0f61f90ae1",
+            "type": "leaf",
+            "state": {
+              "type": "content-creator-view",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "Content Creator"
             }
           }
         ]
@@ -174,8 +184,9 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "9081f7d405e9a01a",
+  "active": "aac857f86fe37b0e",
   "lastOpenFiles": [
+    "Test chaarcter.md",
     "New (Items)dddd.md",
     "New (Items).md",
     "New (Example).md",
