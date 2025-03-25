@@ -332,6 +332,24 @@ button:not(.clickable-icon) {
     color: var(--text-normal);
 }
 
+
+/* Dropdown custom input styling */
+.dropdown-custom-container {
+    margin-top: 5px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-custom-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+/* Add this to styles.css */
+
 .dropdown-custom-input {
     width: 100%;
     margin-top: 5px;
@@ -387,12 +405,7 @@ button:not(.clickable-icon) {
     font-size: 12px;
 }
 
-/* Image field styles */
-.image-input-container {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
+
 
 .image-path-input {
     flex: 1;
@@ -412,32 +425,9 @@ button:not(.clickable-icon) {
     cursor: pointer;
 }
 
-.image-preview-container {
-    margin-top: 10px;
-    border: 1px dashed var(--background-modifier-border);
-    padding: 10px;
-    border-radius: 4px;
-}
 
-.image-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
-    color: var(--text-muted);
-    font-style: italic;
-}
 
-.image-preview {
-    display: flex;
-    justify-content: center;
-}
 
-.preview-image {
-    max-width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-}
 
 .image-value img {
     max-width: 100%;
@@ -556,4 +546,124 @@ button:not(.clickable-icon) {
 
 .file-selector-item:hover {
     background-color: var(--background-modifier-hover);
+}
+
+.content-type-header {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Image component styling */
+.image-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.file-input-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Hide the path input */
+.image-path-input.hidden {
+    display: none;
+}
+
+/* Hide actual file input */
+.file-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+/* Style the label to look like a button */
+.file-input-label {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background-color: var(--interactive-normal);
+    color: var(--text-normal);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.file-input-label:hover {
+    background-color: var(--interactive-hover);
+}
+
+/* Image preview styling */
+.image-preview-container {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.image-preview {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+}
+
+/* Image error display */
+.image-error {
+    padding: 10px;
+    background-color: var(--background-modifier-error);
+    color: var(--text-error);
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Make sure images display correctly in content */
+.field-value.image-value img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
 }

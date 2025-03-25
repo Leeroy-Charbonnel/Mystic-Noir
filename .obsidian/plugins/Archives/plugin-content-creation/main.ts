@@ -217,22 +217,43 @@ export default class ContentCreatorPlugin extends Plugin {
 
     fillTemplateWithData(template: any, data: any) {
         const result = JSON.parse(JSON.stringify(template));
-        function fill(templateObj: any, dataObj: any) {
+
+        function fillRecursive(templateObj: any, dataObj: any) {
             if (!dataObj) return templateObj;
 
+            // Handle group type fields - they have special structure
+            if (templateObj.type === 'group' && templateObj.fields) {
+                for (const key in templateObj.fields) {
+                    if (dataObj.template && dataObj.template[key]) {
+                        templateObj.fields[key] = fillRecursive(templateObj.fields[key], dataObj.template[key]);
+                    }
+                }
+                return templateObj;
+            }
+
+            // Handle field with value and type properties
+            if (hasValueAndType(templateObj)) {
+                // Set the value directly from data object
+                templateObj.value = dataObj;
+                return templateObj;
+            }
+
+            // Handle other objects recursively
             for (const key in templateObj) {
                 if (dataObj.hasOwnProperty(key)) {
-                    if (typeof templateObj[key] === 'object' && templateObj[key] != null) {
-                        templateObj[key] = fill(templateObj[key], dataObj[key]);
-                    }
-                    else {
+                    if (typeof templateObj[key] === 'object' && templateObj[key] !== null) {
+                        templateObj[key] = fillRecursive(templateObj[key], dataObj[key]);
+                    } else {
                         templateObj[key] = dataObj[key];
                     }
                 }
             }
+
             return templateObj;
         }
-        return fill(result, data);
+
+        // Use the template data from data.template
+        return fillRecursive(result, data);
     }
 
 

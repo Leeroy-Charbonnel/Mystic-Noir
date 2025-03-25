@@ -8,7 +8,11 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import SuggestComponent from './SuggestComponent';
 import { MultiValueField } from './MultiValueField';
-import { DropdownComponent, BadgesComponent, ImageComponent, DateComponent } from './components';
+import { DropdownComponent } from 'components/DropdownComponent';
+import { BadgesComponent } from 'components/BadgesComponent';
+import { ImageComponent } from 'components/ImageComponent';
+import { DateComponent } from 'components/DateComponent';
+
 
 export class DynamicFormView {
     private app: App;

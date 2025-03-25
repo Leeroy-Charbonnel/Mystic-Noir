@@ -21,18 +21,40 @@ class ContentCreatorSettingTab extends PluginSettingTab {
 
         containerEl.createEl('h2', { text: 'Content Creator Settings' });
         containerEl.createEl('p', { text: 'All content will be created in the root directory by default.' });
+
+        // Add color settings section
+        containerEl.createEl('h3', { text: 'Content Type Colors' });
+
+        // Get all template types
+        Object.keys(this.plugin.templates).forEach(type => {
+            const displayName = formatDisplayName(type);
+
+            // Set default color if not already set
+            if (!this.plugin.settings.contentColors[type]) {
+                this.plugin.settings.contentColors[type] = '#6688cc'; // Default color
+            }
+
+            new Setting(containerEl)
+                .setName(`${displayName} Color`)
+                .setDesc(`Set the color for ${displayName} content type`)
+                .addColorPicker(color => {
+                    color.setValue(this.plugin.settings.contentColors[type])
+                        .onChange(async value => {
+                            this.plugin.settings.contentColors[type] = value;
+                            await this.plugin.saveSettings();
+                        });
+                });
+        });
     }
 }
 
 interface ContentCreatorPluginSettings {
-    // We're keeping this interface for backward compatibility
-    defaultFolders: { [key: string]: string }
+    contentColors: { [key: string]: string }
 }
 
 const DEFAULT_SETTINGS: ContentCreatorPluginSettings = {
-    defaultFolders: {}
+    contentColors: {}
 }
-
 class EditContentButtons {
     private containerEl: HTMLElement;
     private plugin: ContentCreatorPlugin;
@@ -93,12 +115,24 @@ export class ContentCreatorView extends ItemView {
         this.filePath = filePath;
         this.contentEl.empty();
 
+        // Apply content type color
+        const contentType = this.contentData.contentType;
+        const color = this.plugin.settings.contentColors[contentType] || '#6688cc';
+
+        // Create a colored header
+        const header = node('div', { class: 'content-type-header' });
+        header.style.backgroundColor = color;
+        header.style.color = '#ffffff';
+        header.textContent = formatDisplayName(contentType);
+        this.contentEl.appendChild(header);
+
         const wrapper = node('div', { class: 'content-creator-wrapper' });
         this.contentEl.appendChild(wrapper);
 
         this.formView = new DynamicFormView(this.app, this.plugin, this.contentData, wrapper, newContent);
         this.formView.render();
     }
+
 }
 
 export default class ContentCreatorPlugin extends Plugin {
@@ -144,7 +178,7 @@ export default class ContentCreatorPlugin extends Plugin {
                 this.updateLinksAfterRename(file, oldPath);
             })
         );
-        
+
         // Check for needRefresh on file open
         this.registerEvent(
             this.app.workspace.on('file-open', async (file: TFile) => {
@@ -158,42 +192,42 @@ export default class ContentCreatorPlugin extends Plugin {
     private async updateLinksAfterRename(file: TFile, oldPath: string) {
         // Only process markdown files
         if (file.extension !== 'md') return;
-        
+
         const allFiles = this.app.vault.getMarkdownFiles();
-        
+
         for (const contentFile of allFiles) {
             try {
                 const metadata = this.getFileProperties(this.app, contentFile);
                 if (!metadata || !metadata.data || !metadata.data.contentType) continue;
-                
+
                 let contentChanged = false;
                 const contentData = metadata.data;
-                
+
                 // Check if any links need updating
                 const processObject = (obj: any): boolean => {
                     let changed = false;
-                    
+
                     if (!obj) return changed;
-                    
+
                     if (typeof obj === 'string' && obj.includes('[[')) {
                         // This is a potential link
                         const regex = /\[\[(.*?)(?:#(.*?))?\]\]/g;
                         let match;
-                        
+
                         const newContent = obj.replace(regex, (match, linkPath, linkId) => {
-                            if (linkPath === oldPath.replace('.md', '') || 
+                            if (linkPath === oldPath.replace('.md', '') ||
                                 linkPath === file.basename) {
                                 changed = true;
                                 return `[[${file.basename}#${linkId}]]`;
                             }
                             return match;
                         });
-                        
+
                         if (changed) {
                             return true;
                         }
                     }
-                    
+
                     if (typeof obj === 'object') {
                         if (Array.isArray(obj)) {
                             for (let i = 0; i < obj.length; i++) {
@@ -209,12 +243,12 @@ export default class ContentCreatorPlugin extends Plugin {
                             }
                         }
                     }
-                    
+
                     return changed;
                 };
-                
+
                 contentChanged = processObject(contentData.template);
-                
+
                 if (contentChanged) {
                     // Set needRefresh flag and save the file
                     metadata.needRefresh = true;
@@ -231,34 +265,34 @@ export default class ContentCreatorPlugin extends Plugin {
             }
         }
     }
-    
+
     private async checkAndRefreshContent(file: TFile) {
         try {
             const metadata = this.getFileProperties(this.app, file);
             if (!metadata || !metadata.data || !metadata.needRefresh) return;
-            
+
             // Regenerate the content
             const contentData = metadata.data;
             const fileContent = this.regenerateFileContent(file, contentData);
-            
+
             // Update the file with regenerated content and set needRefresh to false
             metadata.needRefresh = false;
-            
+
             const newContent = file.content.replace(
                 /^---\n([\s\S]*?)\n---\n\n([\s\S]*)/,
                 `---\n${Object.entries(metadata).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join('\n')}\n---\n\n${fileContent}`
             );
-            
+
             await this.app.vault.modify(file, newContent);
-            
+
         } catch (error) {
             console.error(`Error refreshing content for ${file.path}:`, error);
         }
     }
-    
+
     private regenerateFileContent(file: TFile, data: any): string {
         const contentTypeTag = data.contentType.charAt(0).toUpperCase() + data.contentType.slice(1);
-        
+
         let content = `#${contentTypeTag}\n\n`;
         content += this.formatContentData(data.template, 3, "template").innerHTML;
         return content;
@@ -333,44 +367,44 @@ export default class ContentCreatorPlugin extends Plugin {
     // Function to extract only values from template data
     private extractValuesOnly(data: any): any {
         if (!data) return null;
-        
+
         if (Array.isArray(data)) {
             return data.map(item => this.extractValuesOnly(item));
         }
-        
+
         if (typeof data === 'object') {
             // If it has value and type properties, just return the value
             if (hasValueAndType(data)) {
                 return data.value;
             }
-            
+
             // If it's a group, process its fields
             if (data.type === 'group' && data.fields) {
                 const result: any = {
                     type: 'group'
                 };
-                
+
                 if (data.label) {
                     result.label = data.label;
                 }
-                
+
                 result.fields = {};
                 for (const key in data.fields) {
                     result.fields[key] = this.extractValuesOnly(data.fields[key]);
                 }
-                
+
                 return result;
             }
-            
+
             // Process other objects recursively
             const result: any = {};
             for (const key in data) {
                 result[key] = this.extractValuesOnly(data[key]);
             }
-            
+
             return result;
         }
-        
+
         // Return primitive values as is
         return data;
     }
@@ -383,7 +417,7 @@ export default class ContentCreatorPlugin extends Plugin {
             if (!filePath) {
                 filePath = `/${data.name}.md`;
             }
-            
+
             let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
             const fileContent = this.generateFileContent(data, file);
 
@@ -402,10 +436,10 @@ export default class ContentCreatorPlugin extends Plugin {
         }
     }
 
-
     private generateFileContent(data: FormTemplate, existingFile?: TFile): string {
         const contentTypeTag = data.contentType.charAt(0).toUpperCase() + data.contentType.slice(1);
-        
+        const color = this.settings.contentColors[data.contentType] || '#6688cc';
+
         // Get existing properties for this file if it exists
         let existingProps: any = {};
         if (existingFile) {
@@ -414,13 +448,14 @@ export default class ContentCreatorPlugin extends Plugin {
                 existingProps = cache.frontmatter;
             }
         }
-        
+
         // Create a simplified version of the data with only values
         const simplifiedData = {
             contentType: data.contentType,
             name: data.name,
             id: existingProps.data?.id || generateUUID(), // Preserve ID if exists, generate new if not
-            template: this.extractValuesOnly(data.template)
+            template: this.extractValuesOnly(data.template),
+            color: color // Store the color in the frontmatter
         };
 
         let content = "";
@@ -434,7 +469,6 @@ export default class ContentCreatorPlugin extends Plugin {
         content += this.formatContentData(data.template, 3, "template").innerHTML;
         return content;
     }
-
 
     //Helper function to convert a type of filed to html
     private getTextField(value: string): HTMLElement {
@@ -483,7 +517,62 @@ export default class ContentCreatorPlugin extends Plugin {
         return container;
     }
 
-    //Convert json object to html
+    // Add this method to ContentCreatorPlugin class in main.ts
+
+    // Get a proper URL for an image
+    // Get a proper URL for an image
+    private getImageUrl(path: string): string {
+        if (!path) return '';
+
+        try {
+            // Try to get the file from vault
+            const file = this.app.vault.getAbstractFileByPath(path);
+            if (file instanceof TFile) {
+                // Get a resource URL that works in Obsidian
+                return this.app.vault.getResourcePath(file);
+            }
+        } catch (e) {
+            console.warn("Could not get resource path for image:", e);
+        }
+
+        return path; // Return original path as fallback
+    }
+
+    // Add this method for image field rendering
+    private getImageField(value: string): HTMLElement {
+        const container = node('div', { class: 'field-value image-value' });
+
+        if (value) {
+            try {
+                // Get proper image URL
+                const imgPath = this.getImageUrl(value);
+
+                const img = node('img', {
+                    attributes: {
+                        src: imgPath,
+                        alt: 'Image'
+                    }
+                });
+
+                // Add error handling
+                img.addEventListener('error', () => {
+                    container.empty();
+                    container.textContent = `Image not found: ${value}`;
+                    container.classList.add('image-error');
+                });
+
+                container.appendChild(img);
+            } catch (error) {
+                container.textContent = `Error displaying image: ${error.message}`;
+                container.classList.add('image-error');
+            }
+        } else {
+            container.textContent = 'No image';
+        }
+
+        return container;
+    }
+    // Modified version of formatContentData to handle image fields correctly
     private formatContentData(data: any, depth: number, path: string = ''): HTMLElement {
         const contentContainer = node('div', { class: 'content-container' });
 
@@ -569,21 +658,7 @@ export default class ContentCreatorPlugin extends Plugin {
                     fieldValueElement = badgesContainer;
                 } else if (field.type === "image") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
-                    const imageContainer = node('div', { class: 'field-value image-value' });
-
-                    if (field.value) {
-                        const img = node('img', {
-                            attributes: {
-                                src: field.value,
-                                alt: displayName
-                            }
-                        });
-                        imageContainer.appendChild(img);
-                    } else {
-                        imageContainer.textContent = 'No image';
-                    }
-
-                    fieldValueElement = imageContainer;
+                    fieldValueElement = this.getImageField(field.value);
                 } else if (field.type === "date") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     const dateValue = node('div', { class: 'field-value date-value' });
@@ -603,6 +678,8 @@ export default class ContentCreatorPlugin extends Plugin {
 
         return contentContainer;
     }
+
+    // Add this method for image field rendering
 
     onunload() {
         console.log("unloading plugin");

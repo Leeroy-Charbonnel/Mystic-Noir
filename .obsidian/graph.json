@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "( #Characters OR #Events OR #Items OR #Locations OR #Stories )",
+  "search": "( #Characters OR #Events OR #Example OR #Items OR #Locations OR #Stories )",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -81,6 +81,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 1.0000000000000622,
+  "scale": 0.7132754626224863,
   "close": false
 }

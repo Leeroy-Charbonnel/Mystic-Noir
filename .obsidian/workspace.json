@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "d875c57aa2c317b4",
+        "id": "d711764aa99c53ec",
         "type": "tabs",
         "children": [
           {
-            "id": "92b0cd9b79872ef4",
+            "id": "bbe76ca04654ea73",
             "type": "leaf",
             "state": {
-              "type": "content-creator-view",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "New (Items).md",
+                "mode": "preview",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Content Creator"
+              "title": "New (Items)"
             }
           }
         ]
@@ -177,17 +181,29 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "92b0cd9b79872ef4",
+  "active": "bbe76ca04654ea73",
   "lastOpenFiles": [
+    "New (Example).md",
+    "New (Items).md",
+    "New (Items)dddd.md",
+    "Test chaarcter.md",
+    "1. Characters/Alexander Dupont.md",
+    "4. Stories/3 The Last Gamble.md",
+    "1. Characters/Evelyn Dupont.md",
+    "Eliza Crane.md",
+    "_Images/1742941472307-laputa.png",
+    "_Images",
+    "images/1742941293716-Capture_d__cran_2025-03-05_003438.png",
+    "images",
     "1. Characters/Samuel Blackwood.md",
+    "char2.md",
     "test character.md",
+    "Home.md",
+    "2. Items/Dupont's Heirloom.md",
     "1. Characters/The Shadow.md",
     "1. Characters/New (Characters).md",
     "1. Characters/Lily Moore.md",
-    "1. Characters/Evelyn Dupont.md",
-    "1. Characters/Alexander Dupont.md",
     "1. Characters/test.md",
-    "Home.md",
     "0. Chronology.canvas",
     "Untitled.md",
     "5. Events/Mr Dupont's death.md",
@@ -196,10 +212,7 @@
     "5. Events/Revolution.md",
     "5. Events/Lilly's death.md",
     "4. Stories/4 The Missing Melody.md",
-    "4. Stories/3 The Last Gamble.md",
     "4. Stories/2 Silenced Testimony.md",
-    "4. Stories/1 Shadows of the Crescent City.md",
-    "TEST GIT.md",
-    "4. Stories/New (Stories).md"
+    "4. Stories/1 Shadows of the Crescent City.md"
   ]
 }
