@@ -1,4 +1,4 @@
-import { App } from 'obsidian';
+import { App, TFile, TAbstractFile, Modal, TFolder } from 'obsidian';
 import { node } from './utils';
 
 export class DropdownComponent {
@@ -9,9 +9,9 @@ export class DropdownComponent {
     private value: string;
     private onChangeCb: (value: string) => void;
 
-    constructor(app: App, container: HTMLElement) {
+    constructor(app: App, containerEl: HTMLElement) {
         this.app = app;
-        this.container = container;
+        this.container = containerEl;
         this.options = [];
         this.allowCustom = false;
         this.value = '';
@@ -22,8 +22,8 @@ export class DropdownComponent {
         return this;
     }
 
-    setAllowCustom(allow: boolean) {
-        this.allowCustom = allow;
+    setAllowCustom(allowCustom: boolean) {
+        this.allowCustom = allowCustom;
         return this;
     }
 
@@ -40,74 +40,69 @@ export class DropdownComponent {
     render() {
         this.container.empty();
 
-        const selectEl = node('select', { class: 'dropdown-select' });
-        
-        //Add placeholder option
-        const placeholderOption = node('option', { 
-            text: 'Select an option', 
-            attributes: { value: '' } 
-        });
-        selectEl.appendChild(placeholderOption);
-        
-        //Add all options
+        // Create dropdown select
+        const select = node('select', { class: 'dropdown-select' }) as HTMLSelectElement;
+        this.container.appendChild(select);
+
+        // Add placeholder option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select an option';
+        defaultOption.disabled = true;
+        defaultOption.selected = !this.value || !this.options.includes(this.value);
+        select.appendChild(defaultOption);
+
+        // Add options
         this.options.forEach(option => {
-            const optionEl = node('option', {
-                text: option,
-                attributes: { value: option }
-            });
-            if (this.value === option) {
-                optionEl.setAttribute('selected', 'selected');
-            }
-            selectEl.appendChild(optionEl);
+            const optionEl = document.createElement('option');
+            optionEl.value = option;
+            optionEl.textContent = option;
+            optionEl.selected = option === this.value;
+            select.appendChild(optionEl);
         });
 
-        //Add custom option if allowed
+        // Custom input if allowed
+        let customInput: HTMLInputElement | null = null;
         if (this.allowCustom) {
-            const customOption = node('option', {
-                text: 'Custom...',
-                attributes: { value: 'custom' }
-            });
-            selectEl.appendChild(customOption);
-            
-            //Custom input (initially hidden)
-            const customInput = node('input', {
+            // Add "Custom" option
+            const customOption = document.createElement('option');
+            customOption.value = '__custom__';
+            customOption.textContent = 'Custom...';
+            customOption.selected = this.value && !this.options.includes(this.value);
+            select.appendChild(customOption);
+
+            // Create custom input
+            customInput = node('input', {
                 class: 'dropdown-custom-input',
                 attributes: {
                     type: 'text',
-                    placeholder: 'Enter custom value',
-                    style: 'display: none;'
+                    value: this.options.includes(this.value) ? '' : this.value
                 }
-            });
-            
-            //Show/hide custom input based on selection
-            selectEl.addEventListener('change', (e) => {
-                const selectedValue = (e.target as HTMLSelectElement).value;
-                if (selectedValue === 'custom') {
-                    customInput.style.display = 'block';
-                    customInput.focus();
-                } else {
-                    customInput.style.display = 'none';
-                    this.value = selectedValue;
-                    this.onChangeCb(this.value);
-                }
-            });
-            
-            //Update value when custom input changes
-            customInput.addEventListener('input', (e) => {
-                this.value = (e.target as HTMLInputElement).value;
-                this.onChangeCb(this.value);
-            });
-            
+            }) as HTMLInputElement;
+
+            customInput.style.display = this.options.includes(this.value) ? 'none' : 'block';
             this.container.appendChild(customInput);
-        } else {
-            //Simple change handler when custom options are not allowed
-            selectEl.addEventListener('change', (e) => {
-                this.value = (e.target as HTMLSelectElement).value;
+
+            // Handle custom input changes
+            customInput.addEventListener('input', () => {
+                this.value = customInput!.value;
                 this.onChangeCb(this.value);
             });
         }
-        
-        this.container.appendChild(selectEl);
+
+        // Handle select changes
+        select.addEventListener('change', () => {
+            if (select.value === '__custom__' && this.allowCustom) {
+                customInput!.style.display = 'block';
+                customInput!.focus();
+                this.value = customInput!.value;
+            } else {
+                if (customInput) customInput.style.display = 'none';
+                this.value = select.value;
+            }
+            this.onChangeCb(this.value);
+        });
+
         return this;
     }
 }
@@ -119,9 +114,9 @@ export class BadgesComponent {
     private values: string[];
     private onChangeCb: (values: string[]) => void;
 
-    constructor(app: App, container: HTMLElement) {
+    constructor(app: App, containerEl: HTMLElement) {
         this.app = app;
-        this.container = container;
+        this.container = containerEl;
         this.options = [];
         this.values = [];
     }
@@ -143,41 +138,116 @@ export class BadgesComponent {
 
     render() {
         this.container.empty();
-        
         const badgesContainer = node('div', { class: 'badges-container' });
-        
+        this.container.appendChild(badgesContainer);
+
+        // Create a badge option for each option
         this.options.forEach(option => {
             const badgeContainer = node('div', { class: 'badge-option-container' });
-            
             const checkbox = node('input', {
                 attributes: {
                     type: 'checkbox',
-                    value: option
+                    id: `badge-${option.replace(/\s+/g, '-')}`,
+                    checked: this.values.includes(option) ? 'checked' : ''
                 }
             }) as HTMLInputElement;
-            
-            if (this.values.includes(option)) {
-                checkbox.checked = true;
-            }
-            
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked && !this.values.includes(option)) {
-                    this.values.push(option);
-                } else if (!checkbox.checked && this.values.includes(option)) {
-                    this.values = this.values.filter(val => val !== option);
+
+            const label = node('label', {
+                text: option,
+                attributes: {
+                    for: `badge-${option.replace(/\s+/g, '-')}`
                 }
-                this.onChangeCb(this.values);
             });
-            
-            const label = node('label', { text: option });
-            
+
             badgeContainer.appendChild(checkbox);
             badgeContainer.appendChild(label);
             badgesContainer.appendChild(badgeContainer);
+
+            // Handle checkbox changes
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    if (!this.values.includes(option)) {
+                        this.values.push(option);
+                    }
+                } else {
+                    const index = this.values.indexOf(option);
+                    if (index !== -1) {
+                        this.values.splice(index, 1);
+                    }
+                }
+                this.onChangeCb(this.values);
+            });
+        });
+
+        return this;
+    }
+}
+
+// FileSelectorModal class for image browsing
+class FileSelectorModal extends Modal {
+    selectedFile: string | null = null;
+    onFileSelect: (path: string) => void;
+    
+    constructor(app: App, onFileSelect: (path: string) => void) {
+        super(app);
+        this.onFileSelect = onFileSelect;
+    }
+    
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        
+        contentEl.createEl('h2', { text: 'Select an Image' });
+        
+        const fileList = contentEl.createEl('div', { cls: 'file-selector-list' });
+        
+        // Get all images and add them to the list
+        let imageFiles: TFile[] = [];
+        this.app.vault.getFiles().forEach(file => {
+            if (file.extension && ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(file.extension.toLowerCase())) {
+                imageFiles.push(file);
+            }
         });
         
-        this.container.appendChild(badgesContainer);
-        return this;
+        // Sort files by path
+        imageFiles.sort((a, b) => a.path.localeCompare(b.path));
+        
+        // Get folder structure
+        const folderStructure: Record<string, TFile[]> = {};
+        
+        imageFiles.forEach(file => {
+            const folderPath = file.parent ? file.parent.path : '/';
+            if (!folderStructure[folderPath]) {
+                folderStructure[folderPath] = [];
+            }
+            folderStructure[folderPath].push(file);
+        });
+        
+        // Create folder sections
+        Object.keys(folderStructure).sort().forEach(folderPath => {
+            const folderEl = fileList.createEl('details', { cls: 'file-selector-folder' });
+            folderEl.createEl('summary', { text: folderPath || 'Root' });
+            
+            const filesEl = folderEl.createEl('div', { cls: 'file-selector-files' });
+            
+            folderStructure[folderPath].forEach(file => {
+                const fileItem = filesEl.createEl('div', { 
+                    cls: 'file-selector-item',
+                    text: file.name
+                });
+                
+                fileItem.addEventListener('click', () => {
+                    this.selectedFile = file.path;
+                    this.onFileSelect(this.selectedFile);
+                    this.close();
+                });
+            });
+        });
+    }
+    
+    onClose() {
+        const { contentEl } = this;
+        contentEl.empty();
     }
 }
 
@@ -187,9 +257,9 @@ export class ImageComponent {
     private value: string;
     private onChangeCb: (value: string) => void;
 
-    constructor(app: App, container: HTMLElement) {
+    constructor(app: App, containerEl: HTMLElement) {
         this.app = app;
-        this.container = container;
+        this.container = containerEl;
         this.value = '';
     }
 
@@ -205,85 +275,90 @@ export class ImageComponent {
 
     render() {
         this.container.empty();
-        
-        const imageInputContainer = node('div', { class: 'image-input-container' });
-        
-        //Input field for image path
-        const inputField = node('input', {
+
+        // Create input container
+        const inputContainer = node('div', { class: 'image-input-container' });
+        this.container.appendChild(inputContainer);
+
+        // Create path input
+        const pathInput = node('input', {
             class: 'image-path-input',
             attributes: {
                 type: 'text',
-                placeholder: 'Enter image path',
                 value: this.value
             }
         }) as HTMLInputElement;
-        
-        inputField.addEventListener('input', (e) => {
-            this.value = (e.target as HTMLInputElement).value;
-            this.onChangeCb(this.value);
-            
-            //Update preview if available
-            if (imagePreview) {
-                if (this.value) {
-                    imagePreview.style.display = 'block';
-                    imagePlaceholder.style.display = 'none';
-                    imagePreviewImg.src = this.value;
-                } else {
-                    imagePreview.style.display = 'none';
-                    imagePlaceholder.style.display = 'flex';
-                }
-            }
-        });
-        
-        //Image preview
-        const imagePreviewContainer = node('div', { class: 'image-preview-container' });
-        
-        //Placeholder when no image is selected
-        const imagePlaceholder = node('div', { 
-            class: 'image-placeholder',
-            text: 'No image selected'
-        });
-        
-        //Actual image preview
-        const imagePreview = node('div', { 
-            class: 'image-preview',
-            attributes: { style: 'display: none;' }
-        });
-        
-        const imagePreviewImg = node('img', {
-            class: 'preview-image',
-            attributes: { alt: 'Image preview' }
-        }) as HTMLImageElement;
-        
-        //Button to browse files
+        inputContainer.appendChild(pathInput);
+
+        // Create browse button
         const browseButton = node('button', {
             class: 'image-browse-button',
             text: 'Browse'
         });
-        
-        browseButton.addEventListener('click', async () => {
-            //This would need to be implemented to browse and select files from the vault
-            console.log('Browse button clicked');
+        inputContainer.appendChild(browseButton);
+
+        // Create preview container
+        const previewContainer = node('div', { class: 'image-preview-container' });
+        this.container.appendChild(previewContainer);
+
+        this.updatePreview(previewContainer, this.value);
+
+        // Handle input changes
+        pathInput.addEventListener('input', () => {
+            this.value = pathInput.value;
+            this.updatePreview(previewContainer, this.value);
+            this.onChangeCb(this.value);
         });
-        
-        imagePreview.appendChild(imagePreviewImg);
-        imagePreviewContainer.appendChild(imagePlaceholder);
-        imagePreviewContainer.appendChild(imagePreview);
-        
-        imageInputContainer.appendChild(inputField);
-        imageInputContainer.appendChild(browseButton);
-        
-        this.container.appendChild(imageInputContainer);
-        this.container.appendChild(imagePreviewContainer);
-        
-        //Initialize preview if value exists
-        if (this.value) {
-            imagePreview.style.display = 'block';
-            imagePlaceholder.style.display = 'none';
-            imagePreviewImg.src = this.value;
-        }
-        
+
+        // Handle browse button click - fixed functionality
+        browseButton.addEventListener('click', () => {
+            // Open file selector modal
+            const fileSelector = new FileSelectorModal(this.app, (selectedPath) => {
+                this.value = selectedPath;
+                pathInput.value = selectedPath;
+                this.updatePreview(previewContainer, this.value);
+                this.onChangeCb(this.value);
+            });
+            fileSelector.open();
+        });
+
         return this;
+    }
+
+    private updatePreview(container: HTMLElement, imagePath: string) {
+        container.empty();
+
+        if (!imagePath) {
+            container.appendChild(node('div', {
+                class: 'image-placeholder',
+                text: 'No image selected'
+            }));
+            return;
+        }
+
+        // Check if file exists
+        const file = this.app.vault.getAbstractFileByPath(imagePath);
+        if (!file || !(file instanceof TFile)) {
+            container.appendChild(node('div', {
+                class: 'image-placeholder',
+                text: 'Image not found'
+            }));
+            return;
+        }
+
+        // Create preview container
+        const previewElement = node('div', { class: 'image-preview' });
+        container.appendChild(previewElement);
+
+        // Create image element
+        const imgElement = node('img', {
+            class: 'preview-image',
+            attributes: {
+                src: this.app.vault.getResourcePath(file as TFile),
+                alt: 'Image preview'
+            }
+        });
+        previewElement.appendChild(imgElement);
     }
 }
 
@@ -294,9 +369,9 @@ export class DateComponent {
     private placeholder: string;
     private onChangeCb: (value: string) => void;
 
-    constructor(app: App, container: HTMLElement) {
+    constructor(app: App, containerEl: HTMLElement) {
         this.app = app;
-        this.container = container;
+        this.container = containerEl;
         this.value = '';
         this.placeholder = '';
     }
@@ -318,22 +393,24 @@ export class DateComponent {
 
     render() {
         this.container.empty();
-        
+
+        // Create date input
         const dateInput = node('input', {
             class: 'date-input',
             attributes: {
                 type: 'date',
-                placeholder: this.placeholder,
                 value: this.value
             }
         }) as HTMLInputElement;
         
-        dateInput.addEventListener('input', (e) => {
-            this.value = (e.target as HTMLInputElement).value;
+        this.container.appendChild(dateInput);
+
+        // Handle input changes
+        dateInput.addEventListener('input', () => {
+            this.value = dateInput.value;
             this.onChangeCb(this.value);
         });
-        
-        this.container.appendChild(dateInput);
+
         return this;
     }
 }

@@ -1,4 +1,5 @@
 import { templates } from "template";
+import { TFile, App } from 'obsidian';
 
 export interface NodeProperties {
     children?: HTMLElement[];
@@ -12,10 +13,31 @@ export interface NodeProperties {
 export interface FormTemplate {
     name: string,
     contentType: string,
-    defaultFolder: string,
+    defaultFolder?: string, // Now optional
+    id?: string, // Added ID
     template: any
 }
 
+// UUID Generation
+export function generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Find a content file by ID
+export async function findContentById(app: App, id: string): Promise<TFile | null> {
+    const files = app.vault.getMarkdownFiles();
+    for (const file of files) {
+        const metadata = app.metadataCache.getFileCache(file);
+        if (metadata?.frontmatter?.data?.id === id) {
+            return file;
+        }
+    }
+    return null;
+}
 
 export function node<K extends keyof HTMLElementTagNameMap>(tag: K,properties?: NodeProperties): HTMLElementTagNameMap[K] {
     const element=document.createElement(tag);
@@ -126,7 +148,6 @@ export function getTemplates(): { [key: string]: FormTemplate } {
     Object.keys(templates).forEach((key: string) => {
         const templateObj=(templates as Record<string,any>)[key];
         const newObj: FormTemplate={
-            defaultFolder: templateObj.defaultFolder||'',
             name: templateObj.name||'',
             contentType: key,
             template: convertTemplateFormat(JSON.parse(JSON.stringify(templateObj||{})))
@@ -151,27 +172,37 @@ export function isGroupType(obj: any): boolean {
         &&'fields' in obj;
 }
 
-
+// Enhanced link conversion that works with IDs
 export function convertLinks(text: string): string {
     if(!text||typeof text!=='string') return text;
-    const wikiLinkRegex=/\[\[(.*?)(?:\|(.*?))?\]\]/g;
-    return text.replace(wikiLinkRegex,(match,linkPath,displayText) => {
-        const display=displayText? displayText:linkPath;
-        return `<a data-href="${linkPath}" href="${linkPath}" class="internal-link" target="_blank" rel="noopener nofollow">${display}</a>`;
+    
+    // Match both standard wiki links and wiki links with IDs
+    const wikiLinkRegex=/\[\[(.*?)(?:#(.*?))?(?:\|(.*?))?\]\]/g;
+    
+    return text.replace(wikiLinkRegex,(match, linkPath, linkId, displayText) => {
+        const display = displayText ? displayText : linkPath;
+        const idAttr = linkId ? `data-id="${linkId}"` : '';
+        return `<a data-href="${linkPath}" href="${linkPath}" ${idAttr} class="internal-link content-link" target="_blank" rel="noopener nofollow">${display}</a>`;
     });
 }
 
-export function processLinks(content: string): HTMLElement {
+// Process a single link with ID
+export function processLinks(content: string, id?: string): HTMLElement {
     const linkElement = node('a', {
         text: content,
         attributes: {
             'data-href': content,
             'href': content,
-            'class': 'internal-link',
+            'class': 'internal-link content-link',
             'target': '_blank',
             'rel': 'noopener nofollow'
         }
     });
+    
+    // Add ID attribute if provided
+    if (id) {
+        linkElement.setAttribute('data-id', id);
+    }
     
     return linkElement;
 }

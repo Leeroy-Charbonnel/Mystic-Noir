@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "519821402cc993de",
+        "id": "d875c57aa2c317b4",
         "type": "tabs",
         "children": [
           {
-            "id": "0d55262861d3ad7b",
+            "id": "ed201e3e517d025f",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "1. Characters/New (Characters).md",
-                "mode": "preview",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "New (Characters)"
+              "title": "New tab"
             }
           }
         ]
@@ -181,17 +177,21 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "0d55262861d3ad7b",
+  "active": "ed201e3e517d025f",
   "lastOpenFiles": [
-    "1. Characters/New (Characters).md",
-    "1. Characters/test.md",
+    "test character.md",
     "1. Characters/Samuel Blackwood.md",
+    "1. Characters/The Shadow.md",
+    "1. Characters/New (Characters).md",
+    "1. Characters/Lily Moore.md",
+    "1. Characters/Evelyn Dupont.md",
+    "1. Characters/Alexander Dupont.md",
+    "1. Characters/test.md",
     "Home.md",
     "0. Chronology.canvas",
     "Untitled.md",
     "5. Events/Mr Dupont's death.md",
     "4. Stories/5 The Price of Justice.md",
-    "1. Characters/Evelyn Dupont.md",
     "5. Events/test.md",
     "5. Events/Revolution.md",
     "5. Events/Lilly's death.md",
@@ -199,8 +199,6 @@
     "4. Stories/3 The Last Gamble.md",
     "4. Stories/2 Silenced Testimony.md",
     "4. Stories/1 Shadows of the Crescent City.md",
-    "1. Characters/Lily Moore.md",
-    "1. Characters/Alexander Dupont.md",
     "TEST GIT.md",
     "4. Stories/New (Stories).md"
   ]

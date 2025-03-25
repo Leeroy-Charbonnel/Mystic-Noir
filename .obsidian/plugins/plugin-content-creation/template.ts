@@ -6,26 +6,21 @@ export const templates = {
             fields: {
                 FullName: {
                     type: "text",
-                    required: true,
-                    placeholder: "Character's full name"
+                    required: true
                 },
                 BirthDate: {
                     type: "date",
-                    required: true,
-                    placeholder: "dd/mm/yyyy"
+                    required: true
                 },
                 DeathDate: {
                     type: "date",
-                    required: true,
-                    placeholder: "dd/mm/yyyy",
+                    required: true
                 },
                 Occupation: {
-                    type: "text",
-                    placeholder: "Character's occupation or role"
+                    type: "text"
                 },
                 Background: {
-                    type: "textarea",
-                    placeholder: "Character's background story"
+                    type: "textarea"
                 }
             }
 
@@ -35,12 +30,10 @@ export const templates = {
             label: "Appearance",
             fields: {
                 Description: {
-                    type: "textarea",
-                    placeholder: "Description of the character"
+                    type: "textarea"
                 },
                 Accessories: {
-                    type: "array:text",
-                    placeholder: "Add an accessory"
+                    type: "array:text"
                 }
             }
         },
@@ -59,16 +52,13 @@ export const templates = {
             label: "Personality",
             fields: {
                 GeneralTraits: {
-                    type: "textarea",
-                    placeholder: "Overall personality description"
+                    type: "textarea"
                 },
                 Strengths: {
-                    type: "array:text",
-                    placeholder: "Add a strength"
+                    type: "array:text"
                 },
                 Weaknesses: {
-                    type: "array:text",
-                    placeholder: "Add a weakness"
+                    type: "array:text"
                 }
             }
         },
@@ -77,20 +67,16 @@ export const templates = {
             label: "Relationships",
             fields: {
                 Family: {
-                    type: "array:text",
-                    placeholder: "Add a family relationship"
+                    type: "array:text"
                 },
                 FriendsAndAllies: {
-                    type: "array:text",
-                    placeholder: "Add a friend or ally"
+                    type: "array:text"
                 },
                 EnemiesAndRivals: {
-                    type: "array:text",
-                    placeholder: "Add an enemy or rival"
+                    type: "array:text"
                 },
                 RomanticInterests: {
-                    type: "array:text",
-                    placeholder: "Add a romantic interest"
+                    type: "array:text"
                 }
             }
         },
@@ -99,8 +85,7 @@ export const templates = {
             label: "Other",
             fields: {
                 AdditionalNotes: {
-                    type: "textarea",
-                    placeholder: "Any other notes about this character"
+                    type: "textarea"
                 }
             }
         }
@@ -113,20 +98,16 @@ export const templates = {
             fields: {
                 Name: {
                     type: "text",
-                    required: true,
-                    placeholder: "Item name"
+                    required: true
                 },
                 Description: {
-                    type: "textarea",
-                    placeholder: "Item description"
+                    type: "textarea"
                 },
                 Owner: {
-                    type: "array:textarea",
-                    placeholder: "Add an owner with details"
+                    type: "array:textarea"
                 },
                 ItemPhoto: {
-                    type: "image",
-                    placeholder: "Visual representation of the item"
+                    type: "image"
                 }
             }
         },
@@ -135,8 +116,7 @@ export const templates = {
             label: "Other",
             fields: {
                 AdditionalNotes: {
-                    type: "textarea",
-                    placeholder: "Any other notes about this item"
+                    type: "textarea"
                 }
             }
         }
@@ -149,24 +129,19 @@ export const templates = {
             fields: {
                 Name: {
                     type: "text",
-                    required: true,
-                    placeholder: "Event name"
+                    required: true
                 },
                 BeginDate: {
-                    type: "date",
-                    placeholder: "When the event began"
+                    type: "date"
                 },
                 EndDate: {
-                    type: "date",
-                    placeholder: "When the event ended"
+                    type: "date"
                 },
                 Location: {
-                    type: "text",
-                    placeholder: "Where the event occurred"
+                    type: "text"
                 },
                 Description: {
-                    type: "textarea",
-                    placeholder: "Event description"
+                    type: "textarea"
                 }
             }
         },
@@ -175,8 +150,7 @@ export const templates = {
             label: "Participants",
             fields: {
                 AssociatedCharacters: {
-                    type: "array:text",
-                    placeholder: "Add a character associated with this event"
+                    type: "array:text"
                 }
             }
         },
@@ -185,8 +159,7 @@ export const templates = {
             label: "Other",
             fields: {
                 AdditionalNotes: {
-                    type: "textarea",
-                    placeholder: "Any other notes about this event"
+                    type: "textarea"
                 }
             }
         }
@@ -199,12 +172,10 @@ export const templates = {
             fields: {
                 Name: {
                     type: "text",
-                    required: true,
-                    placeholder: "Location name"
+                    required: true
                 },
                 MapImage: {
-                    type: "image",
-                    placeholder: "Map or image of the location"
+                    type: "image"
                 }
             }
         },
@@ -213,12 +184,10 @@ export const templates = {
             label: "Appearance",
             fields: {
                 Atmosphere: {
-                    type: "textarea",
-                    placeholder: "Atmosphere description"
+                    type: "textarea"
                 },
                 Description: {
-                    type: "textarea",
-                    placeholder: "Visual description of the location"
+                    type: "textarea"
                 }
             }
         },
@@ -227,8 +196,7 @@ export const templates = {
             label: "Other",
             fields: {
                 AdditionalNotes: {
-                    type: "textarea",
-                    placeholder: "Any other notes about this location"
+                    type: "textarea"
                 }
             }
         }
@@ -241,20 +209,16 @@ export const templates = {
             fields: {
                 Name: {
                     type: "text",
-                    required: true,
-                    placeholder: "Story title"
+                    required: true
                 },
                 BeginDate: {
-                    type: "date",
-                    placeholder: "When the story begins"
+                    type: "date"
                 },
                 EndDate: {
-                    type: "date",
-                    placeholder: "When the story ends"
+                    type: "date"
                 },
                 Synopsis: {
-                    type: "textarea",
-                    placeholder: "Brief summary of the story"
+                    type: "textarea"
                 }
             }
         },
@@ -263,8 +227,7 @@ export const templates = {
             label: "Story Details",
             fields: {
                 StoryDetails: {
-                    type: "array:textarea",
-                    placeholder: "Add a story detail"
+                    type: "array:textarea"
                 }
             }
         },
@@ -273,20 +236,16 @@ export const templates = {
             label: "Associated Elements",
             fields: {
                 Characters: {
-                    type: "array:text",
-                    placeholder: "Add a character"
+                    type: "array:text"
                 },
                 Locations: {
-                    type: "array:text",
-                    placeholder: "Add a location"
+                    type: "array:text"
                 },
                 Events: {
-                    type: "array:text",
-                    placeholder: "Add an event"
+                    type: "array:text"
                 },
                 Items: {
-                    type: "array:text",
-                    placeholder: "Add an item"
+                    type: "array:text"
                 }
             }
         },
@@ -295,8 +254,7 @@ export const templates = {
             label: "Other",
             fields: {
                 AdditionalNotes: {
-                    type: "textarea",
-                    placeholder: "Any other notes about this story"
+                    type: "textarea"
                 }
             }
         }
@@ -305,14 +263,12 @@ export const templates = {
         //Simple text field
         textField: {
             type: "text",
-            required: true,
-            placeholder: "Enter text here"
+            required: true
         },
 
         //Text area for longer content
         textareaField: {
-            type: "textarea",
-            placeholder: "Enter longer text here"
+            type: "textarea"
         },
 
         //Boolean field (checkbox)
@@ -336,24 +292,20 @@ export const templates = {
 
         //Array of text fields
         arrayTextField: {
-            type: "array:text",
-            placeholder: "Add a new text item"
+            type: "array:text"
         },
 
         //Array of text area fields
         arrayTextareaField: {
-            type: "array:textarea",
-            placeholder: "Add a new text area item"
+            type: "array:textarea"
         },
 
         //Image field
         imageField: {
-            type: "image",
-            placeholder: "Upload an image"
+            type: "image"
         },
         dateField: {
-            type: "date",
-            placeholder: "Select a date"
+            type: "date"
         }
     }
 };

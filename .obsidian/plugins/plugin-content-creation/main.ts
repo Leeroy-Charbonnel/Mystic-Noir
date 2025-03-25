@@ -1,7 +1,7 @@
 import { App, Plugin, PluginSettingTab, Setting, TFile, normalizePath, Notice, TFolder, Menu, MenuItem, FileManager, SuggestModal, WorkspaceLeaf, setIcon, ViewStateResult, ItemView } from 'obsidian';
 import { DynamicFormView } from './DynamicFormView';
 import { ContentSelectorModal } from './contentSelectorModal';
-import { node, formatDisplayName, FormTemplate, getTemplates, hasValueAndType, convertLinks } from './utils';
+import { node, formatDisplayName, FormTemplate, getTemplates, hasValueAndType, convertLinks, generateUUID } from './utils';
 import './styles.css';
 
 // Define the view type
@@ -20,41 +20,12 @@ class ContentCreatorSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         containerEl.createEl('h2', { text: 'Content Creator Settings' });
-        containerEl.createEl('h3', { text: 'Default Folders' });
-        containerEl.createEl('p', { text: 'Specify the default folder path for each content type (e.g., "1. Characters").' });
-
-        const contentTypes = Object.keys(this.plugin.templates).map((key: string) => (this.plugin.templates[key as keyof typeof this.plugin.templates] as FormTemplate).contentType);
-        const folders = this.getAllFolders();
-
-        contentTypes.forEach(type => {
-            const readableType = type.charAt(0).toUpperCase() + type.slice(1);
-
-            new Setting(containerEl)
-                .setName(readableType)
-                .setDesc(`Default folder for ${readableType.toLowerCase()}`)
-                .addDropdown(dropdown => {
-                    folders.forEach(folder => { dropdown.addOption(folder, folder); });
-                    dropdown.setValue(this.plugin.settings.defaultFolders[type] || '');
-                    dropdown.onChange(async (value) => {
-                        this.plugin.settings.defaultFolders[type] = value;
-                        await this.plugin.saveSettings();
-                    })
-                });
-        });
-    }
-    getAllFolders(): string[] {
-        const folders: string[] = [];
-        this.app.vault.getAllLoadedFiles().forEach(file => {
-            if (file instanceof TFolder && file.path !== '/') {
-                folders.push(file.path);
-            }
-        });
-        folders.sort((a, b) => a.localeCompare(b));
-        return folders;
+        containerEl.createEl('p', { text: 'All content will be created in the root directory by default.' });
     }
 }
 
 interface ContentCreatorPluginSettings {
+    // We're keeping this interface for backward compatibility
     defaultFolders: { [key: string]: string }
 }
 
@@ -101,6 +72,7 @@ export class ContentCreatorView extends ItemView {
     private plugin: ContentCreatorPlugin;
     private contentData: FormTemplate;
     private formView: DynamicFormView;
+    private filePath: string | null = null;
 
     constructor(leaf: WorkspaceLeaf, plugin: ContentCreatorPlugin) {
         super(leaf);
@@ -115,9 +87,10 @@ export class ContentCreatorView extends ItemView {
         return "Content Creator";
     }
 
-    updateContent(contentData: FormTemplate, newContent: boolean) {
+    updateContent(contentData: FormTemplate, newContent: boolean, filePath: string | null = null) {
         this.containerEl.addClass("content-creator-container");
         this.contentData = contentData;
+        this.filePath = filePath;
         this.contentEl.empty();
 
         const wrapper = node('div', { class: 'content-creator-wrapper' });
@@ -151,11 +124,6 @@ export default class ContentCreatorPlugin extends Plugin {
 
         //Templates
         this.templates = getTemplates();
-        Object.keys(this.templates).forEach(type => {
-            if (this.settings.defaultFolders[type]) {
-                (this.templates[type as keyof typeof this.templates] as FormTemplate).defaultFolder = this.settings.defaultFolders[type];
-            }
-        });
 
         //Commands
         this.addRibbonIcon('file-plus', 'Create Content', (evt: MouseEvent) => {
@@ -169,6 +137,131 @@ export default class ContentCreatorPlugin extends Plugin {
                 if (currentFileView != null) new EditContentButtons(this.app, this, currentFileView);
             })
         );
+
+        // Register file rename event to update links
+        this.registerEvent(
+            this.app.vault.on('rename', (file: TFile, oldPath: string) => {
+                this.updateLinksAfterRename(file, oldPath);
+            })
+        );
+        
+        // Check for needRefresh on file open
+        this.registerEvent(
+            this.app.workspace.on('file-open', async (file: TFile) => {
+                if (file && file.extension === 'md') {
+                    await this.checkAndRefreshContent(file);
+                }
+            })
+        );
+    }
+
+    private async updateLinksAfterRename(file: TFile, oldPath: string) {
+        // Only process markdown files
+        if (file.extension !== 'md') return;
+        
+        const allFiles = this.app.vault.getMarkdownFiles();
+        
+        for (const contentFile of allFiles) {
+            try {
+                const metadata = this.getFileProperties(this.app, contentFile);
+                if (!metadata || !metadata.data || !metadata.data.contentType) continue;
+                
+                let contentChanged = false;
+                const contentData = metadata.data;
+                
+                // Check if any links need updating
+                const processObject = (obj: any): boolean => {
+                    let changed = false;
+                    
+                    if (!obj) return changed;
+                    
+                    if (typeof obj === 'string' && obj.includes('[[')) {
+                        // This is a potential link
+                        const regex = /\[\[(.*?)(?:#(.*?))?\]\]/g;
+                        let match;
+                        
+                        const newContent = obj.replace(regex, (match, linkPath, linkId) => {
+                            if (linkPath === oldPath.replace('.md', '') || 
+                                linkPath === file.basename) {
+                                changed = true;
+                                return `[[${file.basename}#${linkId}]]`;
+                            }
+                            return match;
+                        });
+                        
+                        if (changed) {
+                            return true;
+                        }
+                    }
+                    
+                    if (typeof obj === 'object') {
+                        if (Array.isArray(obj)) {
+                            for (let i = 0; i < obj.length; i++) {
+                                if (processObject(obj[i])) {
+                                    changed = true;
+                                }
+                            }
+                        } else {
+                            for (const key in obj) {
+                                if (processObject(obj[key])) {
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                    
+                    return changed;
+                };
+                
+                contentChanged = processObject(contentData.template);
+                
+                if (contentChanged) {
+                    // Set needRefresh flag and save the file
+                    metadata.needRefresh = true;
+                    await this.app.vault.modify(
+                        contentFile,
+                        contentFile.content.replace(
+                            /^---\n([\s\S]*?)\n---/,
+                            `---\n${Object.entries(metadata).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join('\n')}\n---`
+                        )
+                    );
+                }
+            } catch (error) {
+                console.error(`Error updating links in ${contentFile.path}:`, error);
+            }
+        }
+    }
+    
+    private async checkAndRefreshContent(file: TFile) {
+        try {
+            const metadata = this.getFileProperties(this.app, file);
+            if (!metadata || !metadata.data || !metadata.needRefresh) return;
+            
+            // Regenerate the content
+            const contentData = metadata.data;
+            const fileContent = this.regenerateFileContent(file, contentData);
+            
+            // Update the file with regenerated content and set needRefresh to false
+            metadata.needRefresh = false;
+            
+            const newContent = file.content.replace(
+                /^---\n([\s\S]*?)\n---\n\n([\s\S]*)/,
+                `---\n${Object.entries(metadata).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join('\n')}\n---\n\n${fileContent}`
+            );
+            
+            await this.app.vault.modify(file, newContent);
+            
+        } catch (error) {
+            console.error(`Error refreshing content for ${file.path}:`, error);
+        }
+    }
+    
+    private regenerateFileContent(file: TFile, data: any): string {
+        const contentTypeTag = data.contentType.charAt(0).toUpperCase() + data.contentType.slice(1);
+        
+        let content = `#${contentTypeTag}\n\n`;
+        content += this.formatContentData(data.template, 3, "template").innerHTML;
+        return content;
     }
 
 
@@ -178,15 +271,9 @@ export default class ContentCreatorPlugin extends Plugin {
 
     async saveSettings() {
         await this.saveData(this.settings);
-
-        Object.keys(this.templates).forEach(type => {
-            if (this.settings.defaultFolders[type]) {
-                (this.templates[type as keyof typeof this.templates] as FormTemplate).defaultFolder = this.settings.defaultFolders[type];
-            }
-        });
     }
 
-    async activateView(contentData: FormTemplate, newContent: boolean) {
+    async activateView(contentData: FormTemplate, newContent: boolean, filePath: string | null = null) {
         const leaf = this.app.workspace.getLeaf();
 
         await leaf.setViewState({
@@ -195,7 +282,7 @@ export default class ContentCreatorPlugin extends Plugin {
         })
 
         if (leaf.view) {
-            (leaf.view as ContentCreatorView).updateContent(contentData, newContent);
+            (leaf.view as ContentCreatorView).updateContent(contentData, newContent, filePath);
             this.activeView = leaf.view as ContentCreatorView;
         }
     }
@@ -203,6 +290,7 @@ export default class ContentCreatorPlugin extends Plugin {
     openFormForContentType(contentType: string) {
         let result = JSON.parse(JSON.stringify(this.templates[contentType as keyof typeof this.templates]));
         result.name = `New (${contentType.charAt(0).toUpperCase() + contentType.slice(1)})`;
+        // New content doesn't have a folder - will save to root
         this.activateView(result, true);
     }
 
@@ -212,7 +300,7 @@ export default class ContentCreatorPlugin extends Plugin {
         const template = this.templates[data.contentType];
         const result = this.fillTemplateWithData(template, data);
         result.name = file.basename;
-        this.activateView(result, false);
+        this.activateView(result, false, file.path);
     }
 
     fillTemplateWithData(template: any, data: any) {
@@ -242,14 +330,62 @@ export default class ContentCreatorPlugin extends Plugin {
         return null;
     }
 
+    // Function to extract only values from template data
+    private extractValuesOnly(data: any): any {
+        if (!data) return null;
+        
+        if (Array.isArray(data)) {
+            return data.map(item => this.extractValuesOnly(item));
+        }
+        
+        if (typeof data === 'object') {
+            // If it has value and type properties, just return the value
+            if (hasValueAndType(data)) {
+                return data.value;
+            }
+            
+            // If it's a group, process its fields
+            if (data.type === 'group' && data.fields) {
+                const result: any = {
+                    type: 'group'
+                };
+                
+                if (data.label) {
+                    result.label = data.label;
+                }
+                
+                result.fields = {};
+                for (const key in data.fields) {
+                    result.fields[key] = this.extractValuesOnly(data.fields[key]);
+                }
+                
+                return result;
+            }
+            
+            // Process other objects recursively
+            const result: any = {};
+            for (const key in data) {
+                result[key] = this.extractValuesOnly(data[key]);
+            }
+            
+            return result;
+        }
+        
+        // Return primitive values as is
+        return data;
+    }
+
     //Generate/edit final file
     async createContentFile(data: any) {
         try {
-            const folderPath = data.defaultFolder;
-            const filePath = normalizePath(`${folderPath}/${data.name}.md`);
-            const fileContent = this.generateFileContent(data);
-
+            // Use existing file path for edits, root folder for new content
+            let filePath = this.activeView?.filePath;
+            if (!filePath) {
+                filePath = `/${data.name}.md`;
+            }
+            
             let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+            const fileContent = this.generateFileContent(data, file);
 
             if (file) {
                 await this.app.vault.modify(file, fileContent);
@@ -267,12 +403,30 @@ export default class ContentCreatorPlugin extends Plugin {
     }
 
 
-    private generateFileContent(data: FormTemplate): string {
+    private generateFileContent(data: FormTemplate, existingFile?: TFile): string {
         const contentTypeTag = data.contentType.charAt(0).toUpperCase() + data.contentType.slice(1);
+        
+        // Get existing properties for this file if it exists
+        let existingProps: any = {};
+        if (existingFile) {
+            const cache = this.app.metadataCache.getFileCache(existingFile);
+            if (cache && cache.frontmatter) {
+                existingProps = cache.frontmatter;
+            }
+        }
+        
+        // Create a simplified version of the data with only values
+        const simplifiedData = {
+            contentType: data.contentType,
+            name: data.name,
+            id: existingProps.data?.id || generateUUID(), // Preserve ID if exists, generate new if not
+            template: this.extractValuesOnly(data.template)
+        };
 
         let content = "";
         content += `---\n\n`;
-        content += `data: ${JSON.stringify(data)}\n\n`;
+        content += `data: ${JSON.stringify(simplifiedData)}\n\n`;
+        content += `needRefresh: false\n\n`;
         content += `---\n\n`;
 
         content += `#${contentTypeTag}\n\n`;

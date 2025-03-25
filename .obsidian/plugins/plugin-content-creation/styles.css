@@ -62,7 +62,36 @@ button.mod-cta {
     width: 100%;
 }
 
+/* Required fields styling */
+.required-field .editor-label {
+    font-weight: bold;
+    color: var(--text-normal);
+}
 
+.missing-required {
+    background-color: rgba(255, 0, 0, 0.1);
+    border-left: 3px solid var(--color-red);
+    padding-left: 10px !important;
+    border-radius: 3px;
+}
+
+/* Collapsible group styling */
+.header-container {
+    cursor: pointer;
+    padding: 5px 0;
+    user-select: none;
+}
+
+.header-container:hover {
+    background-color: var(--background-secondary-alt);
+}
+
+.collapse-icon {
+    margin-right: 8px;
+    display: inline-block;
+    width: 12px;
+    text-align: center;
+}
 
 /* Form field styles - used by both modal and view */
 .form-scroll-container {
@@ -416,6 +445,42 @@ button:not(.clickable-icon) {
     object-fit: contain;
 }
 
+/* File selector styling */
+.file-selector-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 15px 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+}
+
+.file-selector-folder {
+    margin: 5px;
+}
+
+.file-selector-folder summary {
+    padding: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    background-color: var(--background-secondary);
+    border-radius: 4px;
+}
+
+.file-selector-files {
+    padding-left: 15px;
+}
+
+.file-selector-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    margin: 3px 0;
+    border-radius: 4px;
+}
+
+.file-selector-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
 /* Date field styles */
 .date-container {
     margin: 5px 0;
@@ -434,4 +499,61 @@ button:not(.clickable-icon) {
     padding: 8px;
     border-radius: 4px;
     background-color: var(--background-secondary);
+}
+
+
+/* Content links with IDs */
+.content-link {
+    color: var(--text-accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--text-accent-hover);
+    position: relative;
+}
+
+.content-link[data-id]:after {
+    content: '🔗';
+    font-size: 0.8em;
+    margin-left: 2px;
+    opacity: 0.7;
+}
+
+.content-link:hover {
+    color: var(--text-accent-hover);
+    border-bottom: 1px solid var(--text-accent);
+}
+
+/* File selector styling for images */
+.file-selector-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 15px 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+}
+
+.file-selector-folder {
+    margin: 5px;
+}
+
+.file-selector-folder summary {
+    padding: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    background-color: var(--background-secondary);
+    border-radius: 4px;
+}
+
+.file-selector-files {
+    padding-left: 15px;
+}
+
+.file-selector-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    margin: 3px 0;
+    border-radius: 4px;
+}
+
+.file-selector-item:hover {
+    background-color: var(--background-modifier-hover);
 }

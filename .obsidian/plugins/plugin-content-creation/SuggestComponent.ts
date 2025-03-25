@@ -1,14 +1,22 @@
-import { App, PopoverSuggest } from 'obsidian';
+import { App, PopoverSuggest, TFile } from 'obsidian';
+
+// Structure to hold content information including ID
+interface ContentInfo {
+    name: string;
+    id: string | null;
+}
 
 export default class SuggestComponent {
     popover: any;
     parent: HTMLElement;
-    suggetsList: string[];
+    suggestsList: ContentInfo[];
     searchCriteria: string;
     bracketsIndices: number[];
     focusNode: Node;
+    app: App;
 
     constructor(app: App, parent: HTMLElement) {
+        this.app = app;
         this.parent = parent;
         this.popover = new (PopoverSuggest as any)(app);
         this.popover.selectSuggestion = this.selectSuggestion.bind(this);
@@ -73,8 +81,10 @@ export default class SuggestComponent {
         if (this.bracketsIndices.length > 0) {
             this.searchCriteria = value.slice(this.bracketsIndices[0], this.bracketsIndices[1]).toLowerCase().trim();
             const suggests = this.searchCriteria === ""
-                ? this.suggetsList
-                : this.suggetsList.filter(e => e.toLowerCase().trim().includes(this.searchCriteria));
+                ? this.suggestsList.map(item => item.name)
+                : this.suggestsList
+                    .filter(e => e.name.toLowerCase().trim().includes(this.searchCriteria))
+                    .map(item => item.name);
 
             if (suggests.length > 0) {
                 this.popover.suggestions.setSuggestions(suggests);
@@ -125,14 +135,27 @@ export default class SuggestComponent {
     }
 
     selectSuggestion(value: string) {
+        // Find the content info for the selected suggestion
+        const contentInfo = this.suggestsList.find(item => item.name === value);
+        const contentId = contentInfo?.id;
+        
         const oldValue = this.getValue();
-        const newValue = oldValue.slice(0, this.bracketsIndices[0]) +
-            value +
-            oldValue.slice(this.bracketsIndices[1]);
+        
+        // Format with ID if available
+        let newText;
+        if (contentId) {
+            newText = `[[${value}#${contentId}]]`;
+        } else {
+            newText = `[[${value}]]`;
+        }
+        
+        const newValue = oldValue.slice(0, this.bracketsIndices[0] - 2) +
+            newText +
+            oldValue.slice(this.bracketsIndices[1] + 2);
 
         this.setValue(newValue);
         // +2 to place cursor after "]]"
-        this.setCursorPosition(this.bracketsIndices[0] + value.length + 2);
+        this.setCursorPosition(this.bracketsIndices[0] - 2 + newText.length);
         this.popover.close();
     }
 
@@ -160,8 +183,31 @@ export default class SuggestComponent {
         });
     }
 
-    setSuggestList(values: string[]) {
-        this.suggetsList = values;
+    async setSuggestList(values: string[]) {
+        // Convert simple string array to ContentInfo array with IDs
+        this.suggestsList = await Promise.all(
+            values.map(async (name) => {
+                const contentInfo: ContentInfo = { 
+                    name: name,
+                    id: null
+                };
+                
+                // Try to find this content's ID
+                const files = this.app.vault.getMarkdownFiles();
+                for (const file of files) {
+                    if (file.basename === name) {
+                        const metadata = this.app.metadataCache.getFileCache(file);
+                        if (metadata?.frontmatter?.data?.id) {
+                            contentInfo.id = metadata.frontmatter.data.id;
+                            break;
+                        }
+                    }
+                }
+                
+                return contentInfo;
+            })
+        );
+        
         return this;
     }
 
