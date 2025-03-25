@@ -1,0 +1,38 @@
+/* Badges styles */
+.badges-container-wrapper {
+    margin: 5px 0;
+}
+
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 5px 0;
+}
+
+.badge-option-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    padding: 4px 10px;
+}
+
+.badge-option-container input[type="checkbox"] {
+    margin: 0;
+}
+
+.badges-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.badge-item {
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    padding: 4px 10px;
+    display: inline-block;
+    font-size: 12px;
+}

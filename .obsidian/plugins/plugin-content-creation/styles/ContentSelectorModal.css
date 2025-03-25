@@ -1,0 +1,31 @@
+.content-selector-modal {
+    padding: 20px;
+}
+
+.content-selector-modal .selector-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-normal);
+}
+.content-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.content-option {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 5px;
+    padding: 10px;
+    transition: all 0.2s ease;
+}
+
+.content-option:hover {
+    background-color: var(--background-secondary);
+}
+
+button:not(.clickable-icon) {
+    color: var(--text-color);
+    background-color: var(--interactive-normal);
+    box-shadow: var(--input-shadow);
+}

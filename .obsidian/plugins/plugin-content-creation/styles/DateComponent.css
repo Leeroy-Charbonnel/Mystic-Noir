@@ -1,0 +1,19 @@
+/* Date field styles */
+.date-container {
+    margin: 5px 0;
+}
+
+.date-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.date-value {
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+}

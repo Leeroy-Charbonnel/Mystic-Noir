@@ -1,24 +1,20 @@
 {
   "main": {
-    "id": "3b1b592b20de70d0",
+    "id": "0336709e4d4a93b5",
     "type": "split",
     "children": [
       {
-        "id": "d711764aa99c53ec",
+        "id": "74e2c45e0f551b42",
         "type": "tabs",
         "children": [
           {
-            "id": "bbe76ca04654ea73",
+            "id": "635cd1fdf5af13cc",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "New (Items).md",
-                "mode": "preview",
-                "source": false
-              },
+              "type": "content-creator-view",
+              "state": {},
               "icon": "lucide-file",
-              "title": "New (Items)"
+              "title": "Content Creator"
             }
           }
         ]
@@ -27,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "8d867154dcc749ab",
+    "id": "47e74932df8e6b51",
     "type": "split",
     "children": [
       {
-        "id": "5a3cfb41e65b25c6",
+        "id": "6768286b25845476",
         "type": "tabs",
         "children": [
           {
-            "id": "2c237956b5b4af41",
+            "id": "9081f7d405e9a01a",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -48,7 +44,7 @@
             }
           },
           {
-            "id": "c697e132c37fcfbd",
+            "id": "5256f4abe6e2d4c0",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -65,7 +61,7 @@
             }
           },
           {
-            "id": "c53e26ea8cdd5bc2",
+            "id": "e9c9ee545c2c8134",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -78,23 +74,22 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 300
   },
   "right": {
-    "id": "137c8d881fd1f709",
+    "id": "29a3676e3f236c53",
     "type": "split",
     "children": [
       {
-        "id": "9e804982a85cc665",
+        "id": "458bcc7108286073",
         "type": "tabs",
         "children": [
           {
-            "id": "0dbf16b7c149611a",
+            "id": "bbdfdebd7d136347",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "4. Stories/New (Stories).md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,25 +99,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for New (Stories)"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "ec6ea1df3cd5c217",
+            "id": "1f1dba0e31e7f642",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "4. Stories/New (Stories).md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from New (Stories)"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "6168cd05f7c78785",
+            "id": "43ac99374afb3edf",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -137,22 +131,21 @@
             }
           },
           {
-            "id": "d6e45e999f8c9836",
+            "id": "a6529e33d70cce8f",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "4. Stories/New (Stories).md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of New (Stories)"
+              "title": "Outline"
             }
           },
           {
-            "id": "72083b9b9e1d6768",
+            "id": "d15482fcae0105ae",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -166,53 +159,23 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
-      "plugin-home-page:Refresh Home Stats": false,
-      "plugin-timeline-visualiser:Open Timeline Visualizer": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
+      "plugin-home-page:Refresh Home Stats": false,
+      "plugin-timeline-visualiser:Open Timeline Visualizer": false,
       "obsidian-git:Open Git source control": false,
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "bbe76ca04654ea73",
+  "active": "d15482fcae0105ae",
   "lastOpenFiles": [
-    "New (Example).md",
-    "New (Items).md",
-    "New (Items)dddd.md",
-    "Test chaarcter.md",
-    "1. Characters/Alexander Dupont.md",
-    "4. Stories/3 The Last Gamble.md",
-    "1. Characters/Evelyn Dupont.md",
-    "Eliza Crane.md",
-    "_Images/1742941472307-laputa.png",
-    "_Images",
-    "images/1742941293716-Capture_d__cran_2025-03-05_003438.png",
-    "images",
-    "1. Characters/Samuel Blackwood.md",
-    "char2.md",
-    "test character.md",
-    "Home.md",
-    "2. Items/Dupont's Heirloom.md",
-    "1. Characters/The Shadow.md",
-    "1. Characters/New (Characters).md",
-    "1. Characters/Lily Moore.md",
-    "1. Characters/test.md",
-    "0. Chronology.canvas",
-    "Untitled.md",
-    "5. Events/Mr Dupont's death.md",
-    "4. Stories/5 The Price of Justice.md",
-    "5. Events/test.md",
-    "5. Events/Revolution.md",
-    "5. Events/Lilly's death.md",
-    "4. Stories/4 The Missing Melody.md",
-    "4. Stories/2 Silenced Testimony.md",
-    "4. Stories/1 Shadows of the Crescent City.md"
+    "1. Characters/Samuel Blackwood.md"
   ]
 }

@@ -12,6 +12,7 @@ import { DropdownComponent } from 'components/DropdownComponent';
 import { BadgesComponent } from 'components/BadgesComponent';
 import { ImageComponent } from 'components/ImageComponent';
 import { DateComponent } from 'components/DateComponent';
+import { FolderSelectorModal } from 'FolderSelectorModal';
 
 
 export class DynamicFormView {
@@ -87,25 +88,25 @@ export class DynamicFormView {
                 const headerContainer = node('div', { class: `header-container` });
                 // Create collapsible section container
                 const sectionContainer = node('div', { class: `section-container` });
-                
+
                 // Create collapse/expand icon
                 const collapseIcon = node('span', { class: 'collapse-icon', text: '▼' });
                 headerContainer.appendChild(collapseIcon);
-                
+
                 headerContainer.appendChild(node('div', { class: `header-${deep}`, text: field.label || fieldName }));
                 headerContainer.appendChild(node('div', { class: `header-separator-${deep} header-separator` }));
 
                 container.appendChild(headerContainer);
                 container.appendChild(sectionContainer);
-                
+
                 // Add collapse/expand functionality
                 headerContainer.addEventListener('click', (e) => {
                     // Toggle section visibility
-                    sectionContainer.style.display = 
+                    sectionContainer.style.display =
                         sectionContainer.style.display === 'none' ? 'block' : 'none';
-                    
+
                     // Toggle icon
-                    collapseIcon.textContent = 
+                    collapseIcon.textContent =
                         sectionContainer.style.display === 'none' ? '►' : '▼';
                 });
 
@@ -127,16 +128,16 @@ export class DynamicFormView {
                         .setName(fieldName + (field.required ? ' *' : ''))
                         .setType(field.type.split(':')[1])
                         .setValues(field.value as string[])
-                        .onChange((newValues) => { 
-                            this.updateData(currentPath, newValues); 
+                        .onChange((newValues) => {
+                            this.updateData(currentPath, newValues);
                             console.log(`Field ${currentPath} edited`);
                         })
                         .render();
                     this.multiValueFieldsMap.set(currentPath, multiField);
                 } else if (field.type === "boolean") {
                     //Create toggle/checkbox for boolean values
-                    const fieldLabel = node('div', { 
-                        class: 'editor-label', 
+                    const fieldLabel = node('div', {
+                        class: 'editor-label',
                         text: fieldName + (field.required ? ' *' : '')
                     });
                     fieldContainer.appendChild(fieldLabel);
@@ -151,8 +152,8 @@ export class DynamicFormView {
                         });
                 } else if (field.type === "dropdown") {
                     //Create dropdown field
-                    const fieldLabel = node('div', { 
-                        class: 'editor-label', 
+                    const fieldLabel = node('div', {
+                        class: 'editor-label',
                         text: fieldName + (field.required ? ' *' : '')
                     });
                     fieldContainer.appendChild(fieldLabel);
@@ -163,15 +164,15 @@ export class DynamicFormView {
                         .setOptions(field.options || [])
                         .setAllowCustom(field.allowCustom || false)
                         .setValue(field.value || '')
-                        .onChange((value) => { 
-                            this.updateData(currentPath, value); 
+                        .onChange((value) => {
+                            this.updateData(currentPath, value);
                             console.log(`Field ${currentPath} edited`);
                         })
                         .render();
                 } else if (field.type === "badges") {
                     //Create badges field
-                    const fieldLabel = node('div', { 
-                        class: 'editor-label', 
+                    const fieldLabel = node('div', {
+                        class: 'editor-label',
                         text: fieldName + (field.required ? ' *' : '')
                     });
                     fieldContainer.appendChild(fieldLabel);
@@ -181,15 +182,15 @@ export class DynamicFormView {
                     new BadgesComponent(this.app, badgesContainer)
                         .setOptions(field.options || [])
                         .setValues(field.value || [])
-                        .onChange((values) => { 
-                            this.updateData(currentPath, values); 
+                        .onChange((values) => {
+                            this.updateData(currentPath, values);
                             console.log(`Field ${currentPath} edited`);
                         })
                         .render();
                 } else if (field.type === "image") {
                     //Create image field
-                    const fieldLabel = node('div', { 
-                        class: 'editor-label', 
+                    const fieldLabel = node('div', {
+                        class: 'editor-label',
                         text: fieldName + (field.required ? ' *' : '')
                     });
                     fieldContainer.appendChild(fieldLabel);
@@ -198,15 +199,15 @@ export class DynamicFormView {
 
                     new ImageComponent(this.app, imageContainer)
                         .setValue(field.value || '')
-                        .onChange((value) => { 
-                            this.updateData(currentPath, value); 
+                        .onChange((value) => {
+                            this.updateData(currentPath, value);
                             console.log(`Field ${currentPath} edited`);
                         })
                         .render();
                 } else if (field.type === "date") {
                     //Create date field
-                    const fieldLabel = node('div', { 
-                        class: 'editor-label', 
+                    const fieldLabel = node('div', {
+                        class: 'editor-label',
                         text: fieldName + (field.required ? ' *' : '')
                     });
                     fieldContainer.appendChild(fieldLabel);
@@ -215,23 +216,23 @@ export class DynamicFormView {
 
                     new DateComponent(this.app, dateContainer)
                         .setValue(field.value || '')
-                        .onChange((value) => { 
-                            this.updateData(currentPath, value); 
+                        .onChange((value) => {
+                            this.updateData(currentPath, value);
                             console.log(`Field ${currentPath} edited`);
                         })
                         .render();
                 } else {
                     //Create rich text editor for text/textarea
-                    const fieldLabel = node('div', { 
-                        class: 'editor-label', 
+                    const fieldLabel = node('div', {
+                        class: 'editor-label',
                         text: fieldName + (field.required ? ' *' : '')
                     });
                     fieldContainer.appendChild(fieldLabel);
                     fieldContainer.addClass(field.type);
                     const fieldEl = new RichTextEditor(this.app, this.pages);
                     fieldEl.createRichTextEditor(fieldContainer, field.value, field.type);
-                    fieldEl.onChange(newValue => { 
-                        this.updateData(currentPath, newValue); 
+                    fieldEl.onChange(newValue => {
+                        this.updateData(currentPath, newValue);
                         console.log(`Field ${currentPath} edited`);
                     });
                 }
@@ -255,6 +256,10 @@ export class DynamicFormView {
         current[pathParts[pathParts.length - 1]].value = value;
     }
 
+
+
+
+    // Replace the handleSubmit method in DynamicFormView class
     async handleSubmit() {
         if (!this.data.name || this.data.name.trim() === "") {
             new Notice("Please provide a name for the content");
@@ -263,30 +268,30 @@ export class DynamicFormView {
 
         // Validate required fields
         const missingRequired: string[] = [];
-        
+
         // Check each required field
         for (const fieldPath of this.requiredFields) {
             const pathParts: string[] = fieldPath.split('.');
             let current: any = this.data;
-            
+
             // Navigate to the field
             for (let i = 0; i < pathParts.length - 1; i++) {
                 current = current[pathParts[i]];
             }
-            
+
             const field = current[pathParts[pathParts.length - 1]];
-            
+
             // Check if field value is empty
             const isEmpty = (
-                field.value === null || 
-                field.value === undefined || 
-                field.value === "" || 
+                field.value === null ||
+                field.value === undefined ||
+                field.value === "" ||
                 (Array.isArray(field.value) && field.value.length === 0)
             );
-            
+
             if (isEmpty) {
                 missingRequired.push(formatDisplayName(pathParts[pathParts.length - 1]));
-                
+
                 // Highlight the missing field
                 const fieldElements = document.querySelectorAll('.required-field');
                 fieldElements.forEach(el => {
@@ -296,21 +301,37 @@ export class DynamicFormView {
                 });
             }
         }
-        
+
         // Show notice for missing required fields
         if (missingRequired.length > 0) {
             new Notice(`Please fill in the required fields: ${missingRequired.join(", ")}`);
             return;
         }
 
-        const leaf = this.app.workspace.activeLeaf;
-        if (!leaf) return;
+        // If editing existing content, don't show folder selector
+        if (!this.newContent) {
+            const leaf = this.app.workspace.activeLeaf;
+            if (!leaf) return;
 
-        const file = await this.plugin.createContentFile(this.data);
-        if (!file) return;
+            const file = await this.plugin.createContentFile(this.data);
+            if (!file) return;
 
-        await leaf.openFile(file, { state: { mode: 'preview' } });
+            await leaf.openFile(file, { state: { mode: 'preview' } });
+            return;
+        }
+
+        // Open folder selector modal for new content
+        new FolderSelectorModal(this.app, async (folderPath) => {
+            const leaf = this.app.workspace.activeLeaf;
+            if (!leaf) return;
+
+            const file = await this.plugin.createContentFile(this.data, folderPath);
+            if (!file) return;
+
+            await leaf.openFile(file, { state: { mode: 'preview' } });
+        }).open();
     }
+
 
     handleCancel() {
         const leaf = this.app.workspace.activeLeaf;

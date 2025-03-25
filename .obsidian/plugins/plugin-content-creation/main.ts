@@ -2,7 +2,18 @@ import { App, Plugin, PluginSettingTab, Setting, TFile, normalizePath, Notice, T
 import { DynamicFormView } from './DynamicFormView';
 import { ContentSelectorModal } from './contentSelectorModal';
 import { node, formatDisplayName, FormTemplate, getTemplates, hasValueAndType, convertLinks, generateUUID } from './utils';
-import './styles.css';
+
+
+
+import './styles/ContentSelectorModal.css';
+import './styles/DropdownComponent.css';
+import './styles/BadgesComponent.css';
+import './styles/ImageComponent.css';
+import './styles/DateComponent.css';
+import './styles/FolderSelector.css';
+import './styles/MultiValue.css';
+import './styles/Styles.css';
+
 
 // Define the view type
 const VIEW_TYPE_CONTENT_CREATOR = "content-creator-view";
@@ -410,12 +421,17 @@ export default class ContentCreatorPlugin extends Plugin {
     }
 
     //Generate/edit final file
-    async createContentFile(data: any) {
+    // Add this import at the top of main.ts
+
+    // Replace the createContentFile method in ContentCreatorPlugin class
+    async createContentFile(data: any, folderPath: string = "/") {
         try {
-            // Use existing file path for edits, root folder for new content
+            // Use existing file path for edits, selected folder for new content
             let filePath = this.activeView?.filePath;
             if (!filePath) {
-                filePath = `/${data.name}.md`;
+                filePath = folderPath === "/"
+                    ? `/${data.name}.md`
+                    : `${folderPath}/${data.name}.md`;
             }
 
             let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
@@ -424,6 +440,10 @@ export default class ContentCreatorPlugin extends Plugin {
             if (file) {
                 await this.app.vault.modify(file, fileContent);
             } else {
+                // Ensure the folder exists
+                if (folderPath !== "/" && !this.app.vault.getAbstractFileByPath(folderPath)) {
+                    await this.app.vault.createFolder(folderPath);
+                }
                 file = await this.app.vault.create(filePath, fileContent);
             }
 
