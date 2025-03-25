@@ -1,0 +1,4 @@
+Make group collapes with height to have smooth transition
+Remove header (header with color)
+multi value, add "X" even if only one value
+imageCOmo, add dash border and remove background color

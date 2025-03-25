@@ -5,14 +5,14 @@ import { node, formatDisplayName, FormTemplate, getTemplates, hasValueAndType, c
 
 
 
-import './styles/ContentSelectorModal.css';
-import './styles/DropdownComponent.css';
-import './styles/BadgesComponent.css';
-import './styles/ImageComponent.css';
-import './styles/DateComponent.css';
-import './styles/FolderSelector.css';
-import './styles/MultiValue.css';
-import './styles/Styles.css';
+// import './styles/ContentSelectorModal.css';
+// import './styles/DropdownComponent.css';
+// import './styles/BadgesComponent.css';
+// import './styles/ImageComponent.css';
+// import './styles/DateComponent.css';
+// import './styles/FolderSelector.css';
+// import './styles/MultiValue.css';
+// import './Styles22.css';
 
 
 // Define the view type
@@ -162,6 +162,7 @@ export default class ContentCreatorPlugin extends Plugin {
                 return this.activeView;
             }
         );
+        this.loadAllStylesheets();
 
         //Settings
         await this.loadSettings();
@@ -199,6 +200,35 @@ export default class ContentCreatorPlugin extends Plugin {
             })
         );
     }
+    private async loadAllStylesheets() {
+        const stylesheets = [
+            "ContentSelectorModal.css",
+            "DropdownComponent.css",
+            "BadgesComponent.css",
+            "ImageComponent.css",
+            "DateComponent.css",
+            "FolderSelector.css",
+            "MultiValue.css",
+            "Styles.css"
+        ];
+
+        for (const stylesheet of stylesheets) {
+            try {
+                const cssPath = `${this.manifest.dir}/styles/${stylesheet}`;
+                const cssContent = await this.app.vault.adapter.read(cssPath);
+
+                const styleEl = document.createElement('style');
+                styleEl.innerHTML = cssContent;
+
+                document.head.appendChild(styleEl);
+                console.log(`Loaded CSS: ${stylesheet}`);
+            } catch (error) {
+                console.error(`Failed to load CSS file ${stylesheet}:`, error);
+            }
+        }
+    }
+
+
 
     private async updateLinksAfterRename(file: TFile, oldPath: string) {
         // Only process markdown files

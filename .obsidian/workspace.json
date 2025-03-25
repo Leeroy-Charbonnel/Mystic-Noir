@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "74e2c45e0f551b42",
+        "id": "07fc97c9a0a1a510",
         "type": "tabs",
         "children": [
           {
-            "id": "635cd1fdf5af13cc",
+            "id": "aac857f86fe37b0e",
             "type": "leaf",
             "state": {
-              "type": "content-creator-view",
+              "type": "empty",
               "state": {},
               "icon": "lucide-file",
-              "title": "Content Creator"
+              "title": "New tab"
             }
           }
         ]
@@ -174,8 +174,13 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "d15482fcae0105ae",
+  "active": "9081f7d405e9a01a",
   "lastOpenFiles": [
+    "New (Items)dddd.md",
+    "New (Items).md",
+    "New (Example).md",
+    "char2.md",
+    "1. Characters/New (Characters).md",
     "1. Characters/Samuel Blackwood.md"
   ]
 }
