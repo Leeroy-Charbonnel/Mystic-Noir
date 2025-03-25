@@ -1,0 +1,10 @@
+{
+	"id": "plugin-timeline-visualiser",
+	"name": "Timeline Visualiser",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "",
+	"author": "Leeroy Charbonnel",
+	"authorUrl": "",
+	"isDesktopOnly": false
+}

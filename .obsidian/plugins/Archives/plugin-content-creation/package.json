@@ -1,0 +1,41 @@
+{
+	"name": "obsidian-sample-plugin",
+	"version": "1.0.0",
+	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^16.11.6",
+		"@typescript-eslint/eslint-plugin": "5.29.0",
+		"@typescript-eslint/parser": "5.29.0",
+		"builtin-modules": "3.3.0",
+		"esbuild": "0.17.3",
+		"obsidian": "latest",
+		"tslib": "2.4.0",
+		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"@tiptap/core": "^2.11.5",
+		"@tiptap/extension-blockquote": "^2.11.5",
+		"@tiptap/extension-bold": "^2.11.5",
+		"@tiptap/extension-bullet-list": "^2.11.5",
+		"@tiptap/extension-color": "^2.11.5",
+		"@tiptap/extension-font-family": "^2.11.5",
+		"@tiptap/extension-heading": "^2.11.5",
+		"@tiptap/extension-italic": "^2.11.5",
+		"@tiptap/extension-link": "^2.11.5",
+		"@tiptap/extension-list-item": "^2.11.5",
+		"@tiptap/extension-ordered-list": "^2.11.5",
+		"@tiptap/extension-strike": "^2.11.5",
+		"@tiptap/extension-text-style": "^2.11.5",
+		"@tiptap/pm": "^2.11.5",
+		"@tiptap/starter-kit": "^2.11.5"
+	}
+}

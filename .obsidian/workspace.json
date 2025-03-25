@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "65497714858654c8",
+        "id": "aa2b8aedee3cfaf4",
         "type": "tabs",
         "children": [
           {
-            "id": "807f98f047afbe16",
+            "id": "01c0b4cc3733a9d0",
             "type": "leaf",
             "state": {
-              "type": "timeline-visualizer",
+              "type": "content-creator-view",
               "state": {},
               "icon": "lucide-file",
-              "title": "Timeline Visualizer"
+              "title": "Content Creator"
             }
           }
         ]
@@ -138,16 +138,17 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "4. Stories/New (Stories).md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline"
+              "title": "Outline of New (Stories)"
             }
           },
           {
-            "id": "12ba0e3d0d1b25a5",
+            "id": "72083b9b9e1d6768",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -165,7 +166,6 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-git:Open Git source control": false,
       "plugin-home-page:Refresh Home Stats": false,
       "plugin-timeline-visualiser:Open Timeline Visualizer": false,
       "switcher:Open quick switcher": false,
@@ -173,26 +173,28 @@
       "canvas:Create new canvas": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "content-creation-plugin:Create Content": false
+      "content-creation-plugin:Create Content": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "12ba0e3d0d1b25a5",
+  "active": "01c0b4cc3733a9d0",
   "lastOpenFiles": [
-    "Untitled.md",
     "1. Characters/Samuel Blackwood.md",
     "Home.md",
-    "1. Characters/The Shadow.md",
+    "0. Chronology.canvas",
+    "Untitled.md",
+    "5. Events/Mr Dupont's death.md",
+    "4. Stories/5 The Price of Justice.md",
     "1. Characters/Evelyn Dupont.md",
+    "5. Events/test.md",
     "5. Events/Revolution.md",
     "5. Events/Lilly's death.md",
-    "4. Stories/5 The Price of Justice.md",
     "4. Stories/4 The Missing Melody.md",
     "4. Stories/3 The Last Gamble.md",
     "4. Stories/2 Silenced Testimony.md",
     "4. Stories/1 Shadows of the Crescent City.md",
     "1. Characters/Lily Moore.md",
     "1. Characters/Alexander Dupont.md",
-    "0. Chronology.canvas",
     "TEST GIT.md",
     "4. Stories/New (Stories).md"
   ]
