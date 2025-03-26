@@ -1,5 +1,5 @@
 .content-selector-modal {
-    padding: 20px;
+    padding: 0px 20px 20px 20px;
 }
 
 .content-selector-modal .selector-title {
@@ -20,12 +20,20 @@
     transition: all 0.2s ease;
 }
 
-.content-option:hover {
-    background-color: var(--background-secondary);
+
+.content-selector-modal button {
+    cursor:pointer;
+    color: var(--text-accent-color);
+    background-color: var(--interactive-normal) !important;
+    box-shadow: var(--input-shadow);
 }
 
-button:not(.clickable-icon) {
+.content-selector-modal button:hover {
     color: var(--text-color);
-    background-color: var(--interactive-normal);
+    background-color:var(--interactive-accent) !important;
     box-shadow: var(--input-shadow);
+}
+
+.content-selector-modal .setting-item{
+    padding:0px !important;
 }

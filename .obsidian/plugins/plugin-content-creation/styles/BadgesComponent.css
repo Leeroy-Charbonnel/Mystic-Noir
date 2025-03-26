@@ -1,38 +1,29 @@
-/* Badges styles */
-.badges-container-wrapper {
-    margin: 5px 0;
+.badge-option {
+    cursor: pointer;
+    background-color: var(--background-secondary);
+    border-radius: 6px;
+    padding: 4px 10px;
 }
 
 .badges-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 5px 0;
+    flex-flow: wrap;
+    gap: 10px;
 }
 
-.badge-option-container {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background-color: var(--background-secondary);
-    border-radius: 15px;
-    padding: 4px 10px;
+.badges-container-wrapper {
+    width: 100%;
+    border: 1px solid var(--background-modifier-border);
+    padding: 10px;
+    background: var(--background-primary);
 }
 
-.badge-option-container input[type="checkbox"] {
-    margin: 0;
+.badge-option.active {
+    color: var(--text-on-accent) !important;
+    background-color: var(--interactive-accent) !important;
 }
 
-.badges-value {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.badge-item {
-    background-color: var(--background-secondary);
-    border-radius: 15px;
-    padding: 4px 10px;
-    display: inline-block;
-    font-size: 12px;
+.badge-option:hover {
+    background: var(--interactive-hover);
+    color: var(--text-normal);
 }

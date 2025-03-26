@@ -37,7 +37,7 @@ export class ContentSelectorModal extends Modal {
           .setCta()
           .onClick(() => {
             this.close();
-            this.plugin.openFormForContentType(type);
+            this.plugin.createNewContent(type);
           }));
     });
   }

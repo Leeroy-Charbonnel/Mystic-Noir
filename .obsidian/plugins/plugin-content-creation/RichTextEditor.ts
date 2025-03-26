@@ -37,7 +37,7 @@ export class RichTextEditor {
             }
         });
 
-        // Create formatting buttons
+        //Format
         const boldButton = node('button', { class: 'editor-button', text: 'B', attributes: { 'title': 'Bold', 'type': 'button' } });
         boldButton.addEventListener('click', () => { editor.chain().focus().toggleBold().run(); });
 
@@ -47,7 +47,7 @@ export class RichTextEditor {
         const strikeButton = node('button', { class: 'editor-button', text: 'S', attributes: { 'title': 'Strikethrough', 'type': 'button', 'style': 'text-decoration:line-through' } });
         strikeButton.addEventListener('click', () => { editor.chain().focus().toggleStrike().run(); });
 
-        // Color picker with hidden input
+        //Color
         const colorContainer = node('div', { class: 'editor-color-container' });
         const colorButton = node('button', { class: 'editor-button', text: 'A', attributes: { 'title': 'Text Color', 'type': 'button' } });
         const colorInput = node('input', { class: 'editor-color-input', attributes: { type: 'color', title: 'Pick Text Color', value: getComputedStyle(document.body).getPropertyValue('--text-normal') } });
@@ -60,6 +60,8 @@ export class RichTextEditor {
         colorButton.style.color = '#ffffff';
         colorButton.addEventListener('click', () => { colorInput.click(); });
 
+        
+        //Append
         container.appendChild(editorContainer);
         editorContainer.appendChild(toolbar);
         editorContainer.appendChild(contentArea);
@@ -75,7 +77,7 @@ export class RichTextEditor {
         let bulletListButton: HTMLButtonElement;
         let numberedListButton: HTMLButtonElement;
 
-        //Add extra formatting options for textarea fields
+        //Textarea format
         if (inputType == "textarea") {
             //Heading dropdown
             const headingDropdown = document.createElement('select');
@@ -110,13 +112,13 @@ export class RichTextEditor {
                 }
             });
 
-            bulletListButton = node('button', { class: 'editor-button', text: '•', attributes: { 'title': 'Bullet List', 'type': 'button' } });
+            bulletListButton = node('button', { class: 'editor-button', text: '•', attributes: { 'title': 'Bullet List', 'type': 'button' } }) as HTMLButtonElement;
             bulletListButton.addEventListener('click', () => {
                 editor.chain().focus().toggleBulletList().run();
                 bulletListButton.classList.toggle('is-active', editor.isActive('bulletList'));
             });
 
-            numberedListButton = node('button', { class: 'editor-button', text: '#', attributes: { 'title': 'Numbered List', 'type': 'button' } });
+            numberedListButton = node('button', { class: 'editor-button', text: '1.', attributes: { 'title': 'Numbered List', 'type': 'button' } }) as HTMLButtonElement;
             numberedListButton.addEventListener('click', () => {
                 editor.chain().focus().toggleOrderedList().run();
                 numberedListButton.classList.toggle('is-active', editor.isActive('orderedList'));
@@ -141,7 +143,7 @@ export class RichTextEditor {
                 const currentColor = editor.getAttributes('textStyle').color;
                 if (currentColor) {
                     colorButton.style.color = currentColor;
-                    colorInput.value = currentColor;
+                    (colorInput as HTMLInputElement).value = currentColor;
                 }
             }
         });

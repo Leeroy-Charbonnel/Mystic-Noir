@@ -1,4 +1,4 @@
-export const templates = {
+export const templates={
     characters: {
         BasicInformation: {
             type: "group",
@@ -43,7 +43,7 @@ export const templates = {
             fields: {
                 CurrentStatus: {
                     type: "badges",
-                    options: ["Dead", "Injured", "Missing", "Imprisoned", "Unknown"]
+                    options: ["Dead","Injured","Missing","Imprisoned","Unknown"]
                 }
             }
         },
@@ -259,6 +259,10 @@ export const templates = {
             }
         }
     },
+
+
+
+
     Example: {
         //Simple text field
         textField: {
@@ -280,14 +284,14 @@ export const templates = {
         //Dropdown field
         dropdownField: {
             type: "dropdown",
-            options: ["Option 1", "Option 2", "Option 3"],
+            options: ["Option 1","Option 2","Option 3"],
             allowCustom: true //Allow user to enter custom values
         },
 
         //Badges field (similar to dropdown but displayed differently)
         badgesField: {
             type: "badges",
-            options: ["Badge 1", "Badge 2", "Badge 3"]
+            options: ["Badge 1","Badge 2","Badge 3"]
         },
 
         //Array of text fields
@@ -304,8 +308,104 @@ export const templates = {
         imageField: {
             type: "image"
         },
+
         dateField: {
             type: "date"
+        },
+
+        //Level 1 nesting
+        nestedGroup: {
+            type: "group",
+            label: "Nested Group",
+            fields: {
+                //Level 1 fields
+                nestedTextField: {
+                    type: "text"
+                },
+                nestedTextareaField: {
+                    type: "textarea"
+                },
+
+                //Level 2 nesting
+                deeperGroup: {
+                    type: "group",
+                    label: "Deeper Nested Group",
+                    fields: {
+                        //Level 2 fields
+                        deeperTextField: {
+                            type: "text"
+                        },
+                        deeperDropdown: {
+                            type: "dropdown",
+                            options: ["Deep 1","Deep 2","Deep 3"]
+                        },
+
+                        //Level 3 nesting (deepest level)
+                        deepestGroup: {
+                            type: "group",
+                            label: "Deepest Nested Group",
+                            fields: {
+                                //Level 3 fields
+                                deepestTextField: {
+                                    type: "text"
+                                },
+                                deepestBadges: {
+                                    type: "badges",
+                                    options: ["Final 1","Final 2","Final 3"]
+                                },
+                                deepestBoolean: {
+                                    type: "boolean",
+                                    default: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        //Another Level 1 nesting example
+        categorizedData: {
+            type: "group",
+            label: "Categorized Data",
+            fields: {
+                //Level 1 fields
+                categoryName: {
+                    type: "text",
+                    required: true
+                },
+
+                //Level 2 nesting
+                subCategories: {
+                    type: "group",
+                    label: "Sub-Categories",
+                    fields: {
+                        //Level 2 fields
+                        subCategoryList: {
+                            type: "array:text"
+                        },
+
+                        //Level 3 nesting
+                        subCategoryDetails: {
+                            type: "group",
+                            label: "Sub-Category Details",
+                            fields: {
+                                //Level 3 fields
+                                detailsText: {
+                                    type: "textarea"
+                                },
+                                detailsImage: {
+                                    type: "image"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+
+
+
+
 };

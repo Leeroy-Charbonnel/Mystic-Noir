@@ -1,6 +1,5 @@
-/* Date field styles */
 .date-container {
-    margin: 5px 0;
+    height:40px;
 }
 
 .date-input {
@@ -16,4 +15,8 @@
     padding: 8px;
     border-radius: 4px;
     background-color: var(--background-secondary);
+}
+
+.date-input {
+    font-size: 1em !important;
 }

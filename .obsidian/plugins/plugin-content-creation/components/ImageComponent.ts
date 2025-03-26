@@ -1,193 +1,234 @@
-import { App, TFile, normalizePath, Notice } from 'obsidian';
+import { App,TFile,normalizePath,Notice,Modal,FuzzySuggestModal } from 'obsidian';
 import { node } from 'utils';
+
+const allowedExtensions=['jpg','jpeg','png','webp','gif'];
+const IMAGES_FOLDER="_Images";
+
+class ConfirmationModal extends Modal {
+    private result: boolean=false;
+    private resolvePromise: (value: boolean) => void;
+
+    constructor(app: App,private message: string) {
+        super(app);
+    }
+
+    onOpen() {
+        const { contentEl }=this;
+
+        const text=node('p',{ text: this.message });
+        const buttonContainer=node('div',{ class: 'modal-button-container' });
+
+        const cancelBtn=node('button',{ text: 'Cancel',class: 'mod-warning' })
+        cancelBtn.addEventListener('click',() => {
+            this.result=false;
+            this.close();
+        });
+
+        const submitBtn=node('button',{ text: 'Overwrite',class: 'mod-cta' })
+        submitBtn.addEventListener('click',() => {
+            this.result=true;
+            this.close();
+        });
+
+
+        buttonContainer.appendChild(submitBtn);
+        buttonContainer.appendChild(cancelBtn);
+
+        contentEl.appendChild(text);
+        contentEl.appendChild(buttonContainer);
+    }
+
+    onClose() {
+        const { contentEl }=this;
+        contentEl.empty();
+        this.resolvePromise(this.result);
+    }
+
+    async openAndAwait(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.resolvePromise=resolve;
+            this.open();
+        });
+    }
+}
+
+
+class ImageSelectorModal extends FuzzySuggestModal<TFile> {
+    private resolvePromise: (value: string) => void;
+    private images: TFile[]=[];
+
+    constructor(app: App,private imagesFolder: string) {
+        super(app);
+        this.setPlaceholder("Select an image from vault");
+        this.loadImages();
+    }
+
+    private async loadImages() {
+        await ensureImagesFolder();
+
+        const files=this.app.vault.getFiles().filter(file => {
+            return file.path.startsWith(this.imagesFolder)&&allowedExtensions.includes(file.extension.toLowerCase());
+        });
+
+        this.images=files;
+    }
+
+    getItems(): TFile[] {
+        return this.images;
+    }
+
+    getItemText(item: TFile): string {
+        return item.name;
+    }
+
+    onChooseItem(item: TFile): void {
+        this.resolvePromise(item.path);
+        this.close();
+    }
+
+    async openAndAwait(): Promise<string> {
+        return new Promise((resolve) => {
+            this.resolvePromise=resolve;
+            this.open();
+        });
+    }
+}
 
 export class ImageComponent {
     private app: App;
     private container: HTMLElement;
     private value: string;
     private onChangeCb: (value: string) => void;
-    private IMAGES_FOLDER = "_Images"; // Store in root images folder for simplicity
 
-    constructor(app: App, containerEl: HTMLElement) {
-        this.app = app;
-        this.container = containerEl;
-        this.value = '';
+    constructor(app: App,containerEl: HTMLElement) {
+        this.app=app;
+        this.container=containerEl;
+        this.value='';
     }
 
     setValue(value: string) {
-        this.value = value;
+        this.value=value;
         return this;
     }
 
     onChange(cb: (value: string) => void) {
-        this.onChangeCb = cb;
+        this.onChangeCb=cb;
         return this;
     }
 
     render() {
         this.container.empty();
 
-        // Create input container
-        const inputContainer = node('div', { class: 'image-input-container' });
-        this.container.appendChild(inputContainer);
+        //BUTTONS CONTAINER
+        const buttonsContainer=node('div',{ class: 'image-buttons-container' });
 
-        // Create hidden path input (to store the value)
-        const pathInput = node('input', {
-            class: 'image-path-input hidden',
-            attributes: {
-                type: 'text',
-                value: this.value,
-                readonly: 'true'
-            }
-        }) as HTMLInputElement;
-        inputContainer.appendChild(pathInput);
-
-        // File input container for styling
-        const fileInputContainer = node('div', { class: 'file-input-container' });
-        inputContainer.appendChild(fileInputContainer);
-        
-        // Create a label for file input styling
-        const fileLabel = node('label', { 
-            class: 'file-input-label',
-            text: 'Choose Image'
-        });
-        fileInputContainer.appendChild(fileLabel);
-        
-        // Create the actual file input (hidden for styling)
-        const fileInput = node('input', {
-            attributes: {
-                type: 'file',
-                accept: '.jpg,.jpeg,.png,.webp,.gif',
-                class: 'file-input'
-            }
-        }) as HTMLInputElement;
+        //FILE INPUT (UPLOAD)
+        const fileLabel=node('label',{ class: 'file-input-label',text: 'Choose Image' });
+        const fileInput=node('input',{ attributes: { type: 'file',accept: allowedExtensions.map(x => `.${x}`).join(','),class: 'file-input' } }) as HTMLInputElement;
         fileLabel.appendChild(fileInput);
-        
-        // When file is changed, handle it
-        fileInput.addEventListener('change', async (event) => {
-            if (fileInput.files && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                
-                // Ensure the images folder exists
-                await this.ensureImagesFolder();
-                
-                // Save the file to the images folder
-                const newPath = await this.saveFileToImagesFolder(file);
-                
-                // Update the component
-                this.value = newPath;
-                pathInput.value = newPath;
-                this.updatePreview(previewContainer, this.value);
+        buttonsContainer.appendChild(fileLabel);
+
+        //FROM VAULT BUTTON
+        const fromVaultBtn=node('button',{ text: 'From Vault',class: 'from-vault-button' });
+        buttonsContainer.appendChild(fromVaultBtn);
+
+        //PREVIEW
+        const previewContainer=node('div',{ class: 'image-preview-container' });
+        this.updatePreview(previewContainer,this.value);
+
+        //EVENT HANDLERS
+        fileInput.addEventListener('change',async (event) => {
+            if(fileInput.files&&fileInput.files.length>0) {
+                const file=fileInput.files[0];
+                await ensureImagesFolder();
+                const newPath=await this.saveFileToImagesFolder(file);
+
+                if(newPath) {
+                    this.value=newPath;
+                    this.updatePreview(previewContainer,this.value);
+                    this.onChangeCb(this.value);
+                }
+            }
+        });
+
+        fromVaultBtn.addEventListener('click',async () => {
+            await ensureImagesFolder();
+            const imageSelectorModal=new ImageSelectorModal(this.app,IMAGES_FOLDER);
+            const selectedPath=await imageSelectorModal.openAndAwait();
+
+            if(selectedPath) {
+                this.value=selectedPath;
+                this.updatePreview(previewContainer,this.value);
                 this.onChangeCb(this.value);
             }
         });
 
-        // Create preview container
-        const previewContainer = node('div', { class: 'image-preview-container' });
+        this.container.appendChild(buttonsContainer);
         this.container.appendChild(previewContainer);
-
-        // Create placeholder or show image
-        this.updatePreview(previewContainer, this.value);
-
         return this;
     }
-    
-    // Ensure the images folder exists
-    private async ensureImagesFolder(): Promise<void> {
-        try {
-            // Check if folder exists using adapter
-            const exists = await this.app.vault.adapter.exists(this.IMAGES_FOLDER);
-            
-            if (!exists) {
-                await this.app.vault.createFolder(this.IMAGES_FOLDER);
-                console.log(`Created images folder: ${this.IMAGES_FOLDER}`);
-            }
-        } catch (error) {
-            console.error("Failed to create images folder:", error);
-            new Notice("Failed to create images folder: " + error.message);
-        }
-    }
-    
-    // Save uploaded file to images folder
+
+
+
     private async saveFileToImagesFolder(file: File): Promise<string> {
         try {
-            // Generate a safe filename with timestamp to prevent conflicts
-            const timestamp = Date.now();
-            const safeFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            
-            // Create the destination path
-            const destPath = `${this.IMAGES_FOLDER}/${timestamp}-${safeFilename}`;
-            
-            // Read the file as binary data
-            const arrayBuffer = await file.arrayBuffer();
-            const buffer = new Uint8Array(arrayBuffer);
-            
-            // Create the file in the vault with proper path normalization
-            await this.app.vault.createBinary(normalizePath(destPath), buffer);
-            
-            new Notice(`Image saved successfully`);
+            const destPath=`${IMAGES_FOLDER}/${file.name}`;
+            const exists=await this.app.vault.adapter.exists(destPath);
+
+            if(exists) {
+                const modal=new ConfirmationModal(this.app,`An image with this name already exists. Would you like to overwrite it?`);
+                const overwrite=await modal.openAndAwait();
+                if(!overwrite) return ""
+                else await this.app.vault.adapter.remove(destPath);
+            }
+
+            //Create file
+            const arrayBuffer=await file.arrayBuffer();
+            const buffer=new Uint8Array(arrayBuffer);
+            await this.app.vault.createBinary(normalizePath(destPath),buffer);
             return destPath;
-            
-        } catch (error) {
-            console.error("Failed to save image:", error);
-            new Notice("Failed to save image: " + error.message);
+        } catch(error) {
+            new Notice("Failed to save image: "+error.message);
             return "";
         }
     }
 
-    private updatePreview(container: HTMLElement, imagePath: string) {
+    private updatePreview(container: HTMLElement,imagePath: string) {
         container.empty();
 
-        if (!imagePath) {
-            const placeholder = node('div', {
-                class: 'image-placeholder',
-                text: 'No image selected'
-            });
-            container.appendChild(placeholder);
+        if(!imagePath) {
+            container.appendChild(node('div',{ class: 'image-placeholder',text: 'No image selected' }));
             return;
         }
 
-        const previewDiv = node('div', { class: 'image-preview' });
-        
-        // For image preview - try different strategies to get a valid URL
-        let imgSrc = '';
-        
-        try {
-            // First try: Get the file directly 
-            const file = this.app.vault.getAbstractFileByPath(imagePath);
-            if (file instanceof TFile) {
-                // Use Obsidian's API to get a resource URL
-                imgSrc = this.app.vault.getResourcePath(file);
-            } else {
-                // Second try: Use adapter path
-                imgSrc = this.app.vault.adapter.getResourcePath(imagePath);
-            }
-        } catch (e) {
-            console.warn("Could not get resource path, using direct path:", e);
-            
-            // Final fallback: just use the path directly
-            imgSrc = imagePath;
-        }
-        
-        const img = node('img', {
-            class: 'preview-image',
-            attributes: {
-                src: imgSrc,
-                alt: 'Image preview'
-            }
-        });
-        
-        // Add error handling for image
-        img.addEventListener('error', () => {
-            console.error("Failed to load image:", imgSrc);
+        const previewDiv=node('div',{ class: 'image-preview' });
+
+        let imgSrc='';
+        const file=this.app.vault.getAbstractFileByPath(imagePath);
+        if(file instanceof TFile) imgSrc=this.app.vault.getResourcePath(file);
+
+        const img=node('img',{ class: 'preview-image',attributes: { src: imgSrc,alt: 'Image preview' } });
+
+        img.addEventListener('error',() => {
+            console.error("Failed to load image:",imgSrc);
             previewDiv.empty();
-            previewDiv.appendChild(node('div', {
+            previewDiv.appendChild(node('div',{
                 class: 'image-error',
                 text: `Error loading image: ${imagePath}`
             }));
         });
-        
+
         previewDiv.appendChild(img);
         container.appendChild(previewDiv);
+    }
+}
+
+
+async function ensureImagesFolder(): Promise<void> {
+    try {
+        const exists=await this.app.vault.adapter.exists(IMAGES_FOLDER);
+        if(!exists) await this.app.vault.createFolder(IMAGES_FOLDER);
+    } catch(error) {
+        new Notice("Failed to create images folder: "+error.message);
     }
 }
