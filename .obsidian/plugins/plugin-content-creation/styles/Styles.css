@@ -1,7 +1,7 @@
 /* General form */
 
 
-.section-container.collapsed .header-label::before {
+.section-container.collapsed > * > .header-label::before {
     transform: rotate(-90deg);
 }
 

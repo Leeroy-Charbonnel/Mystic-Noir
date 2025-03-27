@@ -1,14 +1,14 @@
 {
   "main": {
-    "id": "3b1b592b20de70d0",
+    "id": "0336709e4d4a93b5",
     "type": "split",
     "children": [
       {
-        "id": "adbe7e369447c5d1",
+        "id": "fa48904828dcb6bd",
         "type": "tabs",
         "children": [
           {
-            "id": "b1cd6bbb580a07f4",
+            "id": "fe3069818404cff8",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -23,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "8d867154dcc749ab",
+    "id": "47e74932df8e6b51",
     "type": "split",
     "children": [
       {
-        "id": "5a3cfb41e65b25c6",
+        "id": "6768286b25845476",
         "type": "tabs",
         "children": [
           {
-            "id": "2c237956b5b4af41",
+            "id": "9081f7d405e9a01a",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -44,7 +44,7 @@
             }
           },
           {
-            "id": "c697e132c37fcfbd",
+            "id": "5256f4abe6e2d4c0",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -61,7 +61,7 @@
             }
           },
           {
-            "id": "c53e26ea8cdd5bc2",
+            "id": "e9c9ee545c2c8134",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -74,23 +74,22 @@
       }
     ],
     "direction": "horizontal",
-    "width": 295.5
+    "width": 200
   },
   "right": {
-    "id": "137c8d881fd1f709",
+    "id": "29a3676e3f236c53",
     "type": "split",
     "children": [
       {
-        "id": "9e804982a85cc665",
+        "id": "458bcc7108286073",
         "type": "tabs",
         "children": [
           {
-            "id": "0dbf16b7c149611a",
+            "id": "bbdfdebd7d136347",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "4. Stories/New (Stories).md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,25 +99,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for New (Stories)"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "ec6ea1df3cd5c217",
+            "id": "1f1dba0e31e7f642",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "4. Stories/New (Stories).md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from New (Stories)"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "6168cd05f7c78785",
+            "id": "43ac99374afb3edf",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -133,7 +131,7 @@
             }
           },
           {
-            "id": "d6e45e999f8c9836",
+            "id": "a6529e33d70cce8f",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -147,7 +145,7 @@
             }
           },
           {
-            "id": "12ba0e3d0d1b25a5",
+            "id": "d15482fcae0105ae",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -165,45 +163,38 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-git:Open Git source control": false,
-      "plugin-home-page:Refresh Home Stats": false,
-      "plugin-timeline-visualiser:Open Timeline Visualizer": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
+      "plugin-home-page:Refresh Home Stats": false,
+      "plugin-timeline-visualiser:Open Timeline Visualizer": false,
+      "obsidian-git:Open Git source control": false,
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "b1cd6bbb580a07f4",
+  "active": "9081f7d405e9a01a",
   "lastOpenFiles": [
-    "1. Characters/Samuel Blackwood.md",
-    "1. Characters/Alexander Dupont.md",
-    "_Images/ezgif-698e88064d088b.gif",
     "New (Example).md",
+    "Home.md",
+    "5. Events/Lilly's death.md",
+    "_Images/1742941472307-laputa.png",
     "_Images/14.JPG",
-    "_Images/birth_certificate.png",
     "_Images/12-1.JPG",
     "_Images/1742988621632-14.JPG",
-    "1. Characters/The Shadow.md",
-    "1. Characters/New (Characters).md",
-    "1. Characters/Lily Moore.md",
-    "5. Events/Mr Dupont's death.md",
-    "_Images/1742941472307-laputa.png",
-    "_Images",
-    "Untitled.md",
-    "Home.md",
-    "1. Characters/Evelyn Dupont.md",
-    "5. Events/Revolution.md",
-    "5. Events/Lilly's death.md",
+    "_Images/birth_certificate.png",
+    "_Images/ezgif-698e88064d088b.gif",
+    "_Images/Screen Shot 2025-03-09 at 14.21.48.png",
+    "1. Characters/Samuel Blackwood.md",
     "4. Stories/5 The Price of Justice.md",
-    "4. Stories/4 The Missing Melody.md",
-    "4. Stories/3 The Last Gamble.md",
-    "4. Stories/2 Silenced Testimony.md",
-    "4. Stories/1 Shadows of the Crescent City.md",
-    "0. Chronology.canvas",
-    "TEST GIT.md",
-    "4. Stories/New (Stories).md"
+    "1. Characters/Alexander Dupont.md",
+    "1. Characters/New (Characters).md",
+    "99. Notes/Future.md",
+    "3. Locations/Stardust Lounge.md",
+    "Test chaarcter.md",
+    "New (Items)dddd.md",
+    "New (Items).md",
+    "char2.md"
   ]
 }
