@@ -1,4 +1,3 @@
-
 .file-input {
     opacity: 0;
     overflow: hidden;
@@ -6,37 +5,23 @@
     z-index: -1;
 }
 
-.image-buttons-container > * {
-    font-size: 1em;
-    height: 100%;
-    padding: 8px 12px;
-    border-radius: 4px;
-    background-color: var(--interactive-normal);
-    color: var(--text-normal);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    overflow: hidden;
-}
-
-.image-buttons-container > *:hover {
-    background-color: var(--interactive-hover);
-    transform: translateY(-1px);
-}
-
-
 .image-preview-container {
+    position: relative;
     margin-top: 10px;
     padding: 10px;
     border-radius: 4px;
-    /* background-color: var(--background-secondary); */
     min-height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px dashed var(--interactive-normal);
+    transition: all 0.2s ease;
 }
 
-.image-preview-container {}
+.image-preview-container:hover {
+    border-color: var(--interactive-hover);
+    background-color: var(--background-secondary-alt);
+}
 
 .image-placeholder {
     display: flex;
@@ -59,7 +44,6 @@
     object-fit: contain;
 }
 
-
 .image-error {
     padding: 10px;
     background-color: var(--background-modifier-error);
@@ -67,7 +51,6 @@
     border-radius: 4px;
     text-align: center;
 }
-
 
 .field-value.image-value img {
     max-width: 100%;
@@ -81,11 +64,238 @@
     object-fit: contain;
 }
 
-.image-buttons-container {
-    display: flex;
-    gap: 10px;
-}
-
 .dynamic-form-field-container.image {
     align-items: baseline;
 }
+
+.image-buttons-overlay {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.image-buttons-overlay.visible {
+    opacity: 1;
+}
+
+.image-edit-button,
+.image-remove-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.image-edit-button:hover,
+.image-remove-button:hover {
+    background-color: var(--interactive-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.image-remove-button:hover {
+    color: var(--text-error);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Images selection popup */
+.image-gallery-modal {
+    --gallery-columns: 4;
+    --card-gap: 12px;
+    --card-border-radius: 6px;
+    --card-bg-color: var(--background-secondary);
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  
+  .gallery-title {
+    margin: 10px 0;
+    text-align: center;
+  }
+  
+  .gallery-search {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+  }
+  
+  .gallery-container {
+    flex: 1;
+    width: 100%;
+    max-height: 600px;
+    overflow-y: auto;
+    position: relative;
+    margin-bottom: 45px;
+    border: 1px solid var(--interactive-normal);
+
+  }
+  
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--gallery-columns), 1fr);
+    gap: var(--card-gap);
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .gallery-card {
+    display: grid;
+    grid-template-rows: auto 30px;
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .gallery-image-container {
+    aspect-ratio: 1;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .gallery-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .gallery-card:hover .gallery-image-container img {
+    transform: scale(1.05);
+  }
+  
+  .gallery-image-name {
+    padding: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  
+  .file-input {
+    display: none;
+  }
+  
+  .image-gallery-modal button {
+    position: absolute;
+    bottom: 0px;
+    right: 10px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 10;
+  }
+  
+  .mod-cta:hover {
+    background-color: #4c6c8c;
+  }
+  
+  .gallery-card:hover {
+    background: var(--interactive-normal);
+  }
+  
+  .gallery-empty {
+    grid-column: 1 / -1;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .image-preview-container {
+    position: relative;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--interactive-normal);
+    transition: all 0.2s ease;
+  }
+  
+  .image-buttons-overlay {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .image-buttons-overlay.visible {
+    opacity: 1;
+  }
+  
+  .image-edit-button,
+  .image-remove-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  
+  .image-preview {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+  }

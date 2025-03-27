@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "fa48904828dcb6bd",
+        "id": "010bd23e6ebb0c2e",
         "type": "tabs",
         "children": [
           {
-            "id": "fe3069818404cff8",
+            "id": "321ed53de9ea4115",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "content-creator-view",
               "state": {},
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Content Creator"
             }
           }
         ]
@@ -174,18 +174,22 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "9081f7d405e9a01a",
+  "active": "321ed53de9ea4115",
   "lastOpenFiles": [
+    "_Images/ezgif-698e88064d088b - Copie (7).gif",
+    "_Images/fffff - Copie (7).png",
+    "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (7).png",
+    "_Images/ezgif-698e88064d088b - Copie (6).gif",
+    "_Images/fffff - Copie (6).png",
+    "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (6).png",
+    "_Images/ezgif-698e88064d088b - Copie (5).gif",
+    "_Images/fffff - Copie (5).png",
+    "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (5).png",
+    "_Images/ezgif-698e88064d088b - Copie (4).gif",
+    "_Images/fffff - Copie (4).png",
     "New (Example).md",
     "Home.md",
     "5. Events/Lilly's death.md",
-    "_Images/1742941472307-laputa.png",
-    "_Images/14.JPG",
-    "_Images/12-1.JPG",
-    "_Images/1742988621632-14.JPG",
-    "_Images/birth_certificate.png",
-    "_Images/ezgif-698e88064d088b.gif",
-    "_Images/Screen Shot 2025-03-09 at 14.21.48.png",
     "1. Characters/Samuel Blackwood.md",
     "4. Stories/5 The Price of Justice.md",
     "1. Characters/Alexander Dupont.md",
