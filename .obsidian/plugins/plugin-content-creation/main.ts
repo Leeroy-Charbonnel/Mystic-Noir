@@ -1,7 +1,7 @@
-import { App, Plugin, PluginSettingTab, Setting, TFile, normalizePath, Notice, TFolder, Menu, MenuItem, FileManager, SuggestModal, WorkspaceLeaf, setIcon, ViewStateResult, ItemView } from 'obsidian';
+import { App, Plugin, TFile, Notice, WorkspaceLeaf, setIcon, ItemView } from 'obsidian';
 import { DynamicFormView } from './DynamicFormView';
 import { ContentSelectorModal } from './ContentSelectorModal';
-import { node, formatDisplayName, FormTemplate, getTemplates, convertLinks, generateUUID } from './utils';
+import { node, formatDisplayName, FormTemplate, getTemplates, convertLinks, generateUUID, getFormattedDateForInput } from './utils';
 
 
 
@@ -9,7 +9,6 @@ import './styles/ContentSelectorModal.css';
 import './styles/DropdownComponent.css';
 import './styles/BadgesComponent.css';
 import './styles/ImageComponent.css';
-import './styles/DateComponent.css';
 import './styles/FolderSelector.css';
 import './styles/MultiValue.css';
 import './styles/Styles.css';
@@ -18,48 +17,7 @@ import './styles/Styles.css';
 // Define the view type
 const VIEW_TYPE_CONTENT_CREATOR = "content-creator-view";
 
-class ContentCreatorSettingTab extends PluginSettingTab {
-    plugin: ContentCreatorPlugin;
 
-    constructor(app: App, plugin: ContentCreatorPlugin) {
-        super(app, plugin);
-        this.plugin = plugin;
-    }
-
-    display(): void {
-        const { containerEl } = this;
-        containerEl.empty();
-
-        containerEl.createEl('h2', { text: 'Content Creator Settings' });
-
-        containerEl.createEl('h3', { text: 'Content Type Colors' });
-        Object.keys(this.plugin.templates).forEach(type => {
-            const displayName = formatDisplayName(type);
-
-            //Default color
-            if (!this.plugin.settings.contentColors[type]) this.plugin.settings.contentColors[type] = '#000000';
-
-            new Setting(containerEl)
-                .setName(`${displayName} Color`)
-                .setDesc(`Set the color for ${displayName} content type`)
-                .addColorPicker(color => {
-                    color.setValue(this.plugin.settings.contentColors[type])
-                        .onChange(async value => {
-                            this.plugin.settings.contentColors[type] = value;
-                            await this.plugin.saveSettings();
-                        });
-                });
-        });
-    }
-}
-
-interface ContentCreatorPluginSettings {
-    contentColors: { [key: string]: string }
-}
-
-const DEFAULT_SETTINGS: ContentCreatorPluginSettings = {
-    contentColors: {}
-}
 class EditContentButtons {
     private containerEl: HTMLElement;
     private plugin: ContentCreatorPlugin;
@@ -115,7 +73,7 @@ export class ContentCreatorView extends ItemView {
         return "Content Creator";
     }
 
-    updateContent(contentData: FormTemplate, newContent: boolean, filePath: string | null = null) {
+    updateContent(contentData: FormTemplate, filePath: string | null = null) {
         this.containerEl.addClass("content-creator-container");
         this.contentData = contentData;
         this.filePath = filePath;
@@ -124,14 +82,13 @@ export class ContentCreatorView extends ItemView {
         const wrapper = node('div', { class: 'content-creator-wrapper' });
         this.contentEl.appendChild(wrapper);
 
-        this.formView = new DynamicFormView(this.app, this.plugin, this.contentData, wrapper, newContent);
+        this.formView = new DynamicFormView(this.app, this.plugin, this.contentData, wrapper, filePath);
         this.formView.render();
     }
 
 }
 
 export default class ContentCreatorPlugin extends Plugin {
-    settings: ContentCreatorPluginSettings;
     templates: { [key: string]: FormTemplate };
     private activeView: ContentCreatorView | null = null;
     private filePath: string | null = null;
@@ -147,10 +104,6 @@ export default class ContentCreatorPlugin extends Plugin {
                 return this.activeView;
             }
         );
-
-        //Settings
-        await this.loadSettings();
-        this.addSettingTab(new ContentCreatorSettingTab(this.app, this));
 
         //Templates
         this.templates = getTemplates();
@@ -188,25 +141,9 @@ export default class ContentCreatorPlugin extends Plugin {
         this.app.workspace.onLayoutReady(() => {
             this.app.workspace.getLeavesOfType(VIEW_TYPE_CONTENT_CREATOR).forEach(leaf => leaf.detach());
         });
-
-
-        setTimeout(() => {
-            this.createNewContent("Example");
-
-        }, 1000)
-
     }
 
-
-    async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-    }
-
-    async saveSettings() {
-        await this.saveData(this.settings);
-    }
-
-    async activateView(contentData: FormTemplate, newContent: boolean, filePath: string | null = null) {
+    async activateView(contentData: FormTemplate, filePath: string | null = null) {
         const leaf = this.app.workspace.getLeaf();
         this.filePath = filePath;
 
@@ -216,7 +153,7 @@ export default class ContentCreatorPlugin extends Plugin {
         })
 
         if (leaf.view) {
-            (leaf.view as ContentCreatorView).updateContent(contentData, newContent, filePath);
+            (leaf.view as ContentCreatorView).updateContent(contentData, filePath);
             this.activeView = leaf.view as ContentCreatorView;
         }
     }
@@ -228,9 +165,8 @@ export default class ContentCreatorPlugin extends Plugin {
         result.name = `New (${contentType.charAt(0).toUpperCase() + contentType.slice(1)})`;
         result.contentType = contentType;
         result.id = generateUUID();
-        result.color = this.settings.contentColors[contentType];
         //Create form
-        this.activateView(result, true);
+        this.activateView(result);
     }
 
 
@@ -240,56 +176,46 @@ export default class ContentCreatorPlugin extends Plugin {
         //Get templates
         const template = this.templates[data.contentType];
         //Fill data
-        const result = this.fillTemplateWithData(template, data);
+        const result = { ...template, template: this.fillTemplateWithData(template.template, data.template) };
         //Update name if file was renamed
         result.name = file.basename;
+        result.contentType = data.contentType;
+        result.id = data.id;
         //Create form
-        this.activateView(result, false, file.path);
+        this.activateView(result, file.path);
     }
 
     fillTemplateWithData(template: any, data: any) {
         const result = JSON.parse(JSON.stringify(template));
         function fill(templateObj: any, dataObj: any) {
-            if (!dataObj) return templateObj;
+            if (!templateObj || !dataObj) return templateObj;
             for (const key in templateObj) {
-                if (dataObj.hasOwnProperty(key)) {
-                    if (typeof dataObj[key] === 'object') templateObj[key] = fill(templateObj[key], dataObj[key]);
-                    else {
-                        if (typeof templateObj[key] === 'object') templateObj[key].value = dataObj[key];
-                        else templateObj[key] = dataObj[key];
+                if (!dataObj.hasOwnProperty(key)) continue;
+
+                if (templateObj[key].type) {
+                    //Group
+                    if (templateObj[key].type === "group") {
+                        fill(templateObj[key].fields, dataObj[key].fields);
+                    } else {
+                        //Other field
+                        if (templateObj[key].type === "date")
+                            templateObj[key].value = getFormattedDateForInput(dataObj[key].value);
+                        else
+                            templateObj[key].value = dataObj[key].value;
                     }
+
                 }
             }
             return templateObj;
         }
-        const final = fill(result, data);
-        return final;
+        return fill(result, data);
     }
-
 
     getFileProperties(app: App, file: TFile) {
         const cache = app.metadataCache.getFileCache(file);
         if (cache && cache.frontmatter) return cache.frontmatter;
         return null;
     }
-
-    private extractValuesOnly(data: any): any {
-        if (!data) return null;
-
-        if (typeof data === 'object') {
-            if (data.type === 'group' && data.fields) {
-                const result: any = { type: 'group', label: data.label, fields: {} };
-                for (const field in data.fields) result.fields[field] = this.extractValuesOnly(data.fields[field]);
-                return result;
-            } else if (data.hasOwnProperty('value')) {
-                return data.value;
-            } else {
-                for (const key in data) data[key] = this.extractValuesOnly(data[key]);
-            }
-        }
-        return data;
-    }
-
 
     async createContentFile(data: any, folderPath: string = "/") {
         try {
@@ -321,15 +247,12 @@ export default class ContentCreatorPlugin extends Plugin {
 
     private generateFileContent(data: FormTemplate, existingFile?: TFile): string {
         const contentTypeTag = data.contentType.charAt(0).toUpperCase() + data.contentType.slice(1);
-        const color = this.settings.contentColors[data.contentType];
-
 
         const newData = {
             id: data.id || generateUUID(),
             contentType: data.contentType,
             name: data.name,
-            color: color,
-            template: this.extractValuesOnly({ ...data.template }),
+            template: data.template,
         };
 
         let content = "";
@@ -391,44 +314,25 @@ export default class ContentCreatorPlugin extends Plugin {
         return container;
     }
 
-    // Add this method to ContentCreatorPlugin class in main.ts
-
-    // Get a proper URL for an image
-    // Get a proper URL for an image
     private getImageUrl(path: string): string {
         if (!path) return '';
-
         try {
-            // Try to get the file from vault
             const file = this.app.vault.getAbstractFileByPath(path);
-            if (file instanceof TFile) {
-                // Get a resource URL that works in Obsidian
-                return this.app.vault.getResourcePath(file);
-            }
+            if (file instanceof TFile) return this.app.vault.getResourcePath(file);
         } catch (e) {
             console.warn("Could not get resource path for image:", e);
         }
-
-        return path; // Return original path as fallback
+        return path;
     }
 
-    // Add this method for image field rendering
     private getImageField(value: string): HTMLElement {
         const container = node('div', { class: 'field-value image-value' });
 
         if (value) {
             try {
-                // Get proper image URL
                 const imgPath = this.getImageUrl(value);
+                const img = node('img', { attributes: { src: imgPath, alt: 'Image' } });
 
-                const img = node('img', {
-                    attributes: {
-                        src: imgPath,
-                        alt: 'Image'
-                    }
-                });
-
-                // Add error handling
                 img.addEventListener('error', () => {
                     container.empty();
                     container.textContent = `Image not found: ${value}`;
@@ -446,7 +350,7 @@ export default class ContentCreatorPlugin extends Plugin {
 
         return container;
     }
-    // Modified version of formatContentData to handle image fields correctly
+
     private formatContentData(data: any, depth: number, path: string = ''): HTMLElement {
         const contentContainer = node('div', { class: 'content-container' });
 
@@ -463,6 +367,7 @@ export default class ContentCreatorPlugin extends Plugin {
                 const section = node('div', { class: `section level-${depth}`, children: [sectionHeader, sectionContent] });
                 contentContainer.appendChild(section);
                 contentContainer.appendChild(node('div', { class: 'section-separator' }));
+
             } else {
                 const isEmpty = (
                     field.value === null ||
@@ -499,51 +404,47 @@ export default class ContentCreatorPlugin extends Plugin {
                             fieldValueElement = this.getTextArray(values);
                         }
                     }
+
                 } else if (field.type === "textarea") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     fieldValueElement = this.getTextAreaField(field.value);
+
                 } else if (field.type === "boolean") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     const checkboxContainer = node('div', { class: 'field-value' });
-                    const checkbox = node('input', {
-                        attributes: {
-                            type: 'checkbox',
-                            disabled: 'true'
-                        }
-                    }) as HTMLInputElement;
+                    const checkbox = node('input', { attributes: { type: 'checkbox', disabled: 'true' } }) as HTMLInputElement;
 
-                    if (field.value) {
-                        checkbox.setAttr("checked", "checked");
-                    }
+                    if (field.value) checkbox.setAttr("checked", "checked");
 
                     checkboxContainer.appendChild(checkbox);
                     fieldValueElement = checkboxContainer;
+
                 } else if (field.type === "dropdown") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     const dropdownDisplay = node('div', { class: 'field-value dropdown-value' });
                     dropdownDisplay.textContent = field.value || '';
                     fieldValueElement = dropdownDisplay;
+
                 } else if (field.type === "badges") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     const badgesContainer = node('div', { class: 'field-value badges-value' });
 
                     (field.value || []).forEach((badge: string) => {
-                        const badgeElement = node('span', {
-                            class: 'badge-item',
-                            text: badge
-                        });
+                        const badgeElement = node('span', { class: 'badge-item', text: badge });
                         badgesContainer.appendChild(badgeElement);
                     });
-
                     fieldValueElement = badgesContainer;
+
                 } else if (field.type === "image") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     fieldValueElement = this.getImageField(field.value);
+
                 } else if (field.type === "date") {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     const dateValue = node('div', { class: 'field-value date-value' });
-                    dateValue.textContent = field.value || '';
+                    dateValue.textContent = (field.value == '') ? '-' : new Date(field.value).toLocaleDateString("fr-FR");
                     fieldValueElement = dateValue;
+
                 } else if (String(field.value).trim()) {
                     fieldContainer.classList.add(`field-type-${field.type}`);
                     fieldValueElement = this.getTextField(field.value);
@@ -558,8 +459,6 @@ export default class ContentCreatorPlugin extends Plugin {
 
         return contentContainer;
     }
-
-    // Add this method for image field rendering
 
     onunload() {
         console.log("unloading plugin");

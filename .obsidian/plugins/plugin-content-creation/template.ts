@@ -4,17 +4,18 @@ export const templates={
             type: "group",
             label: "Basic Information",
             fields: {
+                Image: {
+                    type:"image",
+                },
                 FullName: {
                     type: "text",
                     required: true
                 },
                 BirthDate: {
                     type: "date",
-                    required: true
                 },
                 DeathDate: {
                     type: "date",
-                    required: true
                 },
                 Occupation: {
                     type: "text"
@@ -43,7 +44,7 @@ export const templates={
             fields: {
                 CurrentStatus: {
                     type: "badges",
-                    options: ["Dead","Injured","Missing","Imprisoned","Unknown"]
+                    options: ["Alive","Dead","Injured","Missing","Imprisoned","Unknown"]
                 }
             }
         },
@@ -173,6 +174,9 @@ export const templates={
                 Name: {
                     type: "text",
                     required: true
+                },
+                Location: {
+                    type: "text",
                 },
                 MapImage: {
                     type: "image"

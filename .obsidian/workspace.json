@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "010bd23e6ebb0c2e",
+        "id": "1ec2bd87c36cec9b",
         "type": "tabs",
         "children": [
           {
-            "id": "321ed53de9ea4115",
+            "id": "d0e5efe771013e7a",
             "type": "leaf",
             "state": {
-              "type": "content-creator-view",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "test char.md",
+                "mode": "preview",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Content Creator"
+              "title": "test char"
             }
           }
         ]
@@ -174,31 +178,45 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "321ed53de9ea4115",
+  "active": "d0e5efe771013e7a",
   "lastOpenFiles": [
+    "test char.md",
+    "Home.md",
+    "1. Characters/The Shadow.md",
+    "1. Characters/Alexander Dupont.md",
+    "New (Characters).md",
+    "4. Stories/1 Shadows of the Crescent City.md",
+    "5. Events/Mr Dupont's death.md",
+    "5. Events/Lilly's death.md",
+    "4. Stories/5 The Price of Justice.md",
+    "4. Stories/4 The Missing Melody.md",
+    "4. Stories/3 The Last Gamble.md",
+    "4. Stories/2 Silenced Testimony.md",
+    "3. Locations/Stardust Lounge.md",
+    "3. Locations/Samuel's Office.md",
+    "3. Locations/Dupont's Mansion.md",
+    "2. Items/Dupont's Heirloom.md",
+    "1. Characters/Samuel Blackwood.md",
+    "1. Characters/Lily Moore.md",
+    "1. Characters/Evelyn Dupont.md",
+    "OLD/The Shadow 1.md",
+    "OLD/1 Shadows of the Crescent City 1.md",
+    "OLD/5 The Price of Justice 1.md",
+    "OLD/4 The Missing Melody 1.md",
+    "OLD/3 The Last Gamble 1.md",
+    "OLD/2 Silenced Testimony 1.md",
+    "OLD/Dupont's Mansion 1.md",
+    "DONE",
+    "OLD",
+    "_Images/Screen Shot 2025-03-09 at 14.21.48.png",
+    "_Images/ezgif-698e88064d088b.gif",
+    "_Images/fffff.png",
     "_Images/ezgif-698e88064d088b - Copie (7).gif",
     "_Images/fffff - Copie (7).png",
     "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (7).png",
     "_Images/ezgif-698e88064d088b - Copie (6).gif",
     "_Images/fffff - Copie (6).png",
     "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (6).png",
-    "_Images/ezgif-698e88064d088b - Copie (5).gif",
-    "_Images/fffff - Copie (5).png",
-    "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (5).png",
-    "_Images/ezgif-698e88064d088b - Copie (4).gif",
-    "_Images/fffff - Copie (4).png",
-    "New (Example).md",
-    "Home.md",
-    "5. Events/Lilly's death.md",
-    "1. Characters/Samuel Blackwood.md",
-    "4. Stories/5 The Price of Justice.md",
-    "1. Characters/Alexander Dupont.md",
-    "1. Characters/New (Characters).md",
-    "99. Notes/Future.md",
-    "3. Locations/Stardust Lounge.md",
-    "Test chaarcter.md",
-    "New (Items)dddd.md",
-    "New (Items).md",
-    "char2.md"
+    "_Images/ezgif-698e88064d088b - Copie (5).gif"
   ]
 }

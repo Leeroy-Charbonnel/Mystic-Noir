@@ -1,11 +1,8 @@
 import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, WorkspaceLeaf, ItemView, ViewStateResult, TFolder, Notice } from 'obsidian';
 import { TimelineView, VIEW_TYPE_TIMELINE } from './TimelineView';
-import { cleanHtml, cleanLink, extractLinks, parseDateString, sortAndRemoveDuplicateDates } from './utils';
+import { cleanHtml, cleanLink, extractLinks, sortAndRemoveDuplicateDates } from './utils';
 
 interface TimelineVisualizerSettings {
-    storiesFolder: string;
-    eventsFolder: string;
-    charactersFolder: string;
     storyColor: string;
     eventColor: string;
     characterEventColor: string;
@@ -13,9 +10,6 @@ interface TimelineVisualizerSettings {
 }
 
 const DEFAULT_SETTINGS: TimelineVisualizerSettings = {
-    storiesFolder: '',
-    eventsFolder: '',
-    charactersFolder: '',
     storyColor: '',
     eventColor: '',
     characterEventColor: '',
@@ -97,185 +91,182 @@ export default class TimelineVisualizerPlugin extends Plugin {
     }
 
     async getTimelineData(): Promise<TimelineData> {
-        if (!this.settings.storiesFolder || !this.settings.eventsFolder || !this.settings.charactersFolder) {
-            new Notice("Please configure the folder paths in Timeline Visualizer settings");
-            return { events: [], connections: [] };
-        }
-
         const events: TimelineEvent[] = [];
         const connections: TimelineConnection[] = [];
 
         const files = this.app.vault.getMarkdownFiles();
-        const storyFiles = files.filter(file => file.path.startsWith(this.settings.storiesFolder));
-        const eventFiles = files.filter(file => file.path.startsWith(this.settings.eventsFolder));
-        const characterFiles = files.filter(file => file.path.startsWith(this.settings.charactersFolder));
 
-        //STORIES
-        for (const file of storyFiles) {
-            try {
-                const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-                if (frontmatter && frontmatter.data) {
-                    const data = frontmatter.data;
-                    const beginDate = data.template?.BasicInformation?.BeginDate?.value || '';
-                    const endDate = data.template?.BasicInformation?.EndDate?.value || '';
-                    const name = data.template?.BasicInformation?.Name?.value || file.basename;
-                    const synopsis = data.template?.BasicInformation?.Synopsis?.value || '';
+        // debugger
+        for (const file of files) {
 
-                    const parsedBeginDate = parseDateString(cleanHtml(beginDate), false);
-                    const parsedEndDate = parseDateString(cleanHtml(endDate), true);
+            const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+            if (frontmatter && frontmatter.data) {
+                const data = frontmatter.data;
 
-                    const storyEvent: TimelineEvent = {
-                        type: 'story',
-                        id: file.path,
-                        title: cleanHtml(name),
-                        beginDate: parsedBeginDate,
-                        endDate: parsedEndDate,
-                        description: cleanHtml(synopsis),
-                        file: file.path
-                    };
+                //STORIES
+                if (data.contentType == "stories") {
+                    try {
+                        const basicInfo = data.template.BasicInformation.fields;
 
-                    events.push(storyEvent);
+                        if (basicInfo) {
+                            const name = cleanHtml(basicInfo?.Name.value);
+                            const synopsis = cleanHtml(basicInfo?.Synopsis.value);
 
-                    //Extract characters from story
-                    if (data.template?.Characters?.Characters?.value) {
-                        const characters = data.template.Characters.Characters.value;
-                        characters.forEach((characterRef: string) => {
-                            const extractedLinks = extractLinks(characterRef);
-                            if (extractedLinks.length > 0) {
-                                const characterName = cleanHtml(cleanLink(extractedLinks[0]));
-                                connections.push({
-                                    from: file.path,
-                                    to: `${this.settings.charactersFolder}/${characterName}.md`,
-                                    type: 'appears_in'
-                                });
-                            }
-                        });
-                    }
+                            const beginDate = basicInfo?.BeginDate.value;
+                            const endDate = basicInfo?.EndDate.value;
+                            const parsedBeginDate = beginDate != null ? new Date(beginDate) : null;
+                            const parsedEndDate = endDate != null ? new Date(endDate) : null;
 
-                    //Extract event from story
-                    if (data.template?.Events?.Event?.value) {
-                        const storyEventsList = data.template.Events.Event.value;
-                        storyEventsList.forEach((eventRef: string) => {
-                            const extractedLinks = extractLinks(eventRef);
-                            if (extractedLinks.length > 0) {
-                                const eventName = cleanHtml(cleanLink(extractedLinks[0]));
-                                connections.push({
-                                    from: `${this.settings.eventsFolder}/${eventName}.md`,
-                                    to: file.path,
-                                    type: 'part_of'
-                                });
-                            }
-                        });
+                            const storyEvent: TimelineEvent = {
+                                type: 'story',
+                                id: file.path,
+                                title: name,
+                                beginDate: parsedBeginDate,
+                                endDate: parsedEndDate,
+                                description: synopsis,
+                                file: file.path
+                            };
+
+                            events.push(storyEvent);
+                        }
+
+                        //Extract characters from story
+                        const characters = data.template.Associated.fields.Characters.value;
+                        if (characters && characters.length > 0) {
+                            characters.forEach((characterRef: string) => {
+                                const extractedLinks = extractLinks(characterRef);
+                                if (extractedLinks.length > 0) {
+                                    const characterName = cleanHtml(cleanLink(extractedLinks[0]));
+                                    connections.push({
+                                        from: file.path,
+                                        to: `${characterName}.md`,
+                                        type: 'appears_in'
+                                    });
+                                }
+                            });
+                        }
+
+
+                        //Extract event from story
+                        const storyEventsList = data.template.Associated.fields.Events.value;
+                        if (storyEventsList && storyEventsList.length > 0) {
+                            storyEventsList.forEach((eventRef: string) => {
+                                const extractedLinks = extractLinks(eventRef);
+                                if (extractedLinks.length > 0) {
+                                    const eventName = cleanHtml(cleanLink(extractedLinks[0]));
+                                    connections.push({
+                                        from: `${eventName}.md`,
+                                        to: file.path,
+                                        type: 'part_of'
+                                    });
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Error processing story file ${file.path}:`, error);
                     }
                 }
-            } catch (error) {
-                console.error(`Error processing story file ${file.path}:`, error);
-            }
-        }
+                //EVENTS
+                if (data.contentType == "events") {
+                    try {
+                        const basicInfo = data.template.BasicInformation.fields;
+                        if (basicInfo) {
+                            const name = cleanHtml(basicInfo.Name.value);
+                            const description = cleanHtml(basicInfo.Description.value);
 
-        //EVENTS
-        for (const file of eventFiles) {
-            try {
-                const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+                            const beginDate = basicInfo.BeginDate.value;
+                            const endDate = basicInfo.EndDate.value;
+                            const parsedBeginDate = beginDate != null ? new Date(beginDate) : null;
+                            const parsedEndDate = endDate != null ? new Date(endDate) : null;
 
-                if (frontmatter && frontmatter.data) {
-                    const data = frontmatter.data;
-                    const beginDate = data.template?.BasicInformation?.BeginDate?.value || '';
-                    const endDate = data.template?.BasicInformation?.EndDate?.value || '';
-                    const name = data.template?.BasicInformation?.Name?.value || file.basename;
-                    const description = data.template?.BasicInformation?.Description?.value || '';
+                            events.push({
+                                type: 'event',
+                                id: file.path,
+                                title: name,
+                                beginDate: parsedBeginDate,
+                                endDate: parsedEndDate,
+                                description: description,
+                                file: file.path
+                            });
+                        }
 
-                    const parsedBeginDate = parseDateString(cleanHtml(beginDate), false);
-                    const parsedEndDate = parseDateString(cleanHtml(endDate), true);
-
-                    events.push({
-                        type: 'event',
-                        id: file.path,
-                        title: cleanHtml(name),
-                        beginDate: parsedBeginDate,
-                        endDate: parsedEndDate,
-                        description: cleanHtml(description),
-                        file: file.path
-                    });
-                }
-            } catch (error) {
-                console.error(`Error processing event file ${file.path}:`, error);
-            }
-        }
-
-        //CHARACTERS
-        for (const file of characterFiles) {
-            try {
-                const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-
-                if (frontmatter && frontmatter.data) {
-                    const data = frontmatter.data;
-                    const name = data.template?.BasicInformation?.FullName?.value || file.basename;
-                    let status = "alive";
-
-                    const birthDateValue = data.template?.BasicInformation?.BirthDate?.value || '';
-                    const deathDateValue = data.template?.BasicInformation?.DeathDate?.value || '';
-                    const parsedBirthDate = parseDateString(cleanHtml(birthDateValue), false);
-                    const parsedDeathDate = parseDateString(cleanHtml(deathDateValue), true);
-
-                    if (parsedBirthDate) {
-                        events.push({
-                            type: 'characterEvent',
-                            id: `${file.path}-birth`,
-                            title: `Birth of ${cleanHtml(name)}`,
-                            beginDate: parsedBirthDate,
-                            endDate: parsedBirthDate,
-                            description: `Birth of ${cleanHtml(name)}`,
-                            file: file.path
-                        });
-
-                        connections.push({
-                            from: `${file.path}-birth`,
-                            to: file.path,
-                            type: 'status_change'
-                        });
+                    } catch (error) {
+                        console.error(`Error processing event file ${file.path}:`, error);
                     }
+                }
 
-                    if (data.template?.State?.Dead?.value === true) {
-                        status = "dead";
+                //CHARACTERS
+                if (data.contentType == "characters") {
+                    try {
+                        const basicInfo = data.template.BasicInformation?.fields;
 
-                        if (parsedDeathDate) {
+                        if (basicInfo) {
+                            const name = cleanHtml(basicInfo.FullName.value);
+                            const description = cleanHtml(basicInfo.Background.value);
+
+                            const beginDate = basicInfo.BirthDate.value;
+                            const endDate = basicInfo.DeathDate.value;
+                            const parsedBeginDate = beginDate != null ? new Date(beginDate) : null;
+                            const parsedEndDate = endDate != null ? new Date(endDate) : null;
+
+                            let status = data.template.State.fields.CurrentStatus.value || [];
+
                             events.push({
                                 type: 'characterEvent',
-                                id: `${file.path}-death`,
-                                title: `Death of ${cleanHtml(name)}`,
-                                beginDate: parsedDeathDate,
-                                endDate: parsedDeathDate,
-                                description: `Death of ${cleanHtml(name)}`,
-                                file: file.path,
-                                status: status as TimelineEvent['status']
+                                id: `${file.path}-birth`,
+                                title: `Birth of ${name}`,
+                                beginDate: parsedBeginDate,
+                                endDate: parsedBeginDate,
+                                description: `Birth of ${name}`,
+                                file: file.path
                             });
 
                             connections.push({
-                                from: `${file.path}-death`,
+                                from: `${file.path}-birth`,
                                 to: file.path,
                                 type: 'status_change'
                             });
-                        }
-                    } else if (data.template?.State?.Injured?.value === true) {
-                        status = "injured";
-                    }
 
-                    events.push({
-                        type: 'character',
-                        id: file.path,
-                        title: cleanHtml(name),
-                        beginDate: parsedBirthDate,
-                        endDate: parsedDeathDate ? parsedDeathDate : null,
-                        description: cleanHtml(data.template?.BasicInformation?.Background?.value) || '',
-                        file: file.path,
-                        status: status as TimelineEvent['status']
-                    });
+
+
+                            if (status.includes("Dead")) {
+                                if (parsedEndDate) {
+                                    events.push({
+                                        type: 'characterEvent',
+                                        id: `${file.path}-death`,
+                                        title: `Death of ${name}`,
+                                        beginDate: parsedEndDate,
+                                        endDate: parsedEndDate,
+                                        description: `Death of ${name}`,
+                                        file: file.path,
+                                        status: status
+                                    });
+
+                                    connections.push({
+                                        from: `${file.path}-death`,
+                                        to: file.path,
+                                        type: 'status_change'
+                                    });
+                                }
+                            }
+                            events.push({
+                                type: 'character',
+                                id: file.path,
+                                title: name,
+                                beginDate: parsedBeginDate,
+                                endDate: parsedEndDate,
+                                description: description,
+                                file: file.path,
+                                status: status
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Error processing character file ${file.path}:`, error);
+                    }
                 }
-            } catch (error) {
-                console.error(`Error processing character file ${file.path}:`, error);
             }
         }
+
 
         let allDates = events.reduce((state, value) => {
             if (value.beginDate) state.push(value.beginDate);
@@ -294,6 +285,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
             connections: connections,
         };
 
+        console.log("Timeline Data:", timelineData);
         return timelineData;
     }
 }
@@ -344,47 +336,9 @@ class TimelineVisualizerSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        const folders = this.getAllFolders();
 
         containerEl.createEl('h2', { text: 'Timeline Visualizer Settings' });
 
-        new Setting(containerEl)
-            .setName('Stories Folder')
-            .setDesc('The folder containing your story files')
-            .addDropdown(dropdown => {
-                folders.forEach(folder => dropdown.addOption(folder, folder));
-                dropdown.setValue(this.plugin.settings.storiesFolder);
-                dropdown.onChange(async (value) => {
-                    this.plugin.settings.storiesFolder = value;
-                    await this.plugin.saveSettings();
-                });
-            });
-
-        new Setting(containerEl)
-            .setName('Events Folder')
-            .setDesc('The folder containing your event files')
-            .addDropdown(dropdown => {
-                dropdown.addOption('', '-- Select a folder --');
-                folders.forEach(folder => dropdown.addOption(folder, folder));
-                dropdown.setValue(this.plugin.settings.eventsFolder);
-                dropdown.onChange(async (value) => {
-                    this.plugin.settings.eventsFolder = value;
-                    await this.plugin.saveSettings();
-                });
-            });
-
-        new Setting(containerEl)
-            .setName('Characters Folder')
-            .setDesc('The folder containing your character files')
-            .addDropdown(dropdown => {
-                dropdown.addOption('', '-- Select a folder --');
-                folders.forEach(folder => dropdown.addOption(folder, folder));
-                dropdown.setValue(this.plugin.settings.charactersFolder);
-                dropdown.onChange(async (value) => {
-                    this.plugin.settings.charactersFolder = value;
-                    await this.plugin.saveSettings();
-                });
-            });
 
         new Setting(containerEl)
             .setName('Story Color')
@@ -425,28 +379,5 @@ class TimelineVisualizerSettingTab extends PluginSettingTab {
                     this.plugin.settings.characterColor = value;
                     await this.plugin.saveSettings();
                 }));
-    }
-
-    private getAllFolders(): string[] {
-        const folders: string[] = [];
-        folders.push('/');
-
-        const findFolders = (folder: TFolder) => {
-            if (folder.path.startsWith('.')) return;
-
-            if (folder.path !== '/') {
-                folders.push(folder.path);
-            }
-
-            folder.children.forEach(child => {
-                if (child instanceof TFolder) {
-                    findFolders(child);
-                }
-            });
-        };
-
-        findFolders(this.app.vault.getRoot());
-
-        return folders.sort();
     }
 }

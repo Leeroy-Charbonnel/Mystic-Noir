@@ -1,10 +1,7 @@
 {
   "enabledCssSnippets": [
-    "hideProperties",
-    "pageStyle",
     "contentCreation",
     "main"
   ],
-  "accentColor": "#37e6bb",
-  "cssTheme": ""
+  "accentColor": "#5cf5ce"
 }

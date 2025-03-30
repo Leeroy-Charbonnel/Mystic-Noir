@@ -1,8 +1,14 @@
 Make group collapes with height to have smooth transition
-Remove header (header with color)
-multi value, add "X" even if only one value
-imageCOmo, add dash border and remove background color
-make required fields error a box shadow, not a border
+- Done for edition but toolbar is not showing due to overflow hidden
 
-Add "*" to required filled using ::after 
-Add >, v using ::before for collapsible header
+
+
+
+
+
+Edit home plugin to count each ype based on contetnType and not folder
+
+
+
+
+

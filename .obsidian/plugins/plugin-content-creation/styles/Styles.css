@@ -1,7 +1,7 @@
 /* General form */
 
 
-.section-container.collapsed > * > .header-label::before {
+.section-container.collapsed>*>.header-label::before {
     transform: rotate(-90deg);
 }
 
@@ -13,13 +13,11 @@
 }
 
 .section-container.collapsed .content-container {
-    max-height: 0px;
+    height: 0;
 }
 
 .content-container {
-    overflow: hidden;
-    max-height: 1000vh;
-    transition: max-height 0.3s ease;
+    transition: height 0.3s ease;
 }
 
 .content-name {
