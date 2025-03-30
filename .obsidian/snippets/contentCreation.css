@@ -20,10 +20,6 @@ blockquote {
     white-space: nowrap;
 }
 
-.field-container.field-type-boolean {
-    display: grid;
-    grid-template-columns: 20% auto;
-}
 
 .section-content {
     border-inline-start: var(--blockquote-border-thickness) solid var(--blockquote-border-color);

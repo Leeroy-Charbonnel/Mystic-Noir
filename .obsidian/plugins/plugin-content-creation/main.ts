@@ -128,14 +128,31 @@ export default class ContentCreatorPlugin extends Plugin {
             })
         );
 
-        //Check for needRefresh on file open
-        this.registerEvent(
-            this.app.workspace.on('file-open', async (file: TFile) => {
-                if (file && file.extension === 'md') {
-                    console.log("Refresh needed");
-                }
-            })
-        );
+
+        // //Reload images
+        // this.registerEvent(
+        //     this.app.workspace.on('file-open', (file: TFile) => {
+        //         if (!file || file.extension !== 'md') return;
+        //         console.log("file open && md");
+
+        //         console.log(document.querySelectorAll('img[data-path]'));
+        //         document.querySelectorAll('img[data-path]').forEach((img) => {
+        //             console.log(`Refreshing image ${img.getAttribute('data-path')}`);
+        //             const path = img.getAttribute('data-path');
+        //             if (!path) return;
+
+        //             try {
+        //                 const imageFile = this.app.vault.getAbstractFileByPath(path);
+        //                 if (imageFile instanceof TFile) { img.setAttribute('src', this.app.vault.getResourcePath(imageFile)); }
+        //             } catch (e) {
+        //                 console.warn(`Failed to refresh image ${path}:`, e);
+        //             }
+        //         });
+        //     })
+        // );
+
+
+
 
         //Close all openened plugin view form
         this.app.workspace.onLayoutReady(() => {
@@ -330,9 +347,8 @@ export default class ContentCreatorPlugin extends Plugin {
 
         if (value) {
             try {
-                const imgPath = this.getImageUrl(value);
-                const img = node('img', { attributes: { src: imgPath, alt: 'Image' } });
-
+                const imgPath = value;
+                const img = node('img', { attributes: { src: imgPath, alt: 'Image', 'data-path': value } });
                 img.addEventListener('error', () => {
                     container.empty();
                     container.textContent = `Image not found: ${value}`;
