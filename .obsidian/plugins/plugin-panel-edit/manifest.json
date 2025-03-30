@@ -1,0 +1,10 @@
+{
+	"id": "plugin-panel-edit",
+	"name": "Panel Edit",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "",
+	"author": "Leeroy Charbonnel",
+	"authorUrl": "",
+	"isDesktopOnly": false
+}

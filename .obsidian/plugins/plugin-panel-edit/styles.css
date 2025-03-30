@@ -1,0 +1,557 @@
+/* Comic Creator Plugin Styles */
+
+/* Common Styles */
+.comic-creator-button,
+.comic-selector-button,
+.comic-reader-button,
+.comic-page-button,
+.comic-save-button,
+.comic-view-button,
+.comic-image-selector-button,
+.comic-tool-button,
+.comic-layer-visibility-toggle,
+.comic-layer-lock-toggle,
+.comic-layer-move-button,
+.comic-layer-delete-button,
+.comic-reader-nav-button {
+    cursor: pointer;
+    background-color: var(--interactive-normal);
+    color: var(--text-normal);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 2px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.comic-creator-button:hover,
+.comic-selector-button:hover,
+.comic-reader-button:hover,
+.comic-page-button:hover,
+.comic-save-button:hover,
+.comic-view-button:hover,
+.comic-image-selector-button:hover,
+.comic-tool-button:hover,
+.comic-layer-visibility-toggle:hover,
+.comic-layer-lock-toggle:hover,
+.comic-layer-move-button:hover,
+.comic-layer-delete-button:hover,
+.comic-reader-nav-button:hover {
+    background-color: var(--interactive-hover);
+}
+
+.comic-creator-button-cta,
+.comic-image-selector-button-import,
+.comic-save-button,
+.comic-view-button {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.comic-creator-button-cta:hover,
+.comic-image-selector-button-import:hover,
+.comic-save-button:hover,
+.comic-view-button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+/* Modal Styles */
+.comic-creator-modal,
+.comic-selector-modal,
+.comic-image-selector-modal {
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.comic-creator-title,
+.comic-selector-title,
+.comic-image-selector-title {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.comic-creator-buttons,
+.comic-image-selector-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.comic-creator-error,
+.comic-image-selector-error {
+    color: var(--text-error);
+    background-color: var(--background-modifier-error);
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Comic Selector Modal */
+.comic-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.comic-list-item {
+    padding: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.comic-list-item:last-child {
+    border-bottom: none;
+}
+
+.comic-list-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.comic-list-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* Image Selector */
+.comic-image-selector-modal {
+    max-width: 90%;
+    max-height: 90%;
+    width: 800px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.comic-image-search {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+}
+
+.comic-image-gallery-scroller {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.comic-image-gallery {
+    display: grid;
+    grid-template-columns: repeat(var(--gallery-columns, 4), 1fr);
+    gap: 10px;
+}
+
+.comic-image-card {
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: var(--background-secondary);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comic-image-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.comic-image-container {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--background-secondary-alt);
+}
+
+.comic-image-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.comic-image-name {
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.comic-image-empty,
+.comic-image-error {
+    grid-column: span var(--gallery-columns, 4);
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+}
+
+/* Comic Editor View */
+.comic-editor-container {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 10px;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.comic-toolbar-container {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    background-color: var(--background-secondary);
+    border-radius: 4px;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.comic-layers-container {
+    grid-column: 1;
+    grid-row: 3;
+    background-color: var(--background-secondary);
+    border-radius: 4px;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.comic-editor-canvas {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    background-color: var(--background-secondary-alt);
+    border-radius: 4px;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.comic-page-controls {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.comic-save-button,
+.comic-view-button {
+    grid-column: 2;
+    grid-row: 4;
+    margin-top: 10px;
+}
+
+.comic-view-button {
+    margin-left: 120px;
+}
+
+.comic-page-info {
+    font-weight: bold;
+    margin: 0 10px;
+}
+
+/* SVG Editor */
+.comic-svg-editor {
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+}
+
+/* Toolbar styles */
+.comic-toolbar-header,
+.comic-layers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 5px;
+}
+
+.comic-toolbar-title,
+.comic-layers-title {
+    margin: 0;
+    font-size: 16px;
+}
+
+.comic-tools-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.comic-tool-button {
+    aspect-ratio: 1;
+    padding: 8px;
+}
+
+.comic-tool-button.active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Settings Panels */
+.comic-settings-panel {
+    background-color: var(--background-primary);
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    display: none;
+}
+
+.comic-settings-panel.visible {
+    display: block;
+}
+
+.comic-setting-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.comic-setting-label {
+    width: 60px;
+    font-size: 12px;
+}
+
+.comic-setting-input {
+    flex: 1;
+}
+
+.comic-setting-value {
+    width: 30px;
+    text-align: right;
+    font-size: 12px;
+}
+
+.comic-setting-color-input {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.comic-setting-select {
+    flex: 1;
+    padding: 4px;
+    border-radius: 4px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+}
+
+/* Layers Panel */
+.comic-layers-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.comic-layer-item {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-color: var(--background-primary);
+}
+
+.comic-layer-item.active {
+    background-color: var(--background-modifier-active);
+}
+
+.comic-layer-visibility-toggle,
+.comic-layer-lock-toggle,
+.comic-layer-move-button,
+.comic-layer-delete-button {
+    width: 24px;
+    height: 24px;
+    padding: 2px;
+}
+
+.comic-layer-visibility-toggle.hidden {
+    opacity: 0.5;
+}
+
+.comic-layer-lock-toggle.locked {
+    color: var(--text-accent);
+}
+
+.comic-layer-name {
+    flex: 1;
+    margin: 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.comic-layer-name-input {
+    width: 100%;
+    padding: 2px 4px;
+    border-radius: 2px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.comic-layer-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comic-layer-item:hover .comic-layer-actions {
+    opacity: 1;
+}
+
+/* Comic Reader View */
+.comic-reader-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.comic-reader-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 4px 4px 0 0;
+}
+
+.comic-reader-info-bar {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+}
+
+.comic-reader-page-container {
+    flex: 1;
+    background-color: var(--background-secondary-alt);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    position: relative;
+}
+
+.comic-reader-svg {
+    max-height: 100%;
+    max-width: 100%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.comic-reader-nav-controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 0 0 4px 4px;
+}
+
+.comic-reader-nav-button {
+    font-size: 24px;
+    padding: 8px 16px;
+}
+
+.comic-reader-page-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.comic-reader-page-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--background-modifier-border);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.comic-reader-page-indicator.active {
+    background-color: var(--interactive-accent);
+}
+
+/* Fullscreen mode */
+.comic-reader-container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background-color: var(--background-primary);
+}
+
+.comic-reader-fullscreen {
+    overflow: hidden;
+}
+
+/* Panel and editing styles */
+.control-point {
+    cursor: move;
+}
+
+.drawing-preview {
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .comic-editor-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto auto;
+    }
+    
+    .comic-toolbar-container {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .comic-layers-container {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .comic-editor-canvas {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    
+    .comic-page-controls {
+        grid-column: 1;
+        grid-row: 4;
+    }
+    
+    .comic-save-button,
+    .comic-view-button {
+        grid-column: 1;
+        grid-row: 5;
+        margin-left: 0;
+    }
+}

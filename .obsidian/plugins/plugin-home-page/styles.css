@@ -144,6 +144,13 @@
     border-radius: 4px;
 }
 
+
+
+.home-stats-state-badge.unknown {
+    background-color: #5082cd;
+    color: black;
+}
+
 .home-stats-state-badge.dead {
     background-color: #ff6b6b;
     color: white;

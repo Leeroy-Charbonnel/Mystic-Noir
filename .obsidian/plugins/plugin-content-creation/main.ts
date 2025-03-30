@@ -58,7 +58,6 @@ export class ContentCreatorView extends ItemView {
     private plugin: ContentCreatorPlugin;
     private contentData: FormTemplate;
     private formView: DynamicFormView;
-    public filePath: string | null = null;
 
     constructor(leaf: WorkspaceLeaf, plugin: ContentCreatorPlugin) {
         super(leaf);
@@ -76,7 +75,6 @@ export class ContentCreatorView extends ItemView {
     updateContent(contentData: FormTemplate, filePath: string | null = null) {
         this.containerEl.addClass("content-creator-container");
         this.contentData = contentData;
-        this.filePath = filePath;
         this.contentEl.empty();
 
         const wrapper = node('div', { class: 'content-creator-wrapper' });
@@ -123,13 +121,46 @@ export default class ContentCreatorPlugin extends Plugin {
 
         //Register file rename event to update links
         this.registerEvent(
+            this.app.vault.on('rename', async (file, oldPath) => {
+                if (!(file instanceof TFile) || !file.path.endsWith('.md')) return;
+                const oldBasename = oldPath.split('/').pop()?.replace('.md', '');
+                const newBasename = file.basename;
+                if (oldBasename === newBasename) return; //No actual name change
 
-            //Go thuogh all files in vault and get the data object in the properties
-            //Then, go through the data object and update the links [[link]] with the new path
-            //Set the needRefresh properties to true, that way, the file will be regenerated
+                //Get all markdown files
+                const mdFiles = this.app.vault.getMarkdownFiles();
+                let updatedCount = 0;
+
+                for (const mdFile of mdFiles) {
+                    //Skip the renamed file itself
+                    if (mdFile.path === file.path) continue;
+
+                    try {
+                        const props = this.getFileProperties(this.app, mdFile);
+                        if (!props || !props.data) continue;
+
+                        const dataStr = JSON.stringify(JSON.parse(JSON.stringify(props.data)));
+                        const linkRegex = new RegExp(`\\[\\[${oldBasename}(\\|.*?)?\\]\\]`, 'g');
+
+                        if (!linkRegex.test(dataStr)) continue;
+
+                        //Replace links
+                        const updatedDataStr = dataStr.replace(linkRegex, `[[${newBasename}]]`);
+
+                        if (dataStr !== updatedDataStr) {
+                            const updatedData = JSON.parse(updatedDataStr);
+                            await this.createContentFile(updatedData, mdFile.path);
+                            updatedCount++;
+                        }
+                    } catch (error) {
+                        console.error(`Error updating file ${mdFile.path}:`, error);
+                    }
+                }
+
+                if (updatedCount > 0) new Notice(`${updatedCount} Link${updatedCount !== 1 ? 's' : ''} file updated`);
+
+            })
         );
-
-
 
         //Close all openened plugin view form
         this.app.workspace.onLayoutReady(() => {
@@ -211,22 +242,14 @@ export default class ContentCreatorPlugin extends Plugin {
         return null;
     }
 
-    async createContentFile(data: any, folderPath: string = "/") {
+    async createContentFile(data: any, filePath: string) {
         try {
-            let filePath = this.activeView?.filePath;
-            if (!filePath) {
-                filePath = folderPath === "/" ? `/${data.name}.md` : `${folderPath}/${data.name}.md`;
-            }
-
             let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
             const fileContent = this.generateFileContent(data, file);
 
             if (file) {
                 await this.app.vault.modify(file, fileContent);
             } else {
-                if (folderPath !== "/" && !this.app.vault.getAbstractFileByPath(folderPath)) {
-                    await this.app.vault.createFolder(folderPath);
-                }
                 file = await this.app.vault.create(filePath, fileContent);
             }
 

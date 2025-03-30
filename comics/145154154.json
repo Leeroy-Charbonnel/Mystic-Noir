@@ -1,0 +1,48 @@
+{
+  "id": "3194c303-97b7-43c6-96df-e93b22f23466",
+  "name": "145154154",
+  "created": 1743373236459,
+  "modified": 1743373236459,
+  "pages": [
+    {
+      "id": "9eec15b9-9528-4172-995f-8c56e1e4b530",
+      "name": "Page 1",
+      "created": 1743373236459,
+      "modified": 1743373236459,
+      "width": 900,
+      "height": 1200,
+      "panels": [],
+      "borders": [],
+      "layers": [
+        {
+          "id": "4de421c3-8c4c-407d-8f13-f45817b24f99",
+          "name": "Background",
+          "visible": true,
+          "locked": false,
+          "elements": []
+        },
+        {
+          "id": "cfe47bd1-edf5-474a-903b-c1a369ea12e9",
+          "name": "Panels",
+          "visible": true,
+          "locked": false,
+          "elements": []
+        },
+        {
+          "id": "321e2a33-309a-40f5-b852-cd12f13764a1",
+          "name": "Borders",
+          "visible": true,
+          "locked": false,
+          "elements": []
+        },
+        {
+          "id": "81c0cfd3-0056-470b-9ee0-ae6ac482fbfb",
+          "name": "Foreground",
+          "visible": true,
+          "locked": false,
+          "elements": []
+        }
+      ]
+    }
+  ]
+}

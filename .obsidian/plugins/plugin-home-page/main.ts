@@ -79,11 +79,8 @@ export default class HomeStatsPlugin extends Plugin {
             const fileWordscount = fileContent.split(/\s+/).length;
             stats.totalWords += fileWordscount;
 
-
-
             if (cache) {
-                if (cache.links)
-                    stats.totalLinks += cache.links.length;
+                if (cache.links) stats.totalLinks += cache.links.length;
 
                 stats.totalLinks += this.countAnchorTags(fileContent);
 
@@ -99,26 +96,20 @@ export default class HomeStatsPlugin extends Plugin {
 
                                 if (tag == "characters") {
                                     let name = file.basename;
+
                                     let note = "Unknown";
-                                    let state = "Alive";
 
-                                    if (data.template?.BasicInformation?.FullName?.value)
-                                        name = cleanHtml(data.template.BasicInformation.FullName.value);
+                                    if (data.template?.BasicInformation?.fields?.FullName?.value)
+                                        name = cleanHtml(data.template.BasicInformation.fields.FullName.value);
 
-                                    if (data.template?.BasicInformation?.Occupation?.value)
-                                        note = cleanHtml(data.template.BasicInformation.Occupation.value);
-
-                                    if (data.template?.State.Dead?.value === true) {
-                                        state = "Dead";
-                                    } else if (data.template?.State.Injured?.value === true) {
-                                        state = "Injured";
-                                    }
+                                    if (data.template?.BasicInformation?.fields?.Occupation?.value)
+                                        note = cleanHtml(data.template.BasicInformation.fields.Occupation.value);
 
                                     details.characters.push({
                                         name: name,
                                         path: file.path,
                                         note: note,
-                                        state: state
+                                        state: data.template?.State?.fields?.CurrentStatus.value || []
                                     });
                                 }
 
@@ -135,11 +126,11 @@ export default class HomeStatsPlugin extends Plugin {
                                     let name = file.basename;
                                     let note = "No description";
 
-                                    if (data.template?.BasicInformation?.Name?.value)
-                                        name = cleanHtml(data.template.BasicInformation.Name.value);
+                                    if (data.template?.BasicInformation?.fields?.Name?.value)
+                                        name = cleanHtml(data.template.BasicInformation.fields.Name.value);
 
-                                    if (data.template?.BasicInformation?.location?.value)
-                                        note = cleanHtml(data.template.BasicInformation.location.value);
+                                    if (data.template?.BasicInformation?.fields?.Location?.value)
+                                        note = cleanHtml(data.template.BasicInformation.fields.Location.value);
 
                                     details.locations.push({
                                         name: name,
@@ -152,11 +143,11 @@ export default class HomeStatsPlugin extends Plugin {
                                     let name = file.basename;
                                     let note = "No description";
 
-                                    if (data.template?.BasicInformation?.Name?.value)
-                                        name = cleanHtml(data.template.BasicInformation.Name.value);
+                                    if (data.template?.BasicInformation?.fields?.Name?.value)
+                                        name = cleanHtml(data.template.BasicInformation.fields.Name.value);
 
-                                    if (data.template?.BasicInformation?.Description?.value)
-                                        note = cleanHtml(data.template.BasicInformation.Description.value).substring(0, 50) + "...";
+                                    if (data.template?.BasicInformation?.fields?.Description?.value)
+                                        note = cleanHtml(data.template.BasicInformation.fields.Description.value).substring(0, 50) + "...";
 
                                     details.items.push({
                                         name: name,
@@ -171,11 +162,18 @@ export default class HomeStatsPlugin extends Plugin {
                                     let note = "No date specified";
 
                                     if (cache.frontmatter && cache.frontmatter.data) {
-                                        if (data.template?.BasicInformation?.Name?.value)
-                                            name = cleanHtml(data.template.BasicInformation.Name.value);
+                                        if (data.template?.BasicInformation?.fields?.Name?.value)
+                                            name = cleanHtml(data.template.BasicInformation.fields.Name.value);
 
-                                        if (data.template?.BasicInformation?.Date?.value)
-                                            note = cleanHtml(data.template.BasicInformation.Date.value);
+                                        let beginDate = data.template?.BasicInformation?.fields?.BeginDate?.value;
+                                        let endDate = data.template?.BasicInformation?.fields?.EndDate?.value;
+                                        beginDate = beginDate ? new Date(beginDate).toLocaleDateString('fr-FR') : null;
+                                        endDate = endDate ? new Date(endDate).toLocaleDateString('fr-FR') : null;
+
+                                        if (beginDate == endDate)
+                                            note = `${beginDate ? beginDate : ""}`;
+                                        else
+                                            note = `${beginDate ? beginDate : ""} - ${endDate ? endDate.toLocaleDateString() : ""}`;
                                     }
                                     details.events.push({
                                         name: name,
@@ -291,17 +289,13 @@ export default class HomeStatsPlugin extends Plugin {
                     }
                 }));
 
-                if (item.state === 'Dead') {
+                item.state.forEach((state: string) => {
+                    if (state === 'Alive') return;
                     nameEl.appendChild(node('span', {
-                        text: 'Dead',
-                        class: 'home-stats-state-badge dead'
+                        text: state,
+                        class: `home-stats-state-badge ${state.toLowerCase()}`
                     }));
-                } else if (item.state === 'Injured') {
-                    nameEl.appendChild(node('span', {
-                        text: 'Injured',
-                        class: 'home-stats-state-badge injured'
-                    }));
-                }
+                })
 
                 itemEl.appendChild(nameEl);
                 itemEl.appendChild(node('div', {

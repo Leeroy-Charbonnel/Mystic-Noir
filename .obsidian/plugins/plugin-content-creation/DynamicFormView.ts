@@ -285,14 +285,14 @@ export class DynamicFormView {
         if (this.newContent) {
             //Ask for folder
             new FolderSelectorModal(this.app, async (folderPath) => {
-                const file = await this.plugin.createContentFile(this.data, folderPath);
+                const file = await this.plugin.createContentFile(this.data, folderPath + '/' + this.data.name + '.md');
                 if (!file) return;
 
                 await leaf.openFile(file, { state: { mode: 'preview' } });
             }).open();
 
         } else {
-            const file = await this.plugin.createContentFile(this.data);
+            const file = await this.plugin.createContentFile(this.data, this.filePath!);
             if (!file) return;
             await leaf.openFile(file, { state: { mode: 'preview' } });
             return;

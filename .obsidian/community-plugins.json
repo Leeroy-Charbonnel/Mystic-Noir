@@ -6,5 +6,6 @@
   "plugin-timeline-visualiser",
   "obsidian-git",
   "plugin-content-creation",
-  "content-creation-plugin"
+  "content-creation-plugin",
+  "plugin-panel-edit"
 ]
