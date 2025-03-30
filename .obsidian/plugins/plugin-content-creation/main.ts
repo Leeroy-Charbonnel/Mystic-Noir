@@ -123,34 +123,11 @@ export default class ContentCreatorPlugin extends Plugin {
 
         //Register file rename event to update links
         this.registerEvent(
-            this.app.vault.on('rename', (file: TFile, oldPath: string) => {
-                console.log("Rename file");
-            })
+
+            //Go thuogh all files in vault and get the data object in the properties
+            //Then, go through the data object and update the links [[link]] with the new path
+            //Set the needRefresh properties to true, that way, the file will be regenerated
         );
-
-
-        // //Reload images
-        // this.registerEvent(
-        //     this.app.workspace.on('file-open', (file: TFile) => {
-        //         if (!file || file.extension !== 'md') return;
-        //         console.log("file open && md");
-
-        //         console.log(document.querySelectorAll('img[data-path]'));
-        //         document.querySelectorAll('img[data-path]').forEach((img) => {
-        //             console.log(`Refreshing image ${img.getAttribute('data-path')}`);
-        //             const path = img.getAttribute('data-path');
-        //             if (!path) return;
-
-        //             try {
-        //                 const imageFile = this.app.vault.getAbstractFileByPath(path);
-        //                 if (imageFile instanceof TFile) { img.setAttribute('src', this.app.vault.getResourcePath(imageFile)); }
-        //             } catch (e) {
-        //                 console.warn(`Failed to refresh image ${path}:`, e);
-        //             }
-        //         });
-        //     })
-        // );
-
 
 
 
@@ -329,17 +306,6 @@ export default class ContentCreatorPlugin extends Plugin {
             container.appendChild(textareaItem);
         });
         return container;
-    }
-
-    private getImageUrl(path: string): string {
-        if (!path) return '';
-        try {
-            const file = this.app.vault.getAbstractFileByPath(path);
-            if (file instanceof TFile) return this.app.vault.getResourcePath(file);
-        } catch (e) {
-            console.warn("Could not get resource path for image:", e);
-        }
-        return path;
     }
 
     private getImageField(value: string): HTMLElement {

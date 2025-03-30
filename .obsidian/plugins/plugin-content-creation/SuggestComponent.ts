@@ -1,15 +1,10 @@
 import { App, PopoverSuggest, TFile } from 'obsidian';
 
-// Structure to hold content information including ID
-interface ContentInfo {
-    name: string;
-    id: string | null;
-}
 
 export default class SuggestComponent {
     popover: any;
     parent: HTMLElement;
-    suggestsList: ContentInfo[];
+    suggestsList: string[];
     searchCriteria: string;
     bracketsIndices: number[];
     focusNode: Node;
@@ -31,9 +26,7 @@ export default class SuggestComponent {
         let element = this.parent;
         while (element) {
             if (element.scrollHeight > element.clientHeight) {
-                element.addEventListener('scroll', () => {
-                    if (this.popover.isOpen) this.updatePopoverPosition();
-                });
+                element.addEventListener('scroll', () => { if (this.popover.isOpen) this.updatePopoverPosition(); });
             }
             (element as any) = element.parentElement;
         }
@@ -55,12 +48,12 @@ export default class SuggestComponent {
         let selection = window.getSelection();
         if (!selection || !selection.rangeCount || !selection.focusNode) return;
 
-        // Focus node = selected sub node in editor (p element, strong element, etc.)
+        //Focus node = selected sub node in editor (p element, strong element, etc.)
         this.focusNode = selection.focusNode;
         let pos = selection.getRangeAt(0).startOffset;
         let value = this.getValue();
 
-        // Auto-complete brackets, parentheses, etc.
+        //Auto-complete brackets, parentheses, etc.
         if (e.inputType === "insertText" && e.data) {
             const closeChars = new Map([
                 ['{', '}'],
@@ -74,17 +67,16 @@ export default class SuggestComponent {
             }
         }
 
-        // Get value again after auto-complete
+        //Get value again after auto-complete
         value = this.getValue();
         this.bracketsIndices = this.isBetweenBrackets(value, pos);
 
         if (this.bracketsIndices.length > 0) {
             this.searchCriteria = value.slice(this.bracketsIndices[0], this.bracketsIndices[1]).toLowerCase().trim();
             const suggests = this.searchCriteria === ""
-                ? this.suggestsList.map(item => item.name)
+                ? this.suggestsList
                 : this.suggestsList
-                    .filter(e => e.name.toLowerCase().trim().includes(this.searchCriteria))
-                    .map(item => item.name);
+                    .filter(e => e.toLowerCase().trim().includes(this.searchCriteria));
 
             if (suggests.length > 0) {
                 this.popover.suggestions.setSuggestions(suggests);
@@ -135,20 +127,10 @@ export default class SuggestComponent {
     }
 
     selectSuggestion(value: string) {
-        // Find the content info for the selected suggestion
-        const contentInfo = this.suggestsList.find(item => item.name === value);
-        const contentId = contentInfo?.id;
-        
+
         const oldValue = this.getValue();
-        
-        // Format with ID if available
-        let newText;
-        if (contentId) {
-            newText = `[[${value}#${contentId}]]`;
-        } else {
-            newText = `[[${value}]]`;
-        }
-        
+        let newText = `[[${value}]]`;
+
         const newValue = oldValue.slice(0, this.bracketsIndices[0] - 2) +
             newText +
             oldValue.slice(this.bracketsIndices[1] + 2);
@@ -184,30 +166,7 @@ export default class SuggestComponent {
     }
 
     async setSuggestList(values: string[]) {
-        // Convert simple string array to ContentInfo array with IDs
-        this.suggestsList = await Promise.all(
-            values.map(async (name) => {
-                const contentInfo: ContentInfo = { 
-                    name: name,
-                    id: null
-                };
-                
-                // Try to find this content's ID
-                const files = this.app.vault.getMarkdownFiles();
-                for (const file of files) {
-                    if (file.basename === name) {
-                        const metadata = this.app.metadataCache.getFileCache(file);
-                        if (metadata?.frontmatter?.data?.id) {
-                            contentInfo.id = metadata.frontmatter.data.id;
-                            break;
-                        }
-                    }
-                }
-                
-                return contentInfo;
-            })
-        );
-        
+        this.suggestsList = values;
         return this;
     }
 
