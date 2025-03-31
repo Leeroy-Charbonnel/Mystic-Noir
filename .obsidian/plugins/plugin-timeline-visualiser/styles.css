@@ -129,6 +129,7 @@
   list-style: none;
   text-align: right;
   font-size: 10px;
+  padding:1px;
 }
 
 .event-description {
@@ -199,7 +200,7 @@
 }
 
 .isSticky {
-  border-bottom: 1px solid var(--background-color);
+  box-shadow: 0 1px var(--background-color);
 }
 
 .event-footer {

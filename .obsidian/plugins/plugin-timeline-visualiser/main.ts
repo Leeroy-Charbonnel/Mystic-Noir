@@ -114,8 +114,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
 
                             const beginDate = basicInfo?.BeginDate.value;
                             const endDate = basicInfo?.EndDate.value;
-                            const parsedBeginDate = beginDate != null ? new Date(beginDate) : null;
-                            const parsedEndDate = endDate != null ? new Date(endDate) : null;
+                            const parsedBeginDate = beginDate ? new Date(beginDate) : null;
+                            const parsedEndDate = endDate ? new Date(endDate) : null;
 
                             const storyEvent: TimelineEvent = {
                                 type: 'story',
@@ -176,8 +176,8 @@ export default class TimelineVisualizerPlugin extends Plugin {
 
                             const beginDate = basicInfo.BeginDate.value;
                             const endDate = basicInfo.EndDate.value;
-                            const parsedBeginDate = beginDate != null ? new Date(beginDate) : null;
-                            const parsedEndDate = endDate != null ? new Date(endDate) : null;
+                            const parsedBeginDate = beginDate ? new Date(beginDate) : null;
+                            const parsedEndDate = endDate ? new Date(endDate) : null;
 
                             events.push({
                                 type: 'event',
@@ -206,9 +206,10 @@ export default class TimelineVisualizerPlugin extends Plugin {
 
                             const beginDate = basicInfo.BirthDate.value;
                             const endDate = basicInfo.DeathDate.value;
-                            const parsedBeginDate = beginDate != null ? new Date(beginDate) : null;
-                            const parsedEndDate = endDate != null ? new Date(endDate) : null;
+                            const parsedBeginDate = beginDate ? new Date(beginDate) : null;
+                            const parsedEndDate = endDate ? new Date(endDate) : null;
 
+                            console.log(basicInfo);
                             let status = data.template.State.fields.CurrentStatus.value || [];
 
                             events.push({
@@ -275,7 +276,6 @@ export default class TimelineVisualizerPlugin extends Plugin {
         }, ([] as Date[]));
         allDates = sortAndRemoveDuplicateDates(allDates);
 
-
         const latestDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date();
         events.forEach(event => { if (!event.endDate) event.endDate = latestDate; });
 
@@ -285,7 +285,7 @@ export default class TimelineVisualizerPlugin extends Plugin {
             connections: connections,
         };
 
-        console.log("Timeline Data:", timelineData);
+        // console.log("Timeline Data:", timelineData);
         return timelineData;
     }
 }

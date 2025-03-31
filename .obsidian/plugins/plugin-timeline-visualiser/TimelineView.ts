@@ -305,8 +305,12 @@ export class TimelineView extends ItemView {
             }
         });
 
-        const rowDates = Array.from(uniqueDatesMap.values())
-            .sort((a, b) => a.getTime() - b.getTime());
+        const rowDates = Array.from(uniqueDatesMap.values()).sort((a, b) => a.getTime() - b.getTime());
+
+
+        // console.log(uniqueDatesMap);
+        // console.log(rowDates);
+        // console.log(events);
 
         //Assign grid positions to events
         const columns: TimelineEvent[][] = [];
@@ -529,13 +533,13 @@ export class TimelineView extends ItemView {
     private eventsOverlap(eventA: TimelineEvent, eventB: TimelineEvent): boolean {
         if (!eventA.beginDate || !eventB.beginDate) return false;
 
-        const aStart = eventA.beginDate.getTime();
-        const aEnd = eventA.endDate ? eventA.endDate.getTime() : aStart;
+        const aStart = eventA.beginDate;
+        const aEnd = eventA.endDate;
 
-        const bStart = eventB.beginDate.getTime();
-        const bEnd = eventB.endDate ? eventB.endDate.getTime() : bStart;
+        const bStart = eventB.beginDate;
+        const bEnd = eventB.endDate;
 
-        return aStart <= bEnd && bStart <= aEnd;
+        return aStart <= bEnd! && bStart <= aEnd!;
     }
 }
 
