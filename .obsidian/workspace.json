@@ -1,37 +1,48 @@
 {
   "main": {
-    "id": "0336709e4d4a93b5",
+    "id": "10ab69203df6d0cd",
     "type": "split",
     "children": [
       {
-        "id": "9c78fa9ab75e4ad5",
+        "id": "750f2249dc84a0ff",
         "type": "tabs",
         "children": [
           {
-            "id": "c841b433e4381950",
+            "id": "e33bc5cf99f29bd6",
             "type": "leaf",
             "state": {
-              "type": "timeline-visualizer",
+              "type": "comic-viewer-view",
               "state": {},
-              "icon": "lucide-file",
-              "title": "Timeline Visualizer"
+              "icon": "comic-icon",
+              "title": "testComic"
+            }
+          },
+          {
+            "id": "578cafb4c34ee767",
+            "type": "leaf",
+            "state": {
+              "type": "comic-viewer-view",
+              "state": {},
+              "icon": "comic-icon",
+              "title": "Ultimate Spider-Man - Infinity Comic 015 (2025)"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
   },
   "left": {
-    "id": "47e74932df8e6b51",
+    "id": "322a70862506664c",
     "type": "split",
     "children": [
       {
-        "id": "6768286b25845476",
+        "id": "511c78b68a5609da",
         "type": "tabs",
         "children": [
           {
-            "id": "9081f7d405e9a01a",
+            "id": "91b8e19dafbce24a",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -44,7 +55,7 @@
             }
           },
           {
-            "id": "5256f4abe6e2d4c0",
+            "id": "243959b8a16c4f2f",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -61,7 +72,7 @@
             }
           },
           {
-            "id": "e9c9ee545c2c8134",
+            "id": "6fdc23f0c292e796",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -74,18 +85,18 @@
       }
     ],
     "direction": "horizontal",
-    "width": 286.5
+    "width": 300
   },
   "right": {
-    "id": "29a3676e3f236c53",
+    "id": "49825a0672d60314",
     "type": "split",
     "children": [
       {
-        "id": "458bcc7108286073",
+        "id": "562fe0dd2425bb99",
         "type": "tabs",
         "children": [
           {
-            "id": "bbdfdebd7d136347",
+            "id": "dbc676ac3ab1a4dc",
             "type": "leaf",
             "state": {
               "type": "backlink",
@@ -103,7 +114,7 @@
             }
           },
           {
-            "id": "1f1dba0e31e7f642",
+            "id": "9d821cafe37ff4bd",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
@@ -116,7 +127,7 @@
             }
           },
           {
-            "id": "43ac99374afb3edf",
+            "id": "8816e9208b0e70b9",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -131,21 +142,22 @@
             }
           },
           {
-            "id": "a6529e33d70cce8f",
+            "id": "4786673807bdc0db",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
+                "file": "Ultimate Spider-Man - Infinity Comic 015 (2025).md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline"
+              "title": "Outline of Ultimate Spider-Man - Infinity Comic 015 (2025)"
             }
           },
           {
-            "id": "d15482fcae0105ae",
+            "id": "3c4335c3137172dc",
             "type": "leaf",
             "state": {
               "type": "git-view",
@@ -159,7 +171,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -174,50 +186,25 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "c841b433e4381950",
+  "active": "578cafb4c34ee767",
   "lastOpenFiles": [
-    "1. Characters/Evelyn Dupont.md",
-    "4. Stories/4 The Missing Melody.md",
-    "1. Characters/Alexander Dupont.md",
+    "Ultimate Spider-Man - Infinity Comic 015 (2025).md",
+    "testComic.md",
+    "4. Stories/testComic/img_000000000000005_Ultimate_Spider_Man___Infinity_Comic_015_00003.jpg",
+    "4. Stories/testComic/img_000000000000093_Ultimate_Spider_Man___Infinity_Comic_015_00091.jpg",
+    "4. Stories/testComic/img_000000000000092_Ultimate_Spider_Man___Infinity_Comic_015_00090.jpg",
+    "4. Stories/testComic/img_000000000000091_Ultimate_Spider_Man___Infinity_Comic_015_00089.jpg",
+    "4. Stories/testComic/img_000000000000090_Ultimate_Spider_Man___Infinity_Comic_015_00088.jpg",
+    "4. Stories/testComic/img_000000000000089_Ultimate_Spider_Man___Infinity_Comic_015_00087.jpg",
+    "4. Stories/testComic/img_000000000000088_Ultimate_Spider_Man___Infinity_Comic_015_00086.jpg",
+    "4. Stories/testComic/img_000000000000087_Ultimate_Spider_Man___Infinity_Comic_015_00085.jpg",
+    "4. Stories/testComic/img_000000000000086_Ultimate_Spider_Man___Infinity_Comic_015_00084.jpg",
+    "4. Stories/testComic/img_000000000000085_Ultimate_Spider_Man___Infinity_Comic_015_00083.jpg",
+    "4. Stories/testComic",
+    "4. Stories/Ultimate Spider-Man - Infinity Comic 015 (2025) - Copie",
+    "0. Chronology.canvas",
     "4. Stories/5 The Price of Justice.md",
-    "4. Stories/3 The Last Gamble.md",
-    "4. Stories/2 Silenced Testimony.md",
-    "4. Stories/1 Shadows of the Crescent City.md",
-    "comics/aaaaaaaaaaaaaaaa.md",
-    "comics/zazfazrazrzar.md",
-    "comics/efzfezf.md",
-    "comics/test.md",
-    "comics/145154154.json",
-    "comics/fffffffffff.json",
     "Home.md",
-    "comics/test.json",
-    "comics",
-    "OLD/Stardust Lounge 1.md",
-    "OLD/Samuel Blackwood 1.md",
-    "OLD/Samuel's Office 1.md",
-    "OLD/Lily Moore 1.md",
-    "OLD/Evelyn Dupont 1.md",
-    "OLD/Dupont's Mansion 1.md",
-    "OLD/Dupont's Heirloom 1.md",
-    "OLD/Alexander Dupont 1.md",
-    "OLD/5 The Price of Justice 1.md",
-    "OLD/4 The Missing Melody 1.md",
-    "OLD/3 The Last Gamble 1.md",
-    "OLD/2 Silenced Testimony 1.md",
-    "OLD/1 Shadows of the Crescent City 1.md",
-    "OLD/The Shadow 1.md",
-    "New (Characters)",
-    "DONE",
-    "OLD",
-    "_Images/Screen Shot 2025-03-09 at 14.21.48.png",
-    "_Images/ezgif-698e88064d088b.gif",
-    "_Images/fffff.png",
-    "_Images/ezgif-698e88064d088b - Copie (7).gif",
-    "_Images/fffff - Copie (7).png",
-    "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (7).png",
-    "_Images/ezgif-698e88064d088b - Copie (6).gif",
-    "_Images/fffff - Copie (6).png",
-    "_Images/Screen Shot 2025-03-09 at 14.21.48 - Copie (6).png",
-    "_Images/ezgif-698e88064d088b - Copie (5).gif"
+    "Ultimate Spider-Man - Infinity Comic 015 (2025).md.md"
   ]
 }
