@@ -39,8 +39,7 @@ export default class ComicViewerPlugin extends Plugin {
                 const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
                 const comicData = frontmatter?.comicData;
 
-
-                if (comicData) this.activateView(comicData);
+                if (comicData) this.activateView(comicData, file.path);
 
             })
         );
@@ -55,7 +54,7 @@ export default class ComicViewerPlugin extends Plugin {
         console.log("Unloading comic viewer plugin");
     }
 
-    async activateView(comicData: any) {
+    async activateView(comicData: any, filePath: string) {
         const leaf = this.app.workspace.getMostRecentLeaf();
         if (!leaf) return;
 
@@ -66,12 +65,13 @@ export default class ComicViewerPlugin extends Plugin {
             await new Promise((resolve) => setTimeout(resolve, 100));
         }
         if (leaf.view instanceof ComicViewerView) {
-            leaf.view.updateComic(comicData);
+            leaf.view.updateComic(comicData, filePath);
         }
     }
 
     async createComic(title: string, folderPath: string) {
         try {
+            const filePath = `/${title.replace(/[\\/:*?"<>|]/g, '_')}.md`;
             const comicMetadata = {
                 id: generateUUID(),
                 title: title,
@@ -81,13 +81,11 @@ export default class ComicViewerPlugin extends Plugin {
             };
 
             const fileContent = this.generateComicFileContent(comicMetadata);
-
-            const filePath = `/${title.replace(/[\\/:*?"<>|]/g, '_')}.md`;
             const file = await this.app.vault.create(filePath, fileContent);
 
             new Notice(`Comic page created: ${title}`);
 
-            this.activateView(comicMetadata);
+            this.activateView(comicMetadata, filePath);
             return file;
         } catch (error) {
             console.error("Error creating comic page:", error);
@@ -110,12 +108,14 @@ export default class ComicViewerPlugin extends Plugin {
     }
 
     async updateComicMetadata(filePath: string, updatedMetadata: any) {
+        console.log("updateComicMetadata");
+
+
         try {
             const file = this.app.vault.getAbstractFileByPath(filePath);
             if (file instanceof TFile) {
                 const content = this.generateComicFileContent(updatedMetadata);
                 await this.app.vault.modify(file, content);
-                new Notice("Comic data updated");
             }
         } catch (error) {
             console.error("Error updating comic metadata:", error);

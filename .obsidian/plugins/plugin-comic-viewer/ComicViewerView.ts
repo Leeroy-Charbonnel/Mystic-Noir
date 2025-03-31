@@ -2,13 +2,19 @@ import { ItemView, WorkspaceLeaf, TFile, setIcon, Notice, Menu } from 'obsidian'
 import ComicViewerPlugin from './main';
 import { node } from './utils';
 
+// Define interface for the new notes structure
+interface PanelNote {
+    index: number;
+    text: string;
+}
+
 export class ComicViewerView extends ItemView {
     private plugin: ComicViewerPlugin;
     private comicData: any = null;
     private panelIndex: number = 0;
     private panelFiles: TFile[] = [];
     private displayMode: 'vertical' | 'horizontal';
-    private folderPath: string | null = null;
+    private filePath: string;
 
     private titleEl: HTMLElement;
     private subtitleEl: HTMLElement;
@@ -37,15 +43,14 @@ export class ComicViewerView extends ItemView {
         return "comic-icon";
     }
 
-    async updateComic(comicData: any) {
+    async updateComic(comicData: any, filePath: string) {
         console.log(comicData);
 
         this.comicData = comicData;
-        this.folderPath = comicData.folderPath;
+        this.filePath = filePath;
         this.displayMode = comicData.displayMode;
 
         this.panelIndex = 0;
-
         await this.loadPanelFiles();
         this.render();
         this.setupKeyboardNavigation();
@@ -71,8 +76,6 @@ export class ComicViewerView extends ItemView {
         this.comicContainer.appendChild(this.panelsContainer);
 
         container.appendChild(this.comicContainer);
-
-
     }
 
     setupKeyboardNavigation() {
@@ -85,13 +88,24 @@ export class ComicViewerView extends ItemView {
 
     handleKeyDown = (e: KeyboardEvent) => {
         if (this.displayMode === 'vertical') {
-            if (e.key === 'ArrowDown') { this.navigateToPanel(1) }
-            else if (e.key === 'ArrowUp') { this.navigateToPanel(-1) }
+            if (e.key === 'ArrowDown') {
+                this.navigateToPanel(1)
+                e.preventDefault();
+            }
+            else if (e.key === 'ArrowUp') {
+                this.navigateToPanel(-1)
+                e.preventDefault();
+            }
         } else {
-            if (e.key === 'ArrowRight') { this.navigateHorizontalPages(2); }
-            else if (e.key === 'ArrowLeft') { this.navigateHorizontalPages(-2); }
+            if (e.key === 'ArrowRight') {
+                this.navigateHorizontalPages(2);
+                e.preventDefault();
+            }
+            else if (e.key === 'ArrowLeft') {
+                this.navigateHorizontalPages(-2);
+                e.preventDefault();
+            }
         }
-        e.preventDefault();
     }
 
     navigateToPanel(delta: number) {
@@ -99,9 +113,7 @@ export class ComicViewerView extends ItemView {
         this.panelIndex = Math.max(this.panelIndex, 0);
         this.panelIndex = Math.min(this.panelIndex, this.panelFiles.length - 1);
         const nextPanel = document.querySelector(`.panel-wrapper[data-index="${this.panelIndex}"]`);
-        if (nextPanel) {
-            nextPanel.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (nextPanel) nextPanel.scrollIntoView({ behavior: 'smooth' });
         this.updateControls();
     }
 
@@ -129,8 +141,6 @@ export class ComicViewerView extends ItemView {
             let imageFiles = allFiles.filter(file => { return file.path.startsWith(folderPath) && supportedExtensions.includes(file.extension.toLowerCase()); });
             imageFiles.sort((a, b) => a.name.localeCompare(b.name));
             this.panelFiles = imageFiles;
-
-
         } catch (error) {
             console.error("Error loading panel files:", error);
             new Notice(`Error loading comic panels: ${error.message}`);
@@ -224,8 +234,12 @@ export class ComicViewerView extends ItemView {
             return;
         }
 
-        if (this.displayMode === 'vertical') { this.renderVerticalLayout(); }
-        else { this.renderHorizontalLayout(); }
+        if (this.displayMode === 'vertical') {
+            this.renderVerticalLayout();
+        }
+        else {
+            this.renderHorizontalLayout();
+        }
 
         this.updateControls();
     }
@@ -243,14 +257,13 @@ export class ComicViewerView extends ItemView {
         this.panelsContainer.appendChild(this.previousPanelButton);
         this.panelsContainer.appendChild(this.nextPanelButton);
 
-        //Create main content container for panels
         const contentContainer = node('div', { class: 'vertical-content-container' });
         this.panelsContainer.appendChild(contentContainer);
 
         for (let i = 0; i < this.panelFiles.length; i++) {
             const panelWrapper = node('div', { class: 'panel-wrapper', attributes: { 'data-index': i.toString() } });
 
-            const panelContainer = this.createPanelElement(this.panelFiles[i], i);
+            const panelContainer = this.createPanelElement(i);
             const noteContainer = this.createNoteElement(i);
 
             panelWrapper.appendChild(panelContainer);
@@ -270,7 +283,7 @@ export class ComicViewerView extends ItemView {
         indices.forEach(i => {
             const pageContainer = node('div', { class: 'page-container' });
 
-            const panelContainer = this.createPanelElement(this.panelFiles[i], i);
+            const panelContainer = this.createPanelElement(i);
             const noteContainer = this.createNoteElement(i);
 
             pageContainer.appendChild(panelContainer);
@@ -280,7 +293,9 @@ export class ComicViewerView extends ItemView {
         })
     }
 
-    createPanelElement(file: TFile, index: number): HTMLElement {
+    createPanelElement(index: number): HTMLElement {
+        const file = this.panelFiles[index];
+
         const panelContainer = node('div', {
             class: 'panel-container',
             attributes: { 'data-index': index.toString() }
@@ -325,24 +340,29 @@ export class ComicViewerView extends ItemView {
 
         const textarea = node('textarea', { class: 'note-textarea', attributes: { 'placeholder': 'Add notes for this panel...', 'rows': '1' } }) as HTMLTextAreaElement;
 
-        if (this.comicData?.notes && this.comicData.notes[index]) {
-            textarea.value = this.comicData.notes[index];
-        }
+        //Find note for this panel index
+        const existingNote = this.comicData.notes.find((note: PanelNote) => note.index === index);
+        if (existingNote) textarea.value = existingNote.text;
 
-        //Save note on change
         textarea.addEventListener('input', () => {
-            if (!this.comicData.notes) {
-                this.comicData.notes = [];
+            let note = this.comicData.notes.find((note: PanelNote) => note.index === index);
+
+            if (textarea.value.trim().length > 0) {
+                if (note) {
+                    note.text = textarea.value;
+                } else {
+                    this.comicData.notes.push({ index: index, text: textarea.value });
+                }
+            } else if (note) {
+                const noteIndex = this.comicData.notes.indexOf(note);
+                this.comicData.notes.splice(noteIndex, 1);
             }
-            this.comicData.notes[index] = textarea.value;
             this.saveComicData();
         });
 
         noteContainer.appendChild(textarea);
         return noteContainer;
     }
-
-
 
     setDisplayMode(mode: 'vertical' | 'horizontal') {
         if (this.displayMode !== mode) {
@@ -357,8 +377,8 @@ export class ComicViewerView extends ItemView {
     }
 
     async saveComicData() {
-        if (this.comicData && this.folderPath) {
-            await this.plugin.updateComicMetadata(this.folderPath, this.comicData);
+        if (this.comicData && this.filePath) {
+            await this.plugin.updateComicMetadata(this.filePath, this.comicData);
         }
     }
 }

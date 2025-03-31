@@ -4,21 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "750f2249dc84a0ff",
+        "id": "947cbbc65a775ba8",
         "type": "tabs",
         "children": [
           {
-            "id": "e33bc5cf99f29bd6",
-            "type": "leaf",
-            "state": {
-              "type": "comic-viewer-view",
-              "state": {},
-              "icon": "comic-icon",
-              "title": "testComic"
-            }
-          },
-          {
-            "id": "578cafb4c34ee767",
+            "id": "0eaf97685d736000",
             "type": "leaf",
             "state": {
               "type": "comic-viewer-view",
@@ -27,8 +17,7 @@
               "title": "Ultimate Spider-Man - Infinity Comic 015 (2025)"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -171,7 +160,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -186,7 +175,7 @@
       "content-creation-plugin:Create Content": false
     }
   },
-  "active": "578cafb4c34ee767",
+  "active": "0eaf97685d736000",
   "lastOpenFiles": [
     "Ultimate Spider-Man - Infinity Comic 015 (2025).md",
     "testComic.md",

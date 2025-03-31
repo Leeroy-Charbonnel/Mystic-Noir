@@ -4,7 +4,12 @@ comicData: {
   "title": "Ultimate Spider-Man - Infinity Comic 015 (2025)",
   "folderPath": "4. Stories/Ultimate Spider-Man - Infinity Comic 015 (2025)",
   "displayMode": "vertical",
-  "notes": []
+  "notes": [
+    {
+      "index": 0,
+      "text": "note 1"
+    }
+  ]
 }
 ---
 
