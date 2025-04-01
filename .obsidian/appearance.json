@@ -1,7 +1,7 @@
 {
   "enabledCssSnippets": [
-    "contentCreation",
-    "main"
+    "main",
+    "contentCreation"
   ],
   "accentColor": "#5cf5ce"
 }

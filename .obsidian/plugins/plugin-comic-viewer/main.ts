@@ -111,7 +111,6 @@ export default class ComicViewerPlugin extends Plugin {
     async updateComicMetadata(filePath: string, updatedMetadata: any) {
         console.log("updateComicMetadata");
 
-
         try {
             const file = this.app.vault.getAbstractFileByPath(filePath);
             if (file instanceof TFile) {
