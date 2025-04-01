@@ -77,6 +77,7 @@ export default class ComicViewerPlugin extends Plugin {
                 title: title,
                 folderPath: folderPath,
                 displayMode: 'vertical',
+                displayNote: true,
                 notes: []
             };
 

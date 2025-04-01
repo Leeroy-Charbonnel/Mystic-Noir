@@ -4,7 +4,8 @@ comicData: {
   "title": "testComic",
   "folderPath": "4. Stories/testComic",
   "displayMode": "vertical",
-  "notes": []
+  "notes": [],
+  "displayNote": true
 }
 ---
 
